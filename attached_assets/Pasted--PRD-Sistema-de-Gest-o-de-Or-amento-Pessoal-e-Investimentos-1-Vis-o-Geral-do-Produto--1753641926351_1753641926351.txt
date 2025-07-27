@@ -1,0 +1,186 @@
+# 📄 PRD – Sistema de Gestão de Orçamento Pessoal e Investimentos
+
+## 🧭 1. Visão Geral do Produto
+**Nome provisório:** OrçaFácil  
+**Tipo:** Aplicativo Web + Mobile  
+**Objetivo:**  
+Oferecer uma solução completa e intuitiva para **gestão financeira pessoal**, combinando:
+- Planejamento de orçamento (base 50/30/20)
+- Controle de receitas, despesas e metas
+- Gestão e análise de investimentos
+- Integração entre orçamento, contas bancárias e cartões
+- Acompanhamento da evolução patrimonial
+
+---
+
+## 🧩 2. Problemas a Resolver
+
+1. Falta de controle e visualização do orçamento completo  
+2. Dificuldade em aplicar e manter o método 50/30/20  
+3. Integração fragmentada entre contas, cartões e investimentos  
+4. Incerteza sobre gastos no crédito e saldo real disponível  
+5. Falta de metas claras e acompanhamento financeiro consolidado  
+
+---
+
+## 🎯 3. Público-Alvo
+
+- Usuários de 20 a 55 anos  
+- Classe média e média alta  
+- Investidores iniciantes ou intermediários  
+- Pessoas interessadas em organização e crescimento financeiro  
+
+---
+
+## 💼 4. Funcionalidades do MVP
+
+### A. Painel Financeiro (Dashboard)
+- Visão consolidada de:
+  - Saldo em contas
+  - Faturas em aberto
+  - Conta investimento
+  - Carteira de ativos
+- Gráfico de divisão 50/30/20 baseado no orçamento atual
+- Evolução do patrimônio líquido mês a mês
+
+---
+
+### B. Módulo de Orçamento Pessoal (Receitas e Despesas)
+- Cadastro de receitas e despesas com categorias (fixas e variáveis)
+- Divisão automática entre:
+  - **50%**: Necessidades
+  - **30%**: Desejos
+  - **20%**: Investimentos ou metas
+- Planejamento mensal com alertas de limite por categoria
+- Gráfico de execução: planejado x realizado
+
+---
+
+### C. Contas Bancárias
+- Cadastro de múltiplas contas bancárias (corrente, poupança, etc.)
+- Visualização de saldos separados e consolidados
+- Lançamentos manuais ou importação de extrato
+- Transferência entre contas internas (ou para conta investimento)
+- Conciliação de movimentações
+
+---
+
+### D. Cartões de Crédito
+- Cadastro de cartões com:
+  - Limite
+  - Fechamento da fatura
+  - Vencimento
+- Lançamento de compras e parcelamentos
+- Controle de faturas em aberto
+- Alerta de limite comprometido
+- Integração com orçamento (lançamentos no crédito impactam "desejos" e "necessidades")
+
+---
+
+### E. Conta Investimento (Integração com Orçamento)
+- Conta específica onde o usuário transfere parte da receita mensal
+- Essa conta alimenta o módulo de investimentos
+- Transferência manual ou automática (% do salário)
+- Relatório de aportes por mês
+- Integração com metas de investimento
+
+---
+
+### F. Gestão de Carteira de Investimentos
+
+#### F.1. Controle de Ativos
+- Cadastro de ativos: ações, FIIs, criptos, renda fixa, ETFs
+- Registro de quantidade, preço médio, data de compra
+
+#### F.2. Indicadores por Ativo
+- Preço atual, variação, dividend yield, P/L, P/VP, ROE
+- Histórico de dividendos
+- Simulação de reinvestimento
+
+#### F.3. Consolidação da Carteira
+- Gráfico de alocação por tipo/setor
+- Rentabilidade total e individual
+- Histórico de valorização mês a mês
+
+#### F.4. Proventos
+- Calendário de recebimentos
+- Histórico e previsão mensal
+- Relatórios de dividendos recebidos
+
+---
+
+### G. Metas Financeiras
+- Criação de metas personalizadas (ex: reserva, viagem, imóvel)
+- Definição de valor alvo, prazo e aportes sugeridos
+- Vínculo de metas com orçamento ou conta investimento
+- Acompanhamento visual: progresso em barras, meses restantes
+- Sugestão de ajuste mensal para bater a meta no prazo
+
+---
+
+### H. Relatórios e Insights
+- Relatórios mensais consolidados (gastos, receitas, investimentos)
+- Exportação em PDF e CSV
+- Relatórios de patrimônio líquido, metas, e comparativos 50/30/20
+- Alertas automáticos de comportamento fora do padrão
+- Dicas inteligentes baseadas no perfil do usuário
+
+---
+
+### I. Educação Financeira Integrada
+- Glossário de termos financeiros
+- Artigos e vídeos curados de fontes como: Suno, Primo Rico, Empiricus
+- Ferramentas de simulação: juros compostos, dividendos, metas
+
+---
+
+## 📚 5. Fontes e Referências
+
+- **Orçamento 50/30/20:** Elizabeth Warren – *All Your Worth*  
+- **Gestão de finanças pessoais:** Mobills, Nubank, Guiabolso  
+- **Investimentos:** Status Invest, Investidor10, Trademap, Meus Dividendos  
+- **Cartões e contas:** Guias do BTG, Itaú e Inter  
+- **Metas:** Planilhas da Me Poupe! e Itaú Educação Financeira  
+
+---
+
+## 🛠 6. Tecnologias Sugeridas
+
+- **Frontend:** React + Tailwind  
+- **Mobile:** React Native  
+- **Backend:** Node.js + Express  
+- **Banco de dados:** PostgreSQL  
+- **Integrações futuras:** Open Finance Brasil, Yahoo Finance, APIs bancárias  
+
+---
+
+## 📈 7. Métricas de Sucesso
+
+- 1000 usuários com contas e metas cadastradas  
+- 50% dos usuários utilizando o controle de cartão de crédito  
+- 60% de usuários com conta investimento ativa  
+- NPS acima de 75 nos primeiros 3 meses  
+
+---
+
+## 🧪 8. Roadmap do MVP
+
+| Etapa       | Entregável                                              |
+|-------------|---------------------------------------------------------|
+| Semana 1-2  | Setup da base, login seguro e telas iniciais            |
+| Semana 3-4  | Módulo de orçamento e contas bancárias                  |
+| Semana 5-6  | Cartões de crédito e conta investimento                 |
+| Semana 7-8  | Módulo de investimentos com ativos e indicadores        |
+| Semana 9    | Metas financeiras, relatórios e melhorias UX/UI        |
+| Semana 10   | Testes, ajustes, release beta e primeiros feedbacks     |
+
+---
+
+## 🧱 9. Diferenciais Estratégicos
+
+- Planejamento financeiro completo com foco em **ação e disciplina**
+- Controle de **cartões e contas**, não apenas investimentos
+- Aplicação prática e visual do método **50/30/20**
+- Integração direta entre orçamento e carteira real
+- Progresso claro em metas e no patrimônio líquido
+
