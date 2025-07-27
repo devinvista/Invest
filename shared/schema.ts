@@ -170,8 +170,10 @@ export const insertAccountSchema = createInsertSchema(accounts)
 export const insertCreditCardSchema = createInsertSchema(creditCards)
   .omit({ id: true, createdAt: true })
   .extend({
-    creditLimit: z.union([z.string(), z.number()]).transform(val => val.toString()),
+    limit: z.union([z.string(), z.number()]).transform(val => val.toString()),
     usedAmount: z.union([z.string(), z.number()]).transform(val => val.toString()).optional(),
+    closingDay: z.union([z.string(), z.number()]).transform(val => Number(val)),
+    dueDay: z.union([z.string(), z.number()]).transform(val => Number(val)),
   });
 export const insertCategorySchema = createInsertSchema(categories).omit({ id: true });
 export const insertTransactionSchema = createInsertSchema(transactions)
