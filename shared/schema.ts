@@ -161,12 +161,40 @@ export const budgetsRelations = relations(budgets, ({ one }) => ({
 
 // Insert schemas
 export const insertUserSchema = createInsertSchema(users).omit({ id: true, createdAt: true });
-export const insertAccountSchema = createInsertSchema(accounts).omit({ id: true, createdAt: true });
-export const insertCreditCardSchema = createInsertSchema(creditCards).omit({ id: true, createdAt: true });
+export const insertAccountSchema = createInsertSchema(accounts)
+  .omit({ id: true, createdAt: true })
+  .extend({
+    balance: z.union([z.string(), z.number()]).transform(val => val.toString()),
+    creditLimit: z.union([z.string(), z.number()]).transform(val => val.toString()).optional(),
+  });
+export const insertCreditCardSchema = createInsertSchema(creditCards)
+  .omit({ id: true, createdAt: true })
+  .extend({
+    creditLimit: z.union([z.string(), z.number()]).transform(val => val.toString()),
+    usedAmount: z.union([z.string(), z.number()]).transform(val => val.toString()).optional(),
+  });
 export const insertCategorySchema = createInsertSchema(categories).omit({ id: true });
-export const insertTransactionSchema = createInsertSchema(transactions).omit({ id: true, createdAt: true });
-export const insertAssetSchema = createInsertSchema(assets).omit({ id: true, createdAt: true });
-export const insertGoalSchema = createInsertSchema(goals).omit({ id: true, createdAt: true });
+export const insertTransactionSchema = createInsertSchema(transactions)
+  .omit({ id: true, createdAt: true })
+  .extend({
+    amount: z.union([z.string(), z.number()]).transform(val => val.toString()),
+    installments: z.union([z.string(), z.number()]).transform(val => Number(val)).optional(),
+    currentInstallment: z.union([z.string(), z.number()]).transform(val => Number(val)).optional(),
+  });
+export const insertAssetSchema = createInsertSchema(assets)
+  .omit({ id: true, createdAt: true })
+  .extend({
+    quantity: z.union([z.string(), z.number()]).transform(val => val.toString()),
+    averagePrice: z.union([z.string(), z.number()]).transform(val => val.toString()),
+    currentPrice: z.union([z.string(), z.number()]).transform(val => val.toString()).optional(),
+  });
+export const insertGoalSchema = createInsertSchema(goals)
+  .omit({ id: true, createdAt: true })
+  .extend({
+    targetAmount: z.union([z.string(), z.number()]).transform(val => val.toString()),
+    currentAmount: z.union([z.string(), z.number()]).transform(val => val.toString()).optional(),
+    monthlyContribution: z.union([z.string(), z.number()]).transform(val => val.toString()).optional(),
+  });
 export const insertBudgetSchema = createInsertSchema(budgets)
   .omit({ id: true, createdAt: true })
   .extend({
