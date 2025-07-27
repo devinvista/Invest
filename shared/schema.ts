@@ -167,7 +167,14 @@ export const insertCategorySchema = createInsertSchema(categories).omit({ id: tr
 export const insertTransactionSchema = createInsertSchema(transactions).omit({ id: true, createdAt: true });
 export const insertAssetSchema = createInsertSchema(assets).omit({ id: true, createdAt: true });
 export const insertGoalSchema = createInsertSchema(goals).omit({ id: true, createdAt: true });
-export const insertBudgetSchema = createInsertSchema(budgets).omit({ id: true, createdAt: true });
+export const insertBudgetSchema = createInsertSchema(budgets)
+  .omit({ id: true, createdAt: true })
+  .extend({
+    totalIncome: z.union([z.string(), z.number()]).transform(val => val.toString()),
+    necessitiesBudget: z.union([z.string(), z.number()]).transform(val => val.toString()),
+    wantsBudget: z.union([z.string(), z.number()]).transform(val => val.toString()),
+    savingsBudget: z.union([z.string(), z.number()]).transform(val => val.toString()),
+  });
 
 // Types
 export type User = typeof users.$inferSelect;

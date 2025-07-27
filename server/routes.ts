@@ -272,13 +272,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/budget", async (req: any, res) => {
     try {
-      console.log("Budget request data:", req.body);
       const budgetData = insertBudgetSchema.parse({ ...req.body, userId: req.userId });
-      console.log("Parsed budget data:", budgetData);
       const budget = await storage.createBudget(budgetData);
       res.json(budget);
     } catch (error) {
-      console.error("Budget creation error:", error);
       res.status(400).json({ message: "Erro ao criar orçamento", error: error instanceof Error ? error.message : "Erro desconhecido" });
     }
   });
