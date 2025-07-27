@@ -1,0 +1,453 @@
+import { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Progress } from '@/components/ui/progress';
+import { Badge } from '@/components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { formatCurrency, calculate502020, getProgressColor } from '@/lib/financial-utils';
+import { apiRequest } from '@/lib/queryClient';
+import { useToast } from '@/hooks/use-toast';
+import { Calculator, TrendingUp, TrendingDown, Target, Plus, Edit3 } from 'lucide-react';
+
+export function Budget() {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+  const [isEditing, setIsEditing] = useState(false);
+  const [budgetForm, setBudgetForm] = useState({
+    totalIncome: '',
+    necessitiesBudget: '',
+    wantsBudget: '',
+    savingsBudget: '',
+  });
+
+  const { data: budget, isLoading } = useQuery<any>({
+    queryKey: ['/api/budget', selectedMonth, selectedYear],
+  });
+
+  const { data: transactions = [] } = useQuery<any[]>({
+    queryKey: ['/api/transactions', { month: selectedMonth, year: selectedYear }],
+  });
+
+  const { data: categories = [] } = useQuery<any[]>({
+    queryKey: ['/api/categories'],
+  });
+
+  const createBudgetMutation = useMutation({
+    mutationFn: async (budgetData: any) => {
+      const response = await apiRequest('POST', '/api/budget', {
+        ...budgetData,
+        month: selectedMonth,
+        year: selectedYear,
+      });
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: 'Sucesso',
+        description: 'Orçamento criado com sucesso!',
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/budget'] });
+      setIsEditing(false);
+    },
+    onError: (error: Error) => {
+      toast({
+        title: 'Erro',
+        description: error.message,
+        variant: 'destructive',
+      });
+    },
+  });
+
+  const handleIncomeChange = (income: string) => {
+    const incomeValue = parseFloat(income) || 0;
+    const allocation = calculate502020(incomeValue);
+    
+    setBudgetForm({
+      totalIncome: income,
+      necessitiesBudget: allocation.necessities.toString(),
+      wantsBudget: allocation.wants.toString(),
+      savingsBudget: allocation.savings.toString(),
+    });
+  };
+
+  const handleCreateBudget = () => {
+    createBudgetMutation.mutate({
+      totalIncome: parseFloat(budgetForm.totalIncome),
+      necessitiesBudget: parseFloat(budgetForm.necessitiesBudget),
+      wantsBudget: parseFloat(budgetForm.wantsBudget),
+      savingsBudget: parseFloat(budgetForm.savingsBudget),
+    });
+  };
+
+  // Calculate spending by category type
+  const spendingByType = {
+    necessities: 0,
+    wants: 0,
+    savings: 0,
+  };
+
+  categories.forEach((category: any) => {
+    const categoryTransactions = transactions.filter((t: any) => 
+      t.categoryId === category.id && t.type === 'expense'
+    );
+    const totalSpent = categoryTransactions.reduce((sum: number, t: any) => 
+      sum + parseFloat(t.amount), 0
+    );
+    
+    if (category.type in spendingByType) {
+      spendingByType[category.type as keyof typeof spendingByType] += totalSpent;
+    }
+  });
+
+  const months = [
+    { value: 1, label: 'Janeiro' },
+    { value: 2, label: 'Fevereiro' },
+    { value: 3, label: 'Março' },
+    { value: 4, label: 'Abril' },
+    { value: 5, label: 'Maio' },
+    { value: 6, label: 'Junho' },
+    { value: 7, label: 'Julho' },
+    { value: 8, label: 'Agosto' },
+    { value: 9, label: 'Setembro' },
+    { value: 10, label: 'Outubro' },
+    { value: 11, label: 'Novembro' },
+    { value: 12, label: 'Dezembro' },
+  ];
+
+  const years = [2024, 2023, 2022].map(year => ({ value: year, label: year.toString() }));
+
+  if (isLoading) {
+    return (
+      <div className="p-6">
+        <div className="animate-pulse space-y-6">
+          <div className="h-8 w-64 bg-muted rounded"></div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {[...Array(3)].map((_, i) => (
+              <div key={i} className="h-32 bg-muted rounded-xl"></div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="p-6 space-y-8">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">Orçamento Pessoal</h1>
+          <p className="mt-1 text-muted-foreground">Gerencie suas finanças com o método 50/30/20</p>
+        </div>
+        
+        <div className="mt-4 sm:mt-0 flex items-center space-x-4">
+          <Select value={selectedMonth.toString()} onValueChange={(value) => setSelectedMonth(parseInt(value))}>
+            <SelectTrigger className="w-40">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {months.map(month => (
+                <SelectItem key={month.value} value={month.value.toString()}>
+                  {month.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          
+          <Select value={selectedYear.toString()} onValueChange={(value) => setSelectedYear(parseInt(value))}>
+            <SelectTrigger className="w-24">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {years.map(year => (
+                <SelectItem key={year.value} value={year.value.toString()}>
+                  {year.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      {!budget && !isEditing ? (
+        // No budget created yet
+        <Card className="financial-card">
+          <CardContent className="pt-6 text-center">
+            <Calculator className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+            <h3 className="text-lg font-semibold mb-2">Crie seu primeiro orçamento</h3>
+            <p className="text-muted-foreground mb-6">
+              Configure seu orçamento usando o método 50/30/20 para organizar suas finanças
+            </p>
+            <Button onClick={() => setIsEditing(true)}>
+              <Plus className="w-4 h-4 mr-2" />
+              Criar Orçamento
+            </Button>
+          </CardContent>
+        </Card>
+      ) : isEditing ? (
+        // Budget creation form
+        <Card className="financial-card">
+          <CardHeader>
+            <CardTitle>Configurar Orçamento - {months.find(m => m.value === selectedMonth)?.label} {selectedYear}</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div>
+              <label className="text-sm font-medium text-foreground mb-2 block">
+                Renda Total Mensal
+              </label>
+              <Input
+                type="number"
+                step="0.01"
+                placeholder="0,00"
+                value={budgetForm.totalIncome}
+                onChange={(e) => handleIncomeChange(e.target.value)}
+              />
+            </div>
+
+            {budgetForm.totalIncome && (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label className="text-sm font-medium text-necessities mb-2 block">
+                    Necessidades (50%)
+                  </label>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    value={budgetForm.necessitiesBudget}
+                    onChange={(e) => setBudgetForm(prev => ({ ...prev, necessitiesBudget: e.target.value }))}
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Alimentação, moradia, transporte, saúde
+                  </p>
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium text-wants mb-2 block">
+                    Desejos (30%)
+                  </label>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    value={budgetForm.wantsBudget}
+                    onChange={(e) => setBudgetForm(prev => ({ ...prev, wantsBudget: e.target.value }))}
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Entretenimento, compras, hobbies
+                  </p>
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium text-savings mb-2 block">
+                    Poupança (20%)
+                  </label>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    value={budgetForm.savingsBudget}
+                    onChange={(e) => setBudgetForm(prev => ({ ...prev, savingsBudget: e.target.value }))}
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Investimentos, reserva de emergência
+                  </p>
+                </div>
+              </div>
+            )}
+
+            <div className="flex justify-end space-x-4">
+              <Button variant="outline" onClick={() => setIsEditing(false)}>
+                Cancelar
+              </Button>
+              <Button 
+                onClick={handleCreateBudget}
+                disabled={!budgetForm.totalIncome || createBudgetMutation.isPending}
+              >
+                {createBudgetMutation.isPending ? 'Salvando...' : 'Salvar Orçamento'}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      ) : (
+        // Budget overview
+        <>
+          {/* Budget Summary Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <Card className="financial-card">
+              <CardContent className="pt-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Renda Total</p>
+                    <p className="text-2xl font-bold text-foreground">
+                      {formatCurrency(parseFloat(budget.totalIncome))}
+                    </p>
+                  </div>
+                  <Calculator className="h-8 w-8 text-primary" />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="financial-card">
+              <CardContent className="pt-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Gastos Totais</p>
+                    <p className="text-2xl font-bold text-foreground">
+                      {formatCurrency(spendingByType.necessities + spendingByType.wants + spendingByType.savings)}
+                    </p>
+                  </div>
+                  <TrendingDown className="h-8 w-8 text-red-600" />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="financial-card">
+              <CardContent className="pt-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Restante</p>
+                    <p className="text-2xl font-bold text-green-600">
+                      {formatCurrency(parseFloat(budget.totalIncome) - (spendingByType.necessities + spendingByType.wants + spendingByType.savings))}
+                    </p>
+                  </div>
+                  <TrendingUp className="h-8 w-8 text-green-600" />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="financial-card">
+              <CardContent className="pt-6 text-center">
+                <Button variant="outline" onClick={() => setIsEditing(true)} className="w-full">
+                  <Edit3 className="w-4 h-4 mr-2" />
+                  Editar Orçamento
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Budget Categories */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Necessities */}
+            <Card className="financial-card">
+              <CardHeader>
+                <CardTitle className="flex items-center text-necessities">
+                  <Target className="w-5 h-5 mr-2" />
+                  Necessidades (50%)
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <div className="flex justify-between text-sm mb-2">
+                    <span>Gasto</span>
+                    <span>{formatCurrency(spendingByType.necessities)} de {formatCurrency(parseFloat(budget.necessitiesBudget))}</span>
+                  </div>
+                  <Progress 
+                    value={(spendingByType.necessities / parseFloat(budget.necessitiesBudget)) * 100} 
+                    className="h-2"
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  {categories
+                    .filter((cat: any) => cat.type === 'necessities')
+                    .map((category: any) => {
+                      const categorySpent = transactions
+                        .filter((t: any) => t.categoryId === category.id && t.type === 'expense')
+                        .reduce((sum: number, t: any) => sum + parseFloat(t.amount), 0);
+                      
+                      return (
+                        <div key={category.id} className="flex justify-between text-sm">
+                          <span>{category.name}</span>
+                          <span className="font-medium">{formatCurrency(categorySpent)}</span>
+                        </div>
+                      );
+                    })}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Wants */}
+            <Card className="financial-card">
+              <CardHeader>
+                <CardTitle className="flex items-center text-wants">
+                  <Target className="w-5 h-5 mr-2" />
+                  Desejos (30%)
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <div className="flex justify-between text-sm mb-2">
+                    <span>Gasto</span>
+                    <span>{formatCurrency(spendingByType.wants)} de {formatCurrency(parseFloat(budget.wantsBudget))}</span>
+                  </div>
+                  <Progress 
+                    value={(spendingByType.wants / parseFloat(budget.wantsBudget)) * 100} 
+                    className="h-2"
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  {categories
+                    .filter((cat: any) => cat.type === 'wants')
+                    .map((category: any) => {
+                      const categorySpent = transactions
+                        .filter((t: any) => t.categoryId === category.id && t.type === 'expense')
+                        .reduce((sum: number, t: any) => sum + parseFloat(t.amount), 0);
+                      
+                      return (
+                        <div key={category.id} className="flex justify-between text-sm">
+                          <span>{category.name}</span>
+                          <span className="font-medium">{formatCurrency(categorySpent)}</span>
+                        </div>
+                      );
+                    })}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Savings */}
+            <Card className="financial-card">
+              <CardHeader>
+                <CardTitle className="flex items-center text-savings">
+                  <Target className="w-5 h-5 mr-2" />
+                  Poupança (20%)
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <div className="flex justify-between text-sm mb-2">
+                    <span>Investido</span>
+                    <span>{formatCurrency(spendingByType.savings)} de {formatCurrency(parseFloat(budget.savingsBudget))}</span>
+                  </div>
+                  <Progress 
+                    value={(spendingByType.savings / parseFloat(budget.savingsBudget)) * 100} 
+                    className="h-2"
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  {categories
+                    .filter((cat: any) => cat.type === 'savings')
+                    .map((category: any) => {
+                      const categorySpent = transactions
+                        .filter((t: any) => t.categoryId === category.id && t.type === 'expense')
+                        .reduce((sum: number, t: any) => sum + parseFloat(t.amount), 0);
+                      
+                      return (
+                        <div key={category.id} className="flex justify-between text-sm">
+                          <span>{category.name}</span>
+                          <span className="font-medium">{formatCurrency(categorySpent)}</span>
+                        </div>
+                      );
+                    })}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}

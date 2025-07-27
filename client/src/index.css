@@ -1,0 +1,170 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: hsl(0, 0%, 100%);
+  --foreground: hsl(240, 10%, 3.9%);
+  --muted: hsl(240, 4.8%, 95.9%);
+  --muted-foreground: hsl(240, 3.7%, 46.1%);
+  --popover: hsl(0, 0%, 100%);
+  --popover-foreground: hsl(240, 10%, 3.9%);
+  --card: hsl(0, 0%, 100%);
+  --card-foreground: hsl(240, 10%, 3.9%);
+  --border: hsl(240, 5.9%, 90%);
+  --input: hsl(240, 5.9%, 90%);
+  --primary: hsl(207, 90%, 54%);
+  --primary-foreground: hsl(0, 0%, 98%);
+  --secondary: hsl(240, 4.8%, 95.9%);
+  --secondary-foreground: hsl(240, 5.9%, 10%);
+  --accent: hsl(240, 4.8%, 95.9%);
+  --accent-foreground: hsl(240, 5.9%, 10%);
+  --destructive: hsl(0, 84.2%, 60.2%);
+  --destructive-foreground: hsl(0, 0%, 98%);
+  --ring: hsl(240, 10%, 3.9%);
+  --radius: 0.75rem;
+  
+  /* Custom financial colors */
+  --success: hsl(122, 39%, 49%);
+  --success-foreground: hsl(0, 0%, 98%);
+  --warning: hsl(38, 92%, 50%);
+  --warning-foreground: hsl(0, 0%, 98%);
+  --chart-1: hsl(207, 90%, 54%);
+  --chart-2: hsl(38, 92%, 50%);
+  --chart-3: hsl(122, 39%, 49%);
+  --chart-4: hsl(271, 91%, 65%);
+  --chart-5: hsl(0, 84%, 60%);
+  
+  /* Brazilian financial app specific */
+  --necessities: hsl(207, 90%, 54%);
+  --wants: hsl(38, 92%, 50%);
+  --savings: hsl(122, 39%, 49%);
+  --income: hsl(142, 76%, 36%);
+  --expense: hsl(0, 84%, 60%);
+}
+
+.dark {
+  --background: hsl(240, 10%, 3.9%);
+  --foreground: hsl(0, 0%, 98%);
+  --muted: hsl(240, 3.7%, 15.9%);
+  --muted-foreground: hsl(240, 5%, 64.9%);
+  --popover: hsl(240, 10%, 3.9%);
+  --popover-foreground: hsl(0, 0%, 98%);
+  --card: hsl(240, 10%, 3.9%);
+  --card-foreground: hsl(0, 0%, 98%);
+  --border: hsl(240, 3.7%, 15.9%);
+  --input: hsl(240, 3.7%, 15.9%);
+  --primary: hsl(207, 90%, 54%);
+  --primary-foreground: hsl(0, 0%, 98%);
+  --secondary: hsl(240, 3.7%, 15.9%);
+  --secondary-foreground: hsl(0, 0%, 98%);
+  --accent: hsl(240, 3.7%, 15.9%);
+  --accent-foreground: hsl(0, 0%, 98%);
+  --destructive: hsl(0, 62.8%, 30.6%);
+  --destructive-foreground: hsl(0, 0%, 98%);
+  --ring: hsl(240, 4.9%, 83.9%);
+  
+  /* Dark mode financial colors */
+  --success: hsl(122, 39%, 49%);
+  --success-foreground: hsl(0, 0%, 98%);
+  --warning: hsl(38, 92%, 50%);
+  --warning-foreground: hsl(0, 0%, 98%);
+  --chart-1: hsl(207, 90%, 54%);
+  --chart-2: hsl(38, 92%, 50%);
+  --chart-3: hsl(122, 39%, 49%);
+  --chart-4: hsl(271, 91%, 65%);
+  --chart-5: hsl(0, 84%, 60%);
+  
+  --necessities: hsl(207, 90%, 54%);
+  --wants: hsl(38, 92%, 50%);
+  --savings: hsl(122, 39%, 49%);
+  --income: hsl(142, 76%, 36%);
+  --expense: hsl(0, 84%, 60%);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-semibold;
+  }
+}
+
+@layer components {
+  .financial-card {
+    @apply bg-card border border-border rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow;
+  }
+  
+  .metric-value {
+    @apply text-2xl font-bold text-foreground;
+  }
+  
+  .metric-label {
+    @apply text-sm font-medium text-muted-foreground;
+  }
+  
+  .metric-change {
+    @apply text-sm font-medium;
+  }
+  
+  .metric-change.positive {
+    @apply text-green-600 dark:text-green-400;
+  }
+  
+  .metric-change.negative {
+    @apply text-red-600 dark:text-red-400;
+  }
+  
+  .nav-item {
+    @apply flex items-center px-4 py-3 text-sm font-medium text-muted-foreground rounded-lg hover:bg-accent hover:text-accent-foreground transition-colors;
+  }
+  
+  .nav-item.active {
+    @apply bg-primary bg-opacity-10 text-primary hover:bg-primary hover:bg-opacity-15;
+  }
+  
+  .sidebar-icon {
+    @apply w-5 h-5 mr-3 flex-shrink-0;
+  }
+}
+
+@layer utilities {
+  .text-necessities {
+    color: hsl(var(--necessities));
+  }
+  
+  .text-wants {
+    color: hsl(var(--wants));
+  }
+  
+  .text-savings {
+    color: hsl(var(--savings));
+  }
+  
+  .text-income {
+    color: hsl(var(--income));
+  }
+  
+  .text-expense {
+    color: hsl(var(--expense));
+  }
+  
+  .bg-necessities {
+    background-color: hsl(var(--necessities));
+  }
+  
+  .bg-wants {
+    background-color: hsl(var(--wants));
+  }
+  
+  .bg-savings {
+    background-color: hsl(var(--savings));
+  }
+}
