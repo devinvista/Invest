@@ -11,6 +11,11 @@ Visual Identity: Pharos Capital brand guidelines applied.
 
 ## Recent Changes
 
+- **January 28, 2025**: Enhanced credit card bank selection with account integration
+  - Modified credit card creation form to use dropdown with existing bank accounts
+  - Replaced free text input with Select component linking to user's registered accounts
+  - Improved data consistency by connecting credit cards to existing account banks
+  - Added accounts query to credit cards component for real-time bank selection
 - **January 28, 2025**: Enhanced budget system with default/specific options
   - Implemented flexible budget system: default (all months) vs specific month
   - Added visual selection interface with cards for budget type choice

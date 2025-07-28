@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Badge } from '@/components/ui/badge';
@@ -32,6 +33,10 @@ export function Cards() {
 
   const { data: creditCards = [], isLoading } = useQuery<any[]>({
     queryKey: ['/api/credit-cards'],
+  });
+
+  const { data: accounts = [] } = useQuery<any[]>({
+    queryKey: ['/api/accounts'],
   });
 
   const form = useForm<CardFormData>({
@@ -307,7 +312,22 @@ export function Cards() {
                   <FormItem>
                     <FormLabel>Banco (Opcional)</FormLabel>
                     <FormControl>
-                      <Input placeholder="Ex: Itaú, Bradesco, Santander" {...field} />
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecione um banco ou deixe vazio" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="">Nenhum banco selecionado</SelectItem>
+                          {accounts
+                            .filter((account: any) => account.bankName)
+                            .map((account: any) => (
+                              <SelectItem key={account.id} value={account.bankName}>
+                                {account.bankName} - {account.name}
+                              </SelectItem>
+                            ))
+                          }
+                        </SelectContent>
+                      </Select>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
