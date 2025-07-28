@@ -119,7 +119,7 @@ export function Budget() {
     setBudgetType(type);
     setBudgetForm({
       ...budgetForm,
-      isDefault: type === 'default',
+      isDefault: true, // Sempre deixar como padrão marcado
     });
     
     // Se mudou para personalizado, limpar orçamentos personalizados e inicializar grupos
@@ -141,9 +141,10 @@ export function Budget() {
     let budgetData;
     
     if (budgetType === 'custom') {
-      // Para orçamento personalizado, usar os valores dos grupos personalizados
+      // Para orçamento personalizado, usar a soma das receitas como receita total
+      const totalIncomeFromCategories = calculateCustomTotals().income;
       budgetData = {
-        totalIncome: parseFloat(customGroupBudgets.necessities) + parseFloat(customGroupBudgets.wants) + parseFloat(customGroupBudgets.savings),
+        totalIncome: totalIncomeFromCategories > 0 ? totalIncomeFromCategories : (parseFloat(customGroupBudgets.necessities) + parseFloat(customGroupBudgets.wants) + parseFloat(customGroupBudgets.savings)),
         necessitiesBudget: parseFloat(customGroupBudgets.necessities),
         wantsBudget: parseFloat(customGroupBudgets.wants),
         savingsBudget: parseFloat(customGroupBudgets.savings),
@@ -186,10 +187,33 @@ export function Budget() {
     
     // Para categorias de receita, não há limite
     if (categoryType === 'income') {
-      setCustomCategoryBudgets(prev => ({
-        ...prev,
-        [categoryId]: amount
-      }));
+      setCustomCategoryBudgets(prev => {
+        const updatedBudgets = {
+          ...prev,
+          [categoryId]: amount
+        };
+        
+        // Calcular nova receita total baseada nas categorias
+        const newTotalIncome = Object.entries(updatedBudgets)
+          .filter(([catId, _]) => {
+            const cat = categories.find(c => c.id === catId);
+            return cat && cat.transactionType === 'income';
+          })
+          .reduce((sum, [_, amt]) => sum + (parseFloat(amt) || 0), 0);
+        
+        // Atualizar automaticamente a renda total e recalcular grupos 50/30/20
+        if (newTotalIncome > 0) {
+          const allocation = calculate502020(newTotalIncome);
+          setBudgetForm(prev => ({ ...prev, totalIncome: newTotalIncome.toString() }));
+          setCustomGroupBudgets({
+            necessities: allocation.necessities.toString(),
+            wants: allocation.wants.toString(),
+            savings: allocation.savings.toString(),
+          });
+        }
+        
+        return updatedBudgets;
+      });
       return;
     }
     
@@ -430,18 +454,36 @@ export function Budget() {
               </div>
             </div>
 
-            <div>
-              <label className="text-sm font-medium text-foreground mb-2 block">
-                Renda Total Mensal
-              </label>
-              <Input
-                type="number"
-                step="0.01"
-                placeholder="0,00"
-                value={budgetForm.totalIncome}
-                onChange={(e) => handleIncomeChange(e.target.value)}
-              />
-            </div>
+            {budgetType !== 'custom' && (
+              <div>
+                <label className="text-sm font-medium text-foreground mb-2 block">
+                  Renda Total Mensal
+                </label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  placeholder="0,00"
+                  value={budgetForm.totalIncome}
+                  onChange={(e) => handleIncomeChange(e.target.value)}
+                />
+              </div>
+            )}
+
+            {budgetType === 'custom' && (
+              <div>
+                <label className="text-sm font-medium text-foreground mb-2 block">
+                  Renda Total Mensal (Calculada Automaticamente)
+                </label>
+                <div className="p-3 bg-muted/50 rounded-lg">
+                  <p className="text-lg font-semibold text-foreground">
+                    {formatCurrency(calculateCustomTotals().income)}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Soma das categorias de receita configuradas
+                  </p>
+                </div>
+              </div>
+            )}
 
             {budgetForm.totalIncome && budgetType !== 'custom' && (
               <div className="space-y-4">
@@ -782,7 +824,7 @@ export function Budget() {
                   <div className="text-center mb-4">
                     <h4 className="text-sm font-medium mb-1">Resumo da Distribuição</h4>
                     <p className="text-xs text-muted-foreground">
-                      Valores distribuídos respeitando o método 50/30/20
+                      Receita total calculada automaticamente pela soma das categorias de receita
                     </p>
                   </div>
                   

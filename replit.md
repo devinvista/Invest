@@ -11,6 +11,12 @@ Visual Identity: Pharos Capital brand guidelines applied.
 
 ## Recent Changes
 
+- **January 28, 2025**: Implemented automatic income calculation and default budget selection
+  - Income categories now automatically calculate total income (sum of all income category budgets)
+  - Removed manual income input field in custom budget mode - calculated automatically from categories
+  - Default budget selection ("para todos os meses") now set as default for all budget types
+  - Enhanced custom budget creation to use income category totals as baseline for 50/30/20 calculations
+  - Updated interface to clearly show automatic income calculation with visual feedback
 - **January 28, 2025**: Enhanced budget system with personalized category allocation as default budget option
   - Implemented ability to set custom budget allocation per category as default budget
   - Added Switch component to mark personalized budget as default for all months
