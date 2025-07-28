@@ -106,44 +106,25 @@ export function Budget() {
       isDefault: type === 'default',
     });
     
-    // Se mudou para personalizado, calcular orçamento inicial por categoria
-    if (type === 'custom' && budgetForm.totalIncome) {
-      const incomeValue = parseFloat(budgetForm.totalIncome);
-      const allocation = calculate502020(incomeValue);
-      
-      // Distribuir valores por categoria de forma proporcional
-      const expenseCategories = categories.filter(cat => cat.type && cat.type !== 'income');
-      const necessitiesCategories = expenseCategories.filter(cat => cat.type === 'necessities');
-      const wantsCategories = expenseCategories.filter(cat => cat.type === 'wants');
-      const savingsCategories = expenseCategories.filter(cat => cat.type === 'savings');
-      
-      const newCustomBudgets: {[categoryId: string]: string} = {};
-      
-      // Distribuir valores proporcionalmente entre categorias
-      necessitiesCategories.forEach(cat => {
-        newCustomBudgets[cat.id] = (allocation.necessities / necessitiesCategories.length).toFixed(2);
-      });
-      wantsCategories.forEach(cat => {
-        newCustomBudgets[cat.id] = (allocation.wants / wantsCategories.length).toFixed(2);
-      });
-      savingsCategories.forEach(cat => {
-        newCustomBudgets[cat.id] = (allocation.savings / savingsCategories.length).toFixed(2);
-      });
-      
-      setCustomCategoryBudgets(newCustomBudgets);
+    // Se mudou para personalizado, limpar orçamentos personalizados
+    if (type === 'custom') {
+      setCustomCategoryBudgets({});
     }
   };
 
   const handleCreateBudget = () => {
-    const budgetData = {
-      totalIncome: parseFloat(budgetForm.totalIncome),
-      necessitiesBudget: parseFloat(budgetForm.necessitiesBudget),
-      wantsBudget: parseFloat(budgetForm.wantsBudget),
-      savingsBudget: parseFloat(budgetForm.savingsBudget),
-    };
+    let budgetData;
     
-    // Se for orçamento personalizado, incluir categorias individuais
     if (budgetType === 'custom') {
+      // Para orçamento personalizado, usar os totais calculados das categorias
+      const customTotals = calculateCustomTotals();
+      budgetData = {
+        totalIncome: parseFloat(budgetForm.totalIncome),
+        necessitiesBudget: customTotals.necessities,
+        wantsBudget: customTotals.wants,
+        savingsBudget: customTotals.savings,
+      };
+      
       const budgetCategories = Object.entries(customCategoryBudgets)
         .filter(([_, amount]) => parseFloat(amount) > 0)
         .map(([categoryId, amount]) => ({
@@ -156,11 +137,43 @@ export function Budget() {
         budgetCategories
       });
     } else {
+      // Para orçamento padrão ou específico, usar valores do formulário
+      budgetData = {
+        totalIncome: parseFloat(budgetForm.totalIncome),
+        necessitiesBudget: parseFloat(budgetForm.necessitiesBudget),
+        wantsBudget: parseFloat(budgetForm.wantsBudget),
+        savingsBudget: parseFloat(budgetForm.savingsBudget),
+      };
+      
       createBudgetMutation.mutate(budgetData);
     }
   };
   
-  const handleCustomBudgetChange = (categoryId: string, amount: string) => {
+  const handleCustomBudgetChange = (categoryId: string, amount: string, categoryType: string) => {
+    const category = categories.find(cat => cat.id === categoryId);
+    if (!category) return;
+    
+    const newAmount = parseFloat(amount) || 0;
+    const currentTypeTotal = calculateCustomTotals()[categoryType as keyof ReturnType<typeof calculateCustomTotals>];
+    const currentCategoryAmount = parseFloat(customCategoryBudgets[categoryId] || '0');
+    const otherCategoriesTotal = currentTypeTotal - currentCategoryAmount;
+    
+    // Calcular limite máximo baseado no 50/30/20
+    const incomeValue = parseFloat(budgetForm.totalIncome) || 0;
+    const allocation = calculate502020(incomeValue);
+    const maxAllowed = categoryType === 'necessities' ? allocation.necessities :
+                     categoryType === 'wants' ? allocation.wants : allocation.savings;
+    
+    // Verificar se o novo valor não excede o limite
+    if (otherCategoriesTotal + newAmount > maxAllowed) {
+      const maxPossible = maxAllowed - otherCategoriesTotal;
+      setCustomCategoryBudgets(prev => ({
+        ...prev,
+        [categoryId]: Math.max(0, maxPossible).toFixed(2)
+      }));
+      return;
+    }
+    
     setCustomCategoryBudgets(prev => ({
       ...prev,
       [categoryId]: amount
@@ -179,6 +192,15 @@ export function Budget() {
     });
     
     return totals;
+  };
+  
+  const getAvailableAmount = (type: string) => {
+    const incomeValue = parseFloat(budgetForm.totalIncome) || 0;
+    const allocation = calculate502020(incomeValue);
+    const maxAllowed = type === 'necessities' ? allocation.necessities :
+                     type === 'wants' ? allocation.wants : allocation.savings;
+    const currentTotal = calculateCustomTotals()[type as keyof ReturnType<typeof calculateCustomTotals>];
+    return maxAllowed - currentTotal;
   };
 
   // Check if using default budget
@@ -440,7 +462,7 @@ export function Budget() {
                 <div className="text-center">
                   <h4 className="text-sm font-medium mb-2">Distribuição Personalizada por Categoria</h4>
                   <p className="text-xs text-muted-foreground">
-                    Configure o valor específico para cada categoria de despesa
+                    Distribua os valores do método 50/30/20 entre as categorias de cada grupo
                   </p>
                 </div>
 
@@ -449,20 +471,43 @@ export function Budget() {
                   const typeCategories = categories.filter(cat => cat.type === type);
                   const customTotals = calculateCustomTotals();
                   const typeTotal = customTotals[type as keyof typeof customTotals];
+                  const availableAmount = getAvailableAmount(type);
+                  const incomeValue = parseFloat(budgetForm.totalIncome) || 0;
+                  const allocation = calculate502020(incomeValue);
+                  const maxAllowed = type === 'necessities' ? allocation.necessities :
+                                   type === 'wants' ? allocation.wants : allocation.savings;
                   const typeColor = type === 'necessities' ? 'text-necessities' : 
                                   type === 'wants' ? 'text-wants' : 'text-savings';
-                  const typeLabel = type === 'necessities' ? 'Necessidades' : 
-                                   type === 'wants' ? 'Desejos' : 'Poupança';
+                  const typeLabel = type === 'necessities' ? 'Necessidades (50%)' : 
+                                   type === 'wants' ? 'Desejos (30%)' : 'Poupança (20%)';
 
                   return (
                     <div key={type} className="space-y-3">
-                      <div className="flex justify-between items-center">
-                        <h5 className={`font-medium text-sm ${typeColor}`}>
-                          {typeLabel}
-                        </h5>
-                        <Badge variant="outline" className={typeColor}>
-                          Total: {formatCurrency(typeTotal)}
-                        </Badge>
+                      <div className="space-y-2">
+                        <div className="flex justify-between items-center">
+                          <h5 className={`font-medium text-sm ${typeColor}`}>
+                            {typeLabel}
+                          </h5>
+                          <div className="flex gap-2">
+                            <Badge variant="outline" className={typeColor}>
+                              Usado: {formatCurrency(typeTotal)}
+                            </Badge>
+                            <Badge variant="secondary">
+                              Disponível: {formatCurrency(availableAmount)}
+                            </Badge>
+                          </div>
+                        </div>
+                        
+                        <div className="bg-muted/30 rounded-lg p-2">
+                          <div className="flex justify-between text-xs text-muted-foreground mb-1">
+                            <span>Limite máximo: {formatCurrency(maxAllowed)}</span>
+                            <span>{((typeTotal / maxAllowed) * 100).toFixed(1)}% usado</span>
+                          </div>
+                          <Progress 
+                            value={(typeTotal / maxAllowed) * 100} 
+                            className="h-2"
+                          />
+                        </div>
                       </div>
                       
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -476,7 +521,7 @@ export function Budget() {
                               step="0.01"
                               placeholder="0,00"
                               value={customCategoryBudgets[category.id] || ''}
-                              onChange={(e) => handleCustomBudgetChange(category.id, e.target.value)}
+                              onChange={(e) => handleCustomBudgetChange(category.id, e.target.value, type)}
                               className="text-sm"
                             />
                           </div>
@@ -488,7 +533,14 @@ export function Budget() {
                 
                 {/* Summary */}
                 <div className="bg-muted/50 p-4 rounded-lg">
-                  <div className="grid grid-cols-4 gap-4 text-center">
+                  <div className="text-center mb-4">
+                    <h4 className="text-sm font-medium mb-1">Resumo da Distribuição</h4>
+                    <p className="text-xs text-muted-foreground">
+                      Valores distribuídos respeitando o método 50/30/20
+                    </p>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
                     <div>
                       <p className="text-xs text-muted-foreground">Renda Total</p>
                       <p className="font-medium">{formatCurrency(parseFloat(budgetForm.totalIncome))}</p>
@@ -496,14 +548,23 @@ export function Budget() {
                     <div>
                       <p className="text-xs text-necessities">Necessidades</p>
                       <p className="font-medium text-necessities">{formatCurrency(calculateCustomTotals().necessities)}</p>
+                      <p className="text-xs text-muted-foreground">
+                        de {formatCurrency(calculate502020(parseFloat(budgetForm.totalIncome) || 0).necessities)}
+                      </p>
                     </div>
                     <div>
                       <p className="text-xs text-wants">Desejos</p>
                       <p className="font-medium text-wants">{formatCurrency(calculateCustomTotals().wants)}</p>
+                      <p className="text-xs text-muted-foreground">
+                        de {formatCurrency(calculate502020(parseFloat(budgetForm.totalIncome) || 0).wants)}
+                      </p>
                     </div>
                     <div>
                       <p className="text-xs text-savings">Poupança</p>
                       <p className="font-medium text-savings">{formatCurrency(calculateCustomTotals().savings)}</p>
+                      <p className="text-xs text-muted-foreground">
+                        de {formatCurrency(calculate502020(parseFloat(budgetForm.totalIncome) || 0).savings)}
+                      </p>
                     </div>
                   </div>
                 </div>
