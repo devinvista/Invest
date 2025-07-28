@@ -69,7 +69,7 @@ export function Goals() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-slate-50 to-blue-50/30">
+      <div className="min-h-screen bg-background">
         <div className="p-6">
           <div className="animate-pulse space-y-6">
             <div className="h-8 w-64 bg-muted rounded"></div>
@@ -85,7 +85,7 @@ export function Goals() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-slate-50 to-blue-50/30">
+    <div className="min-h-screen bg-background">
       <div className="p-6 space-y-8">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
