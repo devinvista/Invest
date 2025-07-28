@@ -25,7 +25,7 @@
   --destructive: hsl(0, 84.2%, 60.2%);
   --destructive-foreground: hsl(0, 0%, 98%);
   --ring: hsl(218, 78%, 42%);
-  --radius: 0.5rem;
+  --radius: 0.75rem;
   
   /* Pharos Capital Financial Colors */
   --success: hsl(157, 69%, 38%); /* 149A5A - Pharos Green */
@@ -103,11 +103,19 @@
 
 @layer components {
   .financial-card {
-    @apply bg-card border border-border rounded-lg p-6 shadow-sm hover:shadow-md transition-all duration-200;
+    @apply bg-card border border-border rounded-xl p-6 shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1;
+  }
+  
+  .financial-card:hover {
+    border-color: hsl(var(--primary) / 0.2);
   }
   
   .pharos-card {
-    @apply bg-card border border-border rounded-lg p-6 shadow-sm hover:shadow-lg transition-all duration-300 hover:border-primary/20;
+    @apply bg-card border border-border rounded-xl p-6 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1;
+  }
+  
+  .pharos-card:hover {
+    border-color: hsl(var(--primary) / 0.3);
   }
   
   .pharos-button {
@@ -143,11 +151,12 @@
   }
   
   .nav-item {
-    @apply flex items-center px-4 py-3 text-sm font-medium text-muted-foreground rounded-lg hover:bg-accent hover:text-accent-foreground transition-all duration-200;
+    @apply flex items-center px-4 py-3 text-sm font-medium text-muted-foreground rounded-xl hover:bg-accent hover:text-accent-foreground transition-all duration-200 hover:translate-x-1;
   }
   
   .nav-item.active {
-    @apply bg-primary bg-opacity-10 text-primary hover:bg-primary hover:bg-opacity-15 border-r-2 border-primary;
+    @apply bg-primary bg-opacity-10 text-primary hover:bg-primary hover:bg-opacity-15 shadow-sm border;
+    border-color: hsl(var(--primary) / 0.2);
   }
   
   .sidebar-icon {

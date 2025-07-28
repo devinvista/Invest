@@ -58,7 +58,7 @@ export function Sidebar({ isOpen, onClose, currentPath, onNavigate }: SidebarPro
       {/* Sidebar */}
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-50 w-72 bg-background border-r border-border shadow-lg transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0 pt-16",
+          "fixed inset-y-0 left-0 z-50 w-72 bg-card/80 backdrop-blur-md border-r border-border/40 shadow-lg transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0 pt-16 lg:shadow-none",
           isOpen ? "translate-x-0" : "-translate-x-full"
         )}
       >
@@ -75,11 +75,11 @@ export function Sidebar({ isOpen, onClose, currentPath, onNavigate }: SidebarPro
           </div>
 
           {/* User profile section */}
-          <div className="p-6 border-b border-border">
+          <div className="p-6 border-b border-border/40">
             <div className="flex items-center space-x-3">
-              <Avatar className="h-12 w-12">
+              <Avatar className="h-12 w-12 ring-2 ring-primary/20">
                 <AvatarImage src="" alt={user?.name} />
-                <AvatarFallback>
+                <AvatarFallback className="bg-primary text-primary-foreground font-bold">
                   {user?.name?.charAt(0).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
@@ -113,8 +113,8 @@ export function Sidebar({ isOpen, onClose, currentPath, onNavigate }: SidebarPro
           </nav>
 
           {/* Bottom actions */}
-          <div className="p-4 border-t border-border">
-            <Button className="w-full" onClick={() => {/* TODO: Open transaction modal */}}>
+          <div className="p-4 border-t border-border/40">
+            <Button className="w-full rounded-xl pharos-gradient" onClick={() => {/* TODO: Open transaction modal */}}>
               <Plus className="w-4 h-4 mr-2" />
               Nova Transação
             </Button>

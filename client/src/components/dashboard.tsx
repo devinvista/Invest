@@ -1,13 +1,30 @@
 import { useQuery } from '@tanstack/react-query';
-import { FinancialCard } from '@/components/ui/financial-card';
-import { ChartCard } from '@/components/ui/chart-card';
+import { ModernCard } from '@/components/ui/modern-card';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { formatCurrency, formatDate, getRelativeTime, calculateGoalProgress } from '@/lib/financial-utils';
-import { Wallet, TrendingDown, TrendingUp, PieChart, Download, RefreshCw, Plus, ArrowDownCircle, ArrowUpCircle, AlertTriangle } from 'lucide-react';
-import { PieChart as RechartsPieChart, Pie, Cell, ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
+import { 
+  Wallet, 
+  TrendingDown, 
+  TrendingUp, 
+  CreditCard, 
+  Target, 
+  BarChart3, 
+  Download, 
+  RefreshCw, 
+  Plus, 
+  ArrowRight, 
+  Eye, 
+  EyeOff, 
+  Star,
+  ArrowUpCircle,
+  ArrowDownCircle,
+  AlertTriangle
+} from 'lucide-react';
+import { PieChart as RechartsPieChart, Pie, Cell, ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, AreaChart, Area } from 'recharts';
+import { useState } from 'react';
 
 const COLORS = {
   necessities: 'hsl(207, 90%, 54%)',
@@ -26,21 +43,23 @@ interface DashboardData {
 }
 
 export function Dashboard() {
+  const [balanceVisible, setBalanceVisible] = useState(true);
   const { data: dashboardData, isLoading } = useQuery<DashboardData>({
     queryKey: ['/api/dashboard'],
   });
 
   if (isLoading) {
     return (
-      <div className="p-6 space-y-8">
-        <div className="animate-pulse">
-          <div className="h-8 w-64 bg-muted rounded mb-2"></div>
-          <div className="h-4 w-96 bg-muted rounded"></div>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {[...Array(4)].map((_, i) => (
-            <div key={i} className="h-32 bg-muted rounded-xl animate-pulse"></div>
-          ))}
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
+        <div className="p-6 space-y-8">
+          <div className="animate-pulse">
+            <div className="h-32 bg-muted rounded-2xl mb-6"></div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {[...Array(4)].map((_, i) => (
+                <div key={i} className="h-32 bg-muted rounded-xl animate-pulse"></div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -63,7 +82,7 @@ export function Dashboard() {
     { name: 'Poupança (20%)', value: parseFloat(budget.savingsSpent), total: parseFloat(budget.savingsBudget), color: COLORS.savings },
   ] : [];
 
-  // Mock wealth evolution data (in a real app, this would come from the API)
+  // Mock wealth evolution data
   const wealthData = [
     { month: 'Ago', value: 118500 },
     { month: 'Set', value: 120200 },
@@ -73,292 +92,344 @@ export function Dashboard() {
     { month: 'Jan', value: totalBalance },
   ];
 
+  const netWorth = totalBalance;
+  const savingsRate = monthlyIncome > 0 ? ((monthlyIncome - monthlyExpenses) / monthlyIncome * 100) : 0;
+
   return (
-    <div className="p-6 space-y-8">
-      {/* Breadcrumb */}
-      <nav className="flex text-sm text-muted-foreground">
-        <span>Início</span>
-        <span className="mx-2">/</span>
-        <span className="text-foreground font-medium">Dashboard</span>
-      </nav>
-
-      {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Visão Geral Financeira</h1>
-          <p className="mt-1 text-muted-foreground">Acompanhe suas finanças em tempo real</p>
-        </div>
-        <div className="mt-4 sm:mt-0 flex space-x-3">
-          <Button variant="outline">
-            <Download className="w-4 h-4 mr-2" />
-            Exportar
-          </Button>
-          <Button>
-            <RefreshCw className="w-4 h-4 mr-2" />
-            Atualizar
-          </Button>
-        </div>
-      </div>
-
-      {/* Financial Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <FinancialCard
-          title="Saldo Total"
-          value={totalBalance}
-          change={{ value: 2.1, label: "este mês", positive: true }}
-          icon={Wallet}
-          iconColor="text-primary"
-        />
-        <FinancialCard
-          title="Receitas do Mês"
-          value={monthlyIncome}
-          change={{ value: 0, label: "no prazo", positive: true }}
-          icon={TrendingUp}
-          iconColor="text-green-600"
-        />
-        <FinancialCard
-          title="Despesas do Mês"
-          value={monthlyExpenses}
-          change={{ value: 72, label: "do orçamento", positive: false }}
-          icon={TrendingDown}
-          iconColor="text-orange-600"
-        />
-        <FinancialCard
-          title="Investimentos"
-          value={47890}
-          change={{ value: 5.8, label: "este mês", positive: true }}
-          icon={PieChart}
-          iconColor="text-primary"
-        />
-      </div>
-
-      {/* Charts Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* 50/30/20 Rule Chart */}
-        <ChartCard 
-          title="Regra 50/30/20"
-          showPeriodSelect
-          periods={[
-            { value: 'january', label: 'Janeiro 2024' },
-            { value: 'december', label: 'Dezembro 2023' },
-          ]}
-        >
-          <div className="space-y-6">
-            {budgetData.length > 0 ? (
-              <>
-                <div className="h-64">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <RechartsPieChart>
-                      <Pie
-                        data={budgetData}
-                        cx="50%"
-                        cy="50%"
-                        innerRadius={60}
-                        outerRadius={100}
-                        paddingAngle={5}
-                        dataKey="value"
-                      >
-                        {budgetData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.color} />
-                        ))}
-                      </Pie>
-                      <Tooltip formatter={(value) => formatCurrency(Number(value))} />
-                    </RechartsPieChart>
-                  </ResponsiveContainer>
-                </div>
-                <div className="grid grid-cols-3 gap-4">
-                  {budgetData.map((item, index) => (
-                    <div key={index} className="text-center">
-                      <div className="w-4 h-4 rounded mx-auto mb-2" style={{ backgroundColor: item.color }}></div>
-                      <p className="text-sm font-medium text-foreground">{item.name}</p>
-                      <p className="text-xs text-muted-foreground">{formatCurrency(item.value)}</p>
-                    </div>
-                  ))}
-                </div>
-              </>
-            ) : (
-              <div className="h-64 flex items-center justify-center text-muted-foreground">
-                <p>Configure seu orçamento para ver o gráfico 50/30/20</p>
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
+      <div className="p-6 space-y-6">
+        {/* Hero Section */}
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary via-primary to-chart-2 p-8 text-white">
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/90 via-primary/80 to-chart-2/70" />
+          <div className="relative">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h1 className="text-3xl font-bold mb-2">Olá, Tom! 👋</h1>
+                <p className="text-white/80">Aqui está um resumo das suas finanças hoje</p>
               </div>
-            )}
-          </div>
-        </ChartCard>
-
-        {/* Wealth Evolution */}
-        <ChartCard 
-          title="Evolução Patrimonial"
-          showPeriodSelect
-          periods={[
-            { value: '6months', label: 'Últimos 6 meses' },
-            { value: 'year', label: 'Este ano' },
-          ]}
-        >
-          <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={wealthData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" />
-                <YAxis 
-                  stroke="hsl(var(--muted-foreground))"
-                  tickFormatter={(value) => `R$ ${(value / 1000).toFixed(0)}k`}
-                />
-                <Tooltip 
-                  formatter={(value) => [formatCurrency(Number(value)), 'Patrimônio']}
-                  labelStyle={{ color: 'hsl(var(--foreground))' }}
-                  contentStyle={{ 
-                    backgroundColor: 'hsl(var(--background))', 
-                    border: '1px solid hsl(var(--border))',
-                    borderRadius: '8px'
-                  }}
-                />
-                <Line 
-                  type="monotone" 
-                  dataKey="value" 
-                  stroke="hsl(var(--primary))" 
-                  strokeWidth={2}
-                  dot={{ fill: 'hsl(var(--primary))', strokeWidth: 2, r: 4 }}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-        </ChartCard>
-      </div>
-
-      {/* Recent Transactions & Quick Actions */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Recent Transactions */}
-        <div className="lg:col-span-2">
-          <Card className="financial-card">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle>Transações Recentes</CardTitle>
-                <Button variant="link" className="p-0 h-auto text-primary">
-                  Ver todas
+              <div className="flex items-center space-x-3">
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  className="text-white hover:bg-white/10"
+                  onClick={() => setBalanceVisible(!balanceVisible)}
+                >
+                  {balanceVisible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </Button>
+                <Button variant="secondary" size="sm">
+                  <Download className="h-4 w-4 mr-2" />
+                  Exportar
                 </Button>
               </div>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="bg-white/10 rounded-xl p-4 backdrop-blur-sm">
+                <p className="text-white/80 text-sm mb-1">Patrimônio Total</p>
+                <p className="text-2xl font-bold">
+                  {balanceVisible ? formatCurrency(totalBalance) : '••••••'}
+                </p>
+                <div className="flex items-center mt-2 text-sm">
+                  <TrendingUp className="h-4 w-4 mr-1" />
+                  <span>+2.1% este mês</span>
+                </div>
+              </div>
+              
+              <div className="bg-white/10 rounded-xl p-4 backdrop-blur-sm">
+                <p className="text-white/80 text-sm mb-1">Receitas</p>
+                <p className="text-2xl font-bold">
+                  {balanceVisible ? formatCurrency(monthlyIncome) : '••••••'}
+                </p>
+                <p className="text-sm text-white/70 mt-2">Este mês</p>
+              </div>
+              
+              <div className="bg-white/10 rounded-xl p-4 backdrop-blur-sm">
+                <p className="text-white/80 text-sm mb-1">Despesas</p>
+                <p className="text-2xl font-bold">
+                  {balanceVisible ? formatCurrency(monthlyExpenses) : '••••••'}
+                </p>
+                <p className="text-sm text-white/70 mt-2">Este mês</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Quick Stats */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <ModernCard
+            title="Taxa de Poupança"
+            value={`${savingsRate.toFixed(1)}%`}
+            icon={Target}
+            iconColor="text-success"
+            description="Do salário"
+          />
+          <ModernCard
+            title="Cartão de Crédito"
+            value={balanceVisible ? formatCurrency(totalCreditUsed) : '••••••'}
+            icon={CreditCard}
+            iconColor="text-warning"
+            description="Utilizado"
+          />
+          <ModernCard
+            title="Metas Ativas"
+            value={goals.length.toString()}
+            icon={Star}
+            iconColor="text-primary"
+            description="Objetivos"
+          />
+          <ModernCard
+            title="Investimentos"
+            value={balanceVisible ? formatCurrency(47890) : '••••••'}
+            icon={BarChart3}
+            iconColor="text-chart-3"
+            trend={{ value: 5.8, label: "este mês", positive: true }}
+          />
+        </div>
+
+        {/* Charts and Data */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Wealth Evolution */}
+          <Card className="pharos-card">
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between">
+                <span>Evolução Patrimonial</span>
+                <Button variant="outline" size="sm">
+                  <RefreshCw className="h-4 w-4" />
+                </Button>
+              </CardTitle>
             </CardHeader>
             <CardContent>
-              {recentTransactions.length > 0 ? (
-                <div className="space-y-4">
-                  {recentTransactions.map((transaction: any) => (
-                    <div key={transaction.id} className="flex items-center justify-between py-3 border-b border-border last:border-b-0">
+              <div className="h-64">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={wealthData}>
+                    <defs>
+                      <linearGradient id="colorWealthGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3}/>
+                        <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                    <XAxis 
+                      dataKey="month" 
+                      axisLine={false}
+                      tickLine={false}
+                      tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }}
+                    />
+                    <YAxis 
+                      axisLine={false}
+                      tickLine={false}
+                      tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }}
+                      tickFormatter={(value) => formatCurrency(value)}
+                    />
+                    <Tooltip 
+                      formatter={(value) => [formatCurrency(Number(value)), 'Patrimônio']}
+                      labelStyle={{ color: 'hsl(var(--foreground))' }}
+                      contentStyle={{ 
+                        backgroundColor: 'hsl(var(--card))', 
+                        border: '1px solid hsl(var(--border))',
+                        borderRadius: '8px'
+                      }}
+                    />
+                    <Area 
+                      type="monotone" 
+                      dataKey="value" 
+                      stroke="hsl(var(--primary))" 
+                      strokeWidth={2}
+                      fill="url(#colorWealthGradient)" 
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Budget Distribution */}
+          <Card className="pharos-card">
+            <CardHeader>
+              <CardTitle>Regra 50/30/20</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {budgetData.length > 0 ? (
+                <div className="space-y-6">
+                  <div className="h-48">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <RechartsPieChart>
+                        <Pie
+                          data={budgetData}
+                          cx="50%"
+                          cy="50%"
+                          innerRadius={40}
+                          outerRadius={80}
+                          paddingAngle={2}
+                          dataKey="value"
+                        >
+                          {budgetData.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={entry.color} />
+                          ))}
+                        </Pie>
+                        <Tooltip formatter={(value) => formatCurrency(Number(value))} />
+                      </RechartsPieChart>
+                    </ResponsiveContainer>
+                  </div>
+                  <div className="space-y-3">
+                    {budgetData.map((item, index) => (
+                      <div key={index} className="flex items-center justify-between">
+                        <div className="flex items-center space-x-2">
+                          <div 
+                            className="w-3 h-3 rounded-full" 
+                            style={{ backgroundColor: item.color }}
+                          />
+                          <span className="text-sm font-medium">{item.name}</span>
+                        </div>
+                        <span className="text-sm text-muted-foreground">
+                          {formatCurrency(item.value)}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <div className="h-48 flex items-center justify-center text-muted-foreground">
+                  <div className="text-center">
+                    <BarChart3 className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                    <p>Nenhum orçamento configurado</p>
+                    <Button className="mt-4" size="sm">
+                      <Plus className="h-4 w-4 mr-2" />
+                      Criar Orçamento
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Recent Transactions & Goals */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Recent Transactions */}
+          <Card className="pharos-card">
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between">
+                <span>Transações Recentes</span>
+                <Button variant="ghost" size="sm">
+                  Ver todas
+                  <ArrowRight className="h-4 w-4 ml-1" />
+                </Button>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {recentTransactions.length > 0 ? (
+                  recentTransactions.slice(0, 5).map((transaction, index) => (
+                    <div key={index} className="flex items-center justify-between p-3 rounded-lg hover:bg-accent transition-colors">
                       <div className="flex items-center space-x-3">
-                        <div className="p-2 rounded-lg bg-primary/10">
+                        <div className={`p-2 rounded-lg ${transaction.type === 'income' ? 'bg-success/10' : 'bg-expense/10'}`}>
                           {transaction.type === 'income' ? (
-                            <ArrowDownCircle className="h-5 w-5 text-green-600" />
+                            <ArrowUpCircle className="h-4 w-4 text-success" />
                           ) : (
-                            <ArrowUpCircle className="h-5 w-5 text-red-600" />
+                            <ArrowDownCircle className="h-4 w-4 text-expense" />
                           )}
                         </div>
                         <div>
-                          <p className="font-medium text-foreground">{transaction.description}</p>
-                          <p className="text-sm text-muted-foreground">
-                            {getRelativeTime(transaction.date)} • {transaction.accountId ? 'Conta' : 'Cartão'}
-                          </p>
+                          <p className="font-medium text-sm">{transaction.description}</p>
+                          <p className="text-xs text-muted-foreground">{formatDate(transaction.date)}</p>
                         </div>
                       </div>
-                      <div className="text-right">
-                        <p className={`font-medium ${transaction.type === 'income' ? 'text-green-600' : 'text-foreground'}`}>
-                          {transaction.type === 'income' ? '+' : '-'} {formatCurrency(parseFloat(transaction.amount))}
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          {transaction.category?.name || 'Sem categoria'}
-                        </p>
+                      <div className={`font-semibold ${transaction.type === 'income' ? 'text-success' : 'text-expense'}`}>
+                        {transaction.type === 'income' ? '+' : '-'}{formatCurrency(Math.abs(transaction.amount))}
                       </div>
                     </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-8 text-muted-foreground">
-                  <p>Nenhuma transação recente</p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Quick Actions & Goals */}
-        <div className="space-y-6">
-          {/* Quick Actions */}
-          <Card className="financial-card">
-            <CardHeader>
-              <CardTitle>Ações Rápidas</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <Button className="w-full">
-                <Plus className="w-4 h-4 mr-2" />
-                Nova Despesa
-              </Button>
-              <Button variant="outline" className="w-full">
-                <ArrowDownCircle className="w-4 h-4 mr-2" />
-                Registrar Receita
-              </Button>
-              <Button variant="outline" className="w-full">
-                <TrendingUp className="w-4 h-4 mr-2" />
-                Transferir
-              </Button>
-            </CardContent>
-          </Card>
-
-          {/* Goals Progress */}
-          <Card className="financial-card">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle>Metas em Andamento</CardTitle>
-                <Button variant="link" className="p-0 h-auto text-primary">
-                  Ver todas
-                </Button>
+                  ))
+                ) : (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <ArrowUpCircle className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                    <p>Nenhuma transação recente</p>
+                    <Button className="mt-4" size="sm">
+                      <Plus className="h-4 w-4 mr-2" />
+                      Nova Transação
+                    </Button>
+                  </div>
+                )}
               </div>
+            </CardContent>
+          </Card>
+
+          {/* Financial Goals */}
+          <Card className="pharos-card">
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between">
+                <span>Metas Financeiras</span>
+                <Button variant="ghost" size="sm">
+                  <Plus className="h-4 w-4" />
+                </Button>
+              </CardTitle>
             </CardHeader>
             <CardContent>
-              {goals.length > 0 ? (
-                <div className="space-y-4">
-                  {goals.map((goal: any) => {
-                    const progress = calculateGoalProgress(parseFloat(goal.currentAmount), parseFloat(goal.targetAmount));
+              <div className="space-y-4">
+                {goals.length > 0 ? (
+                  goals.slice(0, 3).map((goal, index) => {
+                    const progress = calculateGoalProgress(goal);
                     return (
-                      <div key={goal.id}>
-                        <div className="flex justify-between items-center mb-2">
-                          <p className="font-medium text-foreground">{goal.name}</p>
-                          <span className="text-sm text-muted-foreground">{progress.toFixed(0)}%</span>
+                      <div key={index} className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="font-medium text-sm">{goal.name}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {formatCurrency(goal.currentAmount)} de {formatCurrency(goal.targetAmount)}
+                            </p>
+                          </div>
+                          <Badge variant={progress >= 100 ? 'default' : 'secondary'}>
+                            {Math.round(progress)}%
+                          </Badge>
                         </div>
-                        <Progress value={progress} className="h-2" />
-                        <p className="text-sm text-muted-foreground mt-1">
-                          {formatCurrency(parseFloat(goal.currentAmount))} de {formatCurrency(parseFloat(goal.targetAmount))}
+                        <Progress value={Math.min(progress, 100)} className="h-2" />
+                        <p className="text-xs text-muted-foreground">
+                          Meta para {formatDate(goal.targetDate)}
                         </p>
                       </div>
                     );
-                  })}
-                </div>
-              ) : (
-                <div className="text-center py-4 text-muted-foreground">
-                  <p>Nenhuma meta criada</p>
-                </div>
-              )}
+                  })
+                ) : (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <Target className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                    <p>Defina suas metas financeiras</p>
+                    <Button className="mt-4" size="sm">
+                      <Plus className="h-4 w-4 mr-2" />
+                      Criar Meta
+                    </Button>
+                  </div>
+                )}
+              </div>
             </CardContent>
           </Card>
-
-          {/* Credit Cards Alert */}
-          {totalCreditUsed > 0 && (
-            <Card className="border-orange-200 bg-orange-50 dark:bg-orange-900/20">
-              <CardContent className="pt-6">
-                <div className="flex items-start">
-                  <AlertTriangle className="h-5 w-5 text-orange-600 mt-0.5 mr-3 flex-shrink-0" />
-                  <div>
-                    <h3 className="text-sm font-medium text-orange-900 dark:text-orange-100">
-                      Atenção: Cartões
-                    </h3>
-                    <p className="mt-1 text-sm text-orange-700 dark:text-orange-200">
-                      Você tem {formatCurrency(totalCreditUsed)} em faturas. 
-                      <Button variant="link" className="p-0 h-auto ml-1 text-orange-800 dark:text-orange-100 underline">
-                        Ver detalhes
-                      </Button>
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          )}
         </div>
+
+        {/* Quick Actions */}
+        <Card className="pharos-card">
+          <CardHeader>
+            <CardTitle>Ações Rápidas</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <Button className="h-20 flex-col space-y-2">
+                <Plus className="h-6 w-6" />
+                <span className="text-sm">Nova Transação</span>
+              </Button>
+              <Button variant="outline" className="h-20 flex-col space-y-2">
+                <Target className="h-6 w-6" />
+                <span className="text-sm">Criar Meta</span>
+              </Button>
+              <Button variant="outline" className="h-20 flex-col space-y-2">
+                <BarChart3 className="h-6 w-6" />
+                <span className="text-sm">Ver Relatórios</span>
+              </Button>
+              <Button variant="outline" className="h-20 flex-col space-y-2">
+                <CreditCard className="h-6 w-6" />
+                <span className="text-sm">Gerenciar Cartões</span>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

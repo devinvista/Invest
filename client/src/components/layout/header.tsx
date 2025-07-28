@@ -30,7 +30,7 @@ export function Header({ onToggleSidebar }: HeaderProps) {
   };
 
   return (
-    <header className="bg-background border-b border-border fixed top-0 w-full z-50 h-16">
+    <header className="bg-card/80 backdrop-blur-md border-b border-border/40 fixed top-0 w-full z-50 h-16 shadow-sm">
       <div className="px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo and mobile menu */}
@@ -38,7 +38,7 @@ export function Header({ onToggleSidebar }: HeaderProps) {
             <Button
               variant="ghost"
               size="sm"
-              className="p-2 lg:hidden"
+              className="p-2 lg:hidden hover:bg-accent/50 rounded-xl transition-all duration-200"
               onClick={onToggleSidebar}
             >
               <Menu className="h-5 w-5" />
@@ -58,16 +58,16 @@ export function Header({ onToggleSidebar }: HeaderProps) {
                   placeholder="Buscar transações..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-64 pl-10"
+                  className="w-64 pl-10 bg-accent/30 border-accent/50 rounded-xl focus:bg-background transition-all duration-200"
                 />
                 <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
               </div>
             </form>
 
             {/* Notifications */}
-            <Button variant="ghost" size="sm" className="relative">
+            <Button variant="ghost" size="sm" className="relative hover:bg-accent/50 rounded-xl transition-all duration-200">
               <Bell className="h-5 w-5" />
-              <Badge className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 text-xs">
+              <Badge className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 text-xs bg-primary">
                 3
               </Badge>
             </Button>
@@ -75,10 +75,10 @@ export function Header({ onToggleSidebar }: HeaderProps) {
             {/* User menu */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="flex items-center space-x-2 p-2">
-                  <Avatar className="h-8 w-8">
+                <Button variant="ghost" className="flex items-center space-x-2 p-2 hover:bg-accent/50 rounded-xl transition-all duration-200">
+                  <Avatar className="h-8 w-8 ring-2 ring-primary/20">
                     <AvatarImage src="" alt={user?.name} />
-                    <AvatarFallback>
+                    <AvatarFallback className="bg-primary text-primary-foreground font-semibold">
                       {user?.name?.charAt(0).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
