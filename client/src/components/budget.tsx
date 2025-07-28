@@ -17,11 +17,13 @@ export function Budget() {
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [isEditing, setIsEditing] = useState(false);
+  const [budgetType, setBudgetType] = useState<'default' | 'specific'>('default');
   const [budgetForm, setBudgetForm] = useState({
     totalIncome: '',
     necessitiesBudget: '',
     wantsBudget: '',
     savingsBudget: '',
+    isDefault: true,
   });
 
   const { data: budget, isLoading } = useQuery<any>({
@@ -40,8 +42,9 @@ export function Budget() {
     mutationFn: async (budgetData: any) => {
       const response = await apiRequest('POST', '/api/budget', {
         ...budgetData,
-        month: selectedMonth,
-        year: selectedYear,
+        month: budgetType === 'default' ? 0 : selectedMonth, // 0 para orçamento padrão
+        year: budgetType === 'default' ? 0 : selectedYear,   // 0 para orçamento padrão
+        isDefault: budgetType === 'default',
       });
       return response.json();
     },
@@ -67,10 +70,19 @@ export function Budget() {
     const allocation = calculate502020(incomeValue);
     
     setBudgetForm({
+      ...budgetForm,
       totalIncome: income,
       necessitiesBudget: allocation.necessities.toString(),
       wantsBudget: allocation.wants.toString(),
       savingsBudget: allocation.savings.toString(),
+    });
+  };
+
+  const handleBudgetTypeChange = (type: 'default' | 'specific') => {
+    setBudgetType(type);
+    setBudgetForm({
+      ...budgetForm,
+      isDefault: type === 'default',
     });
   };
 
@@ -82,6 +94,9 @@ export function Budget() {
       savingsBudget: parseFloat(budgetForm.savingsBudget),
     });
   };
+
+  // Check if using default budget
+  const isUsingDefaultBudget = budget?.isDefault;
 
   // Calculate spending by category type
   const spendingByType = {
@@ -145,6 +160,12 @@ export function Budget() {
         <div>
           <h1 className="text-2xl font-bold text-foreground">Orçamento Pessoal</h1>
           <p className="mt-1 text-muted-foreground">Gerencie suas finanças com o método 50/30/20</p>
+          {isUsingDefaultBudget && (
+            <Badge variant="secondary" className="mt-2">
+              <Target className="w-3 h-3 mr-1" />
+              Usando orçamento padrão
+            </Badge>
+          )}
         </div>
         
         <div className="mt-4 sm:mt-0 flex items-center space-x-4">
@@ -195,9 +216,57 @@ export function Budget() {
         // Budget creation form
         <Card className="financial-card">
           <CardHeader>
-            <CardTitle>Configurar Orçamento - {months.find(m => m.value === selectedMonth)?.label} {selectedYear}</CardTitle>
+            <CardTitle>
+              Configurar Orçamento {budgetType === 'default' ? 'Padrão' : `- ${months.find(m => m.value === selectedMonth)?.label} ${selectedYear}`}
+            </CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
+            {/* Budget Type Selection */}
+            <div>
+              <label className="text-sm font-medium text-foreground mb-3 block">
+                Tipo de Orçamento
+              </label>
+              <div className="grid grid-cols-2 gap-4">
+                <Card 
+                  className={`cursor-pointer border-2 transition-all ${
+                    budgetType === 'default' 
+                      ? 'border-primary bg-primary/5' 
+                      : 'border-border hover:border-primary/30'
+                  }`}
+                  onClick={() => handleBudgetTypeChange('default')}
+                >
+                  <CardContent className="pt-4 pb-4">
+                    <div className="text-center">
+                      <Target className="h-6 w-6 mx-auto mb-2 text-primary" />
+                      <h4 className="font-medium text-sm">Orçamento Padrão</h4>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Aplica para todos os meses
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+                
+                <Card 
+                  className={`cursor-pointer border-2 transition-all ${
+                    budgetType === 'specific' 
+                      ? 'border-primary bg-primary/5' 
+                      : 'border-border hover:border-primary/30'
+                  }`}
+                  onClick={() => handleBudgetTypeChange('specific')}
+                >
+                  <CardContent className="pt-4 pb-4">
+                    <div className="text-center">
+                      <Calculator className="h-6 w-6 mx-auto mb-2 text-primary" />
+                      <h4 className="font-medium text-sm">Mês Específico</h4>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Apenas para {months.find(m => m.value === selectedMonth)?.label}
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+
             <div>
               <label className="text-sm font-medium text-foreground mb-2 block">
                 Renda Total Mensal

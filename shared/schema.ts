@@ -105,6 +105,7 @@ export const budgets = pgTable("budgets", {
   userId: uuid("user_id").references(() => users.id).notNull(),
   month: integer("month").notNull(),
   year: integer("year").notNull(),
+  isDefault: boolean("is_default").default(false).notNull(), // Orçamento padrão para todos os meses
   totalIncome: decimal("total_income", { precision: 12, scale: 2 }).notNull(),
   necessitiesBudget: decimal("necessities_budget", { precision: 12, scale: 2 }).notNull(),
   wantsBudget: decimal("wants_budget", { precision: 12, scale: 2 }).notNull(),

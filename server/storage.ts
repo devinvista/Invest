@@ -47,6 +47,7 @@ export interface IStorage {
 
   // Budgets
   getBudget(userId: string, month: number, year: number): Promise<Budget | undefined>;
+  getDefaultBudget(userId: string): Promise<Budget | undefined>;
   createBudget(budget: InsertBudget): Promise<Budget>;
   updateBudgetSpending(budgetId: string, necessities: string, wants: string, savings: string): Promise<void>;
 }
@@ -175,12 +176,39 @@ export class DatabaseStorage implements IStorage {
 
   // Budgets
   async getBudget(userId: string, month: number, year: number): Promise<Budget | undefined> {
-    const [budget] = await db.select().from(budgets)
+    // First try to find specific budget for the month/year
+    const [specificBudget] = await db.select().from(budgets)
       .where(
         and(
           eq(budgets.userId, userId),
           eq(budgets.month, month),
-          eq(budgets.year, year)
+          eq(budgets.year, year),
+          eq(budgets.isDefault, false)
+        )
+      );
+    
+    if (specificBudget) {
+      return specificBudget;
+    }
+    
+    // If no specific budget, try to find default budget
+    const [defaultBudget] = await db.select().from(budgets)
+      .where(
+        and(
+          eq(budgets.userId, userId),
+          eq(budgets.isDefault, true)
+        )
+      );
+    
+    return defaultBudget || undefined;
+  }
+
+  async getDefaultBudget(userId: string): Promise<Budget | undefined> {
+    const [budget] = await db.select().from(budgets)
+      .where(
+        and(
+          eq(budgets.userId, userId),
+          eq(budgets.isDefault, true)
         )
       );
     return budget || undefined;
