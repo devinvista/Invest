@@ -6,6 +6,8 @@ import { Input } from '@/components/ui/input';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 import { formatCurrency, calculate502020, getProgressColor } from '@/lib/financial-utils';
 import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
@@ -123,6 +125,7 @@ export function Budget() {
         necessitiesBudget: customTotals.necessities,
         wantsBudget: customTotals.wants,
         savingsBudget: customTotals.savings,
+        isDefault: budgetForm.isDefault, // Permitir orçamento personalizado como padrão
       };
       
       const budgetCategories = Object.entries(customCategoryBudgets)
@@ -143,6 +146,7 @@ export function Budget() {
         necessitiesBudget: parseFloat(budgetForm.necessitiesBudget),
         wantsBudget: parseFloat(budgetForm.wantsBudget),
         savingsBudget: parseFloat(budgetForm.savingsBudget),
+        isDefault: budgetForm.isDefault,
       };
       
       createBudgetMutation.mutate(budgetData);
@@ -545,6 +549,23 @@ export function Budget() {
                   <h4 className="text-sm font-medium mb-2">Distribuição Personalizada por Categoria</h4>
                   <p className="text-xs text-muted-foreground">
                     Distribua os valores do método 50/30/20 entre as categorias de cada grupo
+                  </p>
+                </div>
+
+                {/* Switch para orçamento padrão */}
+                <div className="p-4 bg-muted/30 rounded-lg space-y-3">
+                  <div className="flex items-center justify-center space-x-2">
+                    <Switch
+                      id="default-budget"
+                      checked={budgetForm.isDefault}
+                      onCheckedChange={(checked) => setBudgetForm(prev => ({ ...prev, isDefault: checked }))}
+                    />
+                    <Label htmlFor="default-budget" className="text-sm font-medium">
+                      Usar como orçamento padrão para todos os meses
+                    </Label>
+                  </div>
+                  <p className="text-xs text-muted-foreground text-center">
+                    Quando ativado, este orçamento personalizado será aplicado automaticamente para todos os meses que não possuem orçamento específico
                   </p>
                 </div>
 

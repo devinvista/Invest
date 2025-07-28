@@ -11,6 +11,12 @@ Visual Identity: Pharos Capital brand guidelines applied.
 
 ## Recent Changes
 
+- **January 28, 2025**: Enhanced budget system with personalized category allocation as default budget option
+  - Implemented ability to set custom budget allocation per category as default budget
+  - Added Switch component to mark personalized budget as default for all months
+  - Custom budget with category-level control can now serve as baseline for future months
+  - Updated budget creation logic to support default custom budgets with individual category allocations
+  - Enhanced user interface with clear explanation of default budget functionality
 - **January 28, 2025**: Enhanced budget system with personalized category allocation and flexible 50/30/20 adjustments
   - Implemented personalized budget allocation allowing users to distribute values within 50/30/20 framework
   - Added budget_categories table to store individual category budget allocations
