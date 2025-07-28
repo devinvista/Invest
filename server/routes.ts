@@ -284,8 +284,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/investments", async (req: any, res) => {
     try {
       const assets = await storage.getUserAssets(req.userId);
-      const totalValue = assets.reduce((sum, asset) => sum + parseFloat(asset.currentValue), 0);
-      const appliedValue = assets.reduce((sum, asset) => sum + parseFloat(asset.purchaseValue), 0);
+      const totalValue = assets.reduce((sum, asset) => {
+        const quantity = parseFloat(asset.quantity);
+        const currentPrice = parseFloat(asset.currentPrice || asset.averagePrice);
+        return sum + (quantity * currentPrice);
+      }, 0);
+      const appliedValue = assets.reduce((sum, asset) => {
+        const quantity = parseFloat(asset.quantity);
+        const averagePrice = parseFloat(asset.averagePrice);
+        return sum + (quantity * averagePrice);
+      }, 0);
       const totalProfit = totalValue - appliedValue;
       const profitabilityPercent = appliedValue > 0 ? (totalProfit / appliedValue) * 100 : 0;
 
@@ -301,12 +309,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       ];
 
       // Group assets by type for distribution
-      const assetDistribution = {};
+      const assetDistribution: Record<string, any> = {};
       const typeColors = {
         'stock': '#3B82F6',
+        'fii': '#10B981',
         'crypto': '#F59E0B',
-        'bond': '#10B981',
-        'fund': '#EF4444',
+        'fixed_income': '#10B981',
         'etf': '#8B5CF6',
         'other': '#6B7280'
       };
@@ -315,22 +323,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const type = asset.type || 'other';
         const typeName = {
           'stock': 'Ações',
+          'fii': 'FIIs',
           'crypto': 'Criptomoedas', 
-          'bond': 'Renda Fixa',
-          'fund': 'Fundos',
+          'fixed_income': 'Renda Fixa',
           'etf': 'ETFs',
           'other': 'Outros'
-        }[type] || 'Outros';
+        }[type as keyof typeof typeColors] || 'Outros';
 
         if (!assetDistribution[type]) {
           assetDistribution[type] = {
             name: typeName,
             value: 0,
             percentage: 0,
-            color: typeColors[type] || typeColors.other
+            color: typeColors[type as keyof typeof typeColors] || typeColors.other
           };
         }
-        assetDistribution[type].value += parseFloat(asset.currentValue);
+        const quantity = parseFloat(asset.quantity);
+        const currentPrice = parseFloat(asset.currentPrice || asset.averagePrice);
+        assetDistribution[type].value += (quantity * currentPrice);
       });
 
       // Calculate percentages
@@ -345,12 +355,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
         profitabilityPercent,
         variation: totalProfit,
         variationPercent: profitabilityPercent,
-        assets: assets.map(asset => ({
-          ...asset,
-          variationPercent: parseFloat(asset.purchasePrice) > 0 ? 
-            ((parseFloat(asset.currentPrice) - parseFloat(asset.purchasePrice)) / parseFloat(asset.purchasePrice)) * 100 : 0,
-          percentage: totalValue > 0 ? (parseFloat(asset.currentValue) / totalValue) * 100 : 0
-        })),
+        assets: assets.map(asset => {
+          const quantity = parseFloat(asset.quantity);
+          const averagePrice = parseFloat(asset.averagePrice);
+          const currentPrice = parseFloat(asset.currentPrice || asset.averagePrice);
+          const currentValue = quantity * currentPrice;
+          const appliedValue = quantity * averagePrice;
+          
+          return {
+            ...asset,
+            currentValue: currentValue.toString(),
+            appliedValue: appliedValue.toString(),
+            variationPercent: averagePrice > 0 ? 
+              ((currentPrice - averagePrice) / averagePrice) * 100 : 0,
+            percentage: totalValue > 0 ? (currentValue / totalValue) * 100 : 0
+          };
+        }),
         portfolioEvolution,
         assetDistribution: Object.values(assetDistribution)
       });
