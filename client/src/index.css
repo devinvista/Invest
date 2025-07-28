@@ -48,42 +48,46 @@
 
 .dark {
   /* Pharos Capital Brand Colors - Dark Mode */
-  --background: hsl(220, 85%, 8%); /* 05132A - Pharos Dark Blue */
+  --background: hsl(220, 85%, 6%); /* 03101F - Deep Dark Blue */
   --foreground: hsl(0, 0%, 98%);
-  --muted: hsl(218, 70%, 15%); /* 0B2859 - Darker Blue */
-  --muted-foreground: hsl(218, 62%, 57%); /* 549CFF */
-  --popover: hsl(220, 85%, 8%);
+  --muted: hsl(218, 70%, 12%); /* 081E40 - Dark Blue */
+  --muted-foreground: hsl(218, 62%, 70%); /* 7FB4FF - Lighter blue for better contrast */
+  --popover: hsl(218, 70%, 12%);
   --popover-foreground: hsl(0, 0%, 98%);
-  --card: hsl(218, 70%, 15%); /* 0B2859 */
+  --card: hsl(218, 70%, 10%); /* 062136 - Card background */
   --card-foreground: hsl(0, 0%, 98%);
-  --border: hsl(218, 57%, 25%); /* 10408D */
-  --input: hsl(218, 70%, 15%);
-  --primary: hsl(217, 100%, 64%); /* 549CFF - Lighter Blue for dark mode */
+  --border: hsl(218, 57%, 20%); /* 0D3366 - Visible borders */
+  --input: hsl(218, 70%, 12%);
+  --primary: hsl(217, 100%, 70%); /* 66B2FF - Bright blue for contrast */
   --primary-foreground: hsl(220, 85%, 8%);
   --secondary: hsl(218, 70%, 15%);
   --secondary-foreground: hsl(0, 0%, 98%);
-  --accent: hsl(218, 57%, 25%);
+  --accent: hsl(218, 57%, 18%);
   --accent-foreground: hsl(0, 0%, 98%);
-  --destructive: hsl(4, 65%, 54%);
+  --destructive: hsl(4, 80%, 65%); /* Brighter red for dark mode */
   --destructive-foreground: hsl(0, 0%, 98%);
-  --ring: hsl(217, 100%, 64%);
+  --ring: hsl(217, 100%, 70%);
   
-  /* Pharos Dark mode financial colors */
-  --success: hsl(157, 69%, 38%); /* 149A5A */
+  /* Pharos Dark mode financial colors - Enhanced contrast */
+  --success: hsl(157, 69%, 48%); /* 1AB56C - Brighter green */
   --success-foreground: hsl(0, 0%, 98%);
-  --warning: hsl(37, 90%, 51%); /* E8B73D */
-  --warning-foreground: hsl(0, 0%, 98%);
-  --chart-1: hsl(217, 100%, 64%); /* 549CFF */
-  --chart-2: hsl(218, 100%, 75%); /* 6BAAFF */
-  --chart-3: hsl(157, 69%, 38%); /* 149A5A */
-  --chart-4: hsl(37, 90%, 51%); /* E8B73D */
-  --chart-5: hsl(4, 65%, 54%); /* CE363F */
+  --warning: hsl(37, 90%, 60%); /* F2C94C - Brighter yellow */
+  --warning-foreground: hsl(220, 85%, 8%);
   
-  --necessities: hsl(217, 100%, 64%); /* Light Blue */
-  --wants: hsl(37, 90%, 51%); /* Yellow */
-  --savings: hsl(157, 69%, 38%); /* Green */
-  --income: hsl(157, 69%, 38%); /* Green */
-  --expense: hsl(4, 65%, 54%); /* Red */
+  /* Enhanced chart colors for dark mode */
+  --chart-1: hsl(217, 100%, 70%); /* 66B2FF - Bright Primary */
+  --chart-2: hsl(218, 80%, 85%); /* A8D0FF - Light Blue */
+  --chart-3: hsl(157, 69%, 48%); /* 1AB56C - Bright Green */
+  --chart-4: hsl(37, 90%, 60%); /* F2C94C - Bright Yellow */
+  --chart-5: hsl(4, 80%, 65%); /* E85B6B - Bright Red */
+  
+  /* Enhanced category colors for dark mode */
+  --necessities: hsl(217, 100%, 70%); /* Bright Primary Blue */
+  --wants: hsl(37, 90%, 60%); /* Bright Yellow */
+  --savings: hsl(157, 69%, 48%); /* Bright Green */
+  --income: hsl(157, 69%, 48%); /* Bright Green */
+  --expense: hsl(4, 80%, 65%); /* Bright Red */
+
 }
 
 @layer base {
@@ -94,6 +98,7 @@
   body {
     @apply bg-background text-foreground font-sans antialiased;
     font-family: 'DM Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    transition: background-color 0.3s ease, color 0.3s ease;
   }
 
   h1, h2, h3, h4, h5, h6 {

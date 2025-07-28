@@ -14,6 +14,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Bell, Search, Menu, User, Settings, LogOut } from 'lucide-react';
+import { ThemeToggle } from '@/components/ui/theme-toggle';
 
 interface HeaderProps {
   onToggleSidebar: () => void;
@@ -63,6 +64,9 @@ export function Header({ onToggleSidebar }: HeaderProps) {
                 <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
               </div>
             </form>
+
+            {/* Theme Toggle */}
+            <ThemeToggle />
 
             {/* Notifications */}
             <Button variant="ghost" size="sm" className="relative hover:bg-accent/50 rounded-xl transition-all duration-200">
