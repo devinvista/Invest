@@ -14,8 +14,9 @@ import { Calculator, TrendingUp, TrendingDown, Target, Plus, Edit3 } from 'lucid
 export function Budget() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
-  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+  const currentDate = new Date();
+  const [selectedMonth, setSelectedMonth] = useState(currentDate.getMonth() + 1);
+  const [selectedYear, setSelectedYear] = useState(currentDate.getFullYear());
   const [isEditing, setIsEditing] = useState(false);
   const [budgetType, setBudgetType] = useState<'default' | 'specific'>('default');
   const [budgetForm, setBudgetForm] = useState({
@@ -133,7 +134,8 @@ export function Budget() {
     { value: 12, label: 'Dezembro' },
   ];
 
-  const years = [2024, 2023, 2022].map(year => ({ value: year, label: year.toString() }));
+  const currentYear = new Date().getFullYear();
+  const years = [currentYear, currentYear - 1, currentYear - 2].map(year => ({ value: year, label: year.toString() }));
 
   if (isLoading) {
     return (

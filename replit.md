@@ -11,6 +11,13 @@ Visual Identity: Pharos Capital brand guidelines applied.
 
 ## Recent Changes
 
+- **January 28, 2025**: Enhanced budget system with default/specific options
+  - Implemented flexible budget system: default (all months) vs specific month
+  - Added visual selection interface with cards for budget type choice
+  - Created database column 'isDefault' to differentiate budget types
+  - Default budgets apply to all months when no specific budget exists
+  - Visual indicator shows when using default budget across months
+  - Date selectors now default to current month/year for better UX
 - **January 28, 2025**: Implemented flexible login system and phone field
   - Added phone field to user schema with unique constraint
   - Updated login to accept username, email, or phone as identifier
