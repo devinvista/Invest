@@ -12,7 +12,7 @@ import { useToast } from '@/hooks/use-toast';
 import { ChartLine, Eye, EyeOff, Loader2 } from 'lucide-react';
 
 const loginSchema = z.object({
-  username: z.string().min(1, 'Nome de usuário é obrigatório'),
+  username: z.string().min(1, 'Usuário, email ou telefone é obrigatório'),
   password: z.string().min(1, 'Senha é obrigatória'),
 });
 
@@ -20,6 +20,7 @@ const registerSchema = z.object({
   username: z.string().min(3, 'Nome de usuário deve ter pelo menos 3 caracteres'),
   email: z.string().email('Email inválido'),
   name: z.string().min(2, 'Nome deve ter pelo menos 2 caracteres'),
+  phone: z.string().min(10, 'Telefone deve ter pelo menos 10 dígitos'),
   password: z.string().min(6, 'Senha deve ter pelo menos 6 caracteres'),
   confirmPassword: z.string().min(1, 'Confirmação de senha é obrigatória'),
 }).refine((data) => data.password === data.confirmPassword, {
@@ -52,6 +53,7 @@ export function Login() {
       username: '',
       email: '',
       name: '',
+      phone: '',
       password: '',
       confirmPassword: '',
     },
@@ -137,10 +139,10 @@ export function Login() {
                       name="username"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Nome de usuário</FormLabel>
+                          <FormLabel>Usuário, Email ou Telefone</FormLabel>
                           <FormControl>
                             <Input 
-                              placeholder="Digite seu nome de usuário"
+                              placeholder="Digite seu usuário, email ou telefone"
                               autoComplete="username"
                               {...field} 
                             />
@@ -235,6 +237,25 @@ export function Login() {
                               type="email"
                               placeholder="Digite seu email"
                               autoComplete="email"
+                              {...field} 
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={registerForm.control}
+                      name="phone"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Telefone</FormLabel>
+                          <FormControl>
+                            <Input 
+                              type="tel"
+                              placeholder="(11) 99999-9999"
+                              autoComplete="tel"
                               {...field} 
                             />
                           </FormControl>

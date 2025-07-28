@@ -11,6 +11,12 @@ Visual Identity: Pharos Capital brand guidelines applied.
 
 ## Recent Changes
 
+- **January 28, 2025**: Implemented flexible login system and phone field
+  - Added phone field to user schema with unique constraint
+  - Updated login to accept username, email, or phone as identifier
+  - Modified registration form to include phone field with proper formatting
+  - Enhanced backend storage methods to support multi-type user lookup
+  - Updated admin user creation script with phone number
 - **January 28, 2025**: Migration from Replit Agent to Replit environment completed
   - Configured PostgreSQL database with environment variables
   - Installed dotenv package for proper .env file loading

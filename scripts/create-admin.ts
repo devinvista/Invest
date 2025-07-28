@@ -20,7 +20,8 @@ async function createAdmin() {
         .set({ 
           password: hashedPassword,
           name: 'Tom Admin',
-          email: 'tom@admin.com'
+          email: 'tom@admin.com',
+          phone: '11999999999'
         })
         .where(eq(users.username, 'tom'));
       
@@ -34,7 +35,8 @@ async function createAdmin() {
         username: 'tom',
         password: hashedPassword,
         name: 'Tom Admin',
-        email: 'tom@admin.com'
+        email: 'tom@admin.com',
+        phone: '11999999999'
       });
       
       console.log('✅ Usuário admin criado com sucesso!');
