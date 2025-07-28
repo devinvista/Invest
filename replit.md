@@ -7,6 +7,7 @@ OrçaFácil is a comprehensive personal finance management application built wit
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
+Language: Portuguese (Brazilian)
 
 ## System Architecture
 
