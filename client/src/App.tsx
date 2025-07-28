@@ -15,6 +15,7 @@ import { Investments } from "@/components/investments";
 import { Goals } from "@/components/goals";
 import { Reports } from "@/components/reports";
 import { Education } from "@/components/education";
+import { Categories } from "@/components/categories";
 import { Login } from "@/pages/auth/login";
 import NotFound from "@/pages/not-found";
 
@@ -57,6 +58,7 @@ function AppContent() {
             <Route path="/cards" component={Cards} />
             <Route path="/investments" component={Investments} />
             <Route path="/goals" component={Goals} />
+            <Route path="/categories" component={Categories} />
             <Route path="/reports" component={Reports} />
             <Route path="/education" component={Education} />
             <Route component={NotFound} />

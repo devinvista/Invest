@@ -212,6 +212,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.put("/api/categories/:id", async (req: any, res) => {
+    try {
+      const categoryId = req.params.id;
+      const updates = insertCategorySchema.partial().parse(req.body);
+      const category = await storage.updateCategory(categoryId, updates);
+      res.json(category);
+    } catch (error) {
+      res.status(400).json({ message: "Erro ao atualizar categoria", error: error instanceof Error ? error.message : "Erro desconhecido" });
+    }
+  });
+
+  app.delete("/api/categories/:id", async (req: any, res) => {
+    try {
+      const categoryId = req.params.id;
+      await storage.deleteCategory(categoryId);
+      res.json({ message: "Categoria excluída com sucesso" });
+    } catch (error) {
+      res.status(400).json({ message: "Erro ao excluir categoria", error: error instanceof Error ? error.message : "Erro desconhecido" });
+    }
+  });
+
   // Transactions routes
   app.get("/api/transactions", async (req: any, res) => {
     try {

@@ -29,6 +29,8 @@ export interface IStorage {
   // Categories
   getUserCategories(userId: string): Promise<Category[]>;
   createCategory(category: InsertCategory): Promise<Category>;
+  updateCategory(categoryId: string, updates: Partial<InsertCategory>): Promise<Category>;
+  deleteCategory(categoryId: string): Promise<void>;
 
   // Transactions
   getUserTransactions(userId: string, limit?: number): Promise<Transaction[]>;
@@ -115,6 +117,18 @@ export class DatabaseStorage implements IStorage {
   async createCategory(category: InsertCategory): Promise<Category> {
     const [newCategory] = await db.insert(categories).values(category).returning();
     return newCategory;
+  }
+
+  async updateCategory(categoryId: string, updates: Partial<InsertCategory>): Promise<Category> {
+    const [updatedCategory] = await db.update(categories)
+      .set(updates)
+      .where(eq(categories.id, categoryId))
+      .returning();
+    return updatedCategory;
+  }
+
+  async deleteCategory(categoryId: string): Promise<void> {
+    await db.delete(categories).where(eq(categories.id, categoryId));
   }
 
   // Transactions

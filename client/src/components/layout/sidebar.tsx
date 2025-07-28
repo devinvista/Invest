@@ -10,6 +10,7 @@ import {
   CreditCard,
   TrendingUp,
   Target,
+  Tag,
   BarChart3,
   GraduationCap,
   Plus,
@@ -23,6 +24,7 @@ const navigationItems = [
   { name: 'Cartões', href: '/cards', icon: CreditCard, current: false },
   { name: 'Investimentos', href: '/investments', icon: TrendingUp, current: false },
   { name: 'Metas', href: '/goals', icon: Target, current: false },
+  { name: 'Categorias', href: '/categories', icon: Tag, current: false },
   { name: 'Relatórios', href: '/reports', icon: BarChart3, current: false },
   { name: 'Educação', href: '/education', icon: GraduationCap, current: false },
 ];

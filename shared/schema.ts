@@ -50,9 +50,13 @@ export const categories = pgTable("categories", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: uuid("user_id").references(() => users.id).notNull(),
   name: text("name").notNull(),
-  type: categoryTypeEnum("type").notNull(),
+  type: categoryTypeEnum("type").notNull(), // necessities, wants, savings, income
+  transactionType: transactionTypeEnum("transaction_type").notNull(), // income, expense, transfer
   color: text("color").default("#1565C0"),
-  icon: text("icon").default("fas fa-circle"),
+  icon: text("icon").default("Circle"),
+  isDefault: boolean("is_default").default(false).notNull(),
+  description: text("description"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
 // Transactions table
@@ -177,7 +181,7 @@ export const insertCreditCardSchema = createInsertSchema(creditCards)
     closingDay: z.union([z.string(), z.number()]).transform(val => Number(val)),
     dueDay: z.union([z.string(), z.number()]).transform(val => Number(val)),
   });
-export const insertCategorySchema = createInsertSchema(categories).omit({ id: true });
+export const insertCategorySchema = createInsertSchema(categories).omit({ id: true, createdAt: true });
 export const insertTransactionSchema = createInsertSchema(transactions)
   .omit({ id: true, createdAt: true })
   .extend({
