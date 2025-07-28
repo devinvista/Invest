@@ -32,7 +32,12 @@ export function Budget() {
   });
 
   const { data: transactions = [] } = useQuery<any[]>({
-    queryKey: ['/api/transactions', { month: selectedMonth, year: selectedYear }],
+    queryKey: ['/api/transactions', selectedMonth, selectedYear],
+    queryFn: () => fetch(`/api/transactions?month=${selectedMonth}&year=${selectedYear}`, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+      }
+    }).then(res => res.json()),
   });
 
   const { data: categories = [] } = useQuery<any[]>({
