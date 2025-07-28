@@ -389,6 +389,96 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Criar transação para investimento (categorizada como "Investimentos Futuros")
+  app.post("/api/transactions/investment", async (req: any, res) => {
+    try {
+      const { accountId, categoryId, amount, description, investmentAccountId } = req.body;
+      
+      if (!accountId || !amount) {
+        return res.status(400).json({ message: "Dados de investimento incompletos" });
+      }
+      
+      if (parseFloat(amount) <= 0) {
+        return res.status(400).json({ message: "Valor deve ser maior que zero" });
+      }
+
+      // Verificar se a conta de origem existe e tem saldo suficiente
+      const sourceAccount = await storage.getAccount(accountId);
+      if (!sourceAccount || sourceAccount.userId !== req.userId) {
+        return res.status(404).json({ message: "Conta de origem não encontrada" });
+      }
+
+      if (parseFloat(sourceAccount.balance) < parseFloat(amount)) {
+        return res.status(400).json({ message: "Saldo insuficiente na conta de origem" });
+      }
+
+      // Buscar categoria de investimento padrão se não fornecida
+      let finalCategoryId = categoryId;
+      if (!finalCategoryId) {
+        const categories = await storage.getUserCategories(req.userId);
+        const investmentCategory = categories.find(cat => 
+          cat.name === 'Investimentos Futuros' || 
+          (cat.type === 'savings' && cat.transactionType === 'expense')
+        );
+        finalCategoryId = investmentCategory?.id;
+      }
+
+      if (!finalCategoryId) {
+        return res.status(400).json({ message: "Categoria de investimento não encontrada" });
+      }
+
+      // Se tiver conta de investimento destino, atualizar saldos
+      if (investmentAccountId) {
+        const investmentAccount = await storage.getAccount(investmentAccountId);
+        if (!investmentAccount || investmentAccount.userId !== req.userId) {
+          return res.status(404).json({ message: "Conta de investimento não encontrada" });
+        }
+
+        // Atualizar saldos
+        const newSourceBalance = (parseFloat(sourceAccount.balance) - parseFloat(amount)).toFixed(2);
+        const newInvestmentBalance = (parseFloat(investmentAccount.balance) + parseFloat(amount)).toFixed(2);
+        
+        await storage.updateAccountBalance(accountId, newSourceBalance);
+        await storage.updateAccountBalance(investmentAccountId, newInvestmentBalance);
+
+        // Criar transação como transferência para investimento
+        const transaction = await storage.createTransaction({
+          userId: req.userId,
+          accountId,
+          categoryId: finalCategoryId,
+          type: 'expense',
+          amount,
+          description: description || `Investimento para ${investmentAccount.name}`,
+          date: new Date(),
+          transferToAccountId: investmentAccountId,
+          isInvestmentTransfer: true
+        });
+
+        res.json({ 
+          transaction, 
+          sourceAccount: { ...sourceAccount, balance: newSourceBalance },
+          investmentAccount: { ...investmentAccount, balance: newInvestmentBalance }
+        });
+      } else {
+        // Criar transação simples de investimento (sem transferência entre contas)
+        const transaction = await storage.createTransaction({
+          userId: req.userId,
+          accountId,
+          categoryId: finalCategoryId,
+          type: 'expense',
+          amount,
+          description: description || 'Investimento',
+          date: new Date(),
+          isInvestmentTransfer: true
+        });
+
+        res.json({ transaction });
+      }
+    } catch (error) {
+      res.status(500).json({ message: "Erro ao criar investimento", error: error instanceof Error ? error.message : "Erro desconhecido" });
+    }
+  });
+
   // Assets routes
   app.get("/api/assets", async (req: any, res) => {
     try {
