@@ -37,6 +37,13 @@ Visual Identity: Pharos Capital brand guidelines applied.
   - Modified registration form to include phone field with proper formatting
   - Enhanced backend storage methods to support multi-type user lookup
   - Updated admin user creation script with phone number
+- **January 28, 2025**: Database schema updated and cleaned
+  - Recreated PostgreSQL database with complete investment transfer functionality
+  - Implemented isInvestmentTransfer flag in transactions table for proper categorization
+  - Added transferToAccountId field for tracking investment account transfers
+  - Investment transfers are excluded from profit/loss calculations in dashboard
+  - All tables updated with current schema including phone field in users table
+  - Database reset ensures clean state with all current features working properly
 - **January 28, 2025**: Migration from Replit Agent to Replit environment completed
   - Successfully migrated project from Replit Agent to standard Replit environment
   - Configured PostgreSQL database to use .env configuration exclusively
