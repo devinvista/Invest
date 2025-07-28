@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Badge } from '@/components/ui/badge';
 import { formatCurrency } from '@/lib/financial-utils';
@@ -13,7 +14,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Building2, Plus, Wallet, CreditCard, PiggyBank, ArrowUpRight, ArrowDownRight, MoreHorizontal, Edit, Send } from 'lucide-react';
+import { Building2, Plus, Wallet, CreditCard, PiggyBank, ArrowUpRight, ArrowDownRight, MoreHorizontal, Edit, Send, Trash2 } from 'lucide-react';
 
 const accountFormSchema = z.object({
   name: z.string().min(1, 'Nome é obrigatório'),
@@ -38,7 +39,9 @@ export function Accounts() {
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showTransferDialog, setShowTransferDialog] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [editingAccount, setEditingAccount] = useState<any>(null);
+  const [deletingAccount, setDeletingAccount] = useState<any>(null);
 
   const { data: accounts = [], isLoading } = useQuery<any[]>({
     queryKey: ['/api/accounts'],
@@ -173,6 +176,30 @@ export function Accounts() {
     transferMutation.mutate(data);
   };
 
+  const deleteAccountMutation = useMutation({
+    mutationFn: async (accountId: string) => {
+      const response = await apiRequest('DELETE', `/api/accounts/${accountId}`);
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: 'Sucesso',
+        description: 'Conta excluída com sucesso!',
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/accounts'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/dashboard'] });
+      setShowDeleteDialog(false);
+      setDeletingAccount(null);
+    },
+    onError: (error: Error) => {
+      toast({
+        title: 'Erro',
+        description: error.message,
+        variant: 'destructive',
+      });
+    },
+  });
+
   const handleEditAccount = (account: any) => {
     setEditingAccount(account);
     editForm.reset({
@@ -182,6 +209,17 @@ export function Accounts() {
       bankName: account.bankName || '',
     });
     setShowEditDialog(true);
+  };
+
+  const handleDeleteAccount = (account: any) => {
+    setDeletingAccount(account);
+    setShowDeleteDialog(true);
+  };
+
+  const confirmDeleteAccount = () => {
+    if (deletingAccount) {
+      deleteAccountMutation.mutate(deletingAccount.id);
+    }
   };
 
   const getAccountIcon = (type: string) => {
@@ -506,13 +544,24 @@ export function Accounts() {
                 )}
               />
 
-              <div className="flex justify-end space-x-4">
-                <Button type="button" variant="outline" onClick={() => setShowEditDialog(false)}>
-                  Cancelar
+              <div className="flex justify-between">
+                <Button 
+                  type="button" 
+                  variant="destructive" 
+                  onClick={() => handleDeleteAccount(editingAccount)}
+                  disabled={parseFloat(editingAccount?.balance || '0') !== 0}
+                >
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  Excluir
                 </Button>
-                <Button type="submit" disabled={updateAccountMutation.isPending}>
-                  {updateAccountMutation.isPending ? 'Atualizando...' : 'Atualizar'}
-                </Button>
+                <div className="flex space-x-4">
+                  <Button type="button" variant="outline" onClick={() => setShowEditDialog(false)}>
+                    Cancelar
+                  </Button>
+                  <Button type="submit" disabled={updateAccountMutation.isPending}>
+                    {updateAccountMutation.isPending ? 'Atualizando...' : 'Atualizar'}
+                  </Button>
+                </div>
               </div>
             </form>
           </Form>
@@ -626,6 +675,41 @@ export function Accounts() {
           </Form>
         </DialogContent>
       </Dialog>
+
+      {/* Delete Account Confirmation Dialog */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir Conta</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja excluir a conta "{deletingAccount?.name}"?
+              {parseFloat(deletingAccount?.balance || '0') !== 0 && (
+                <div className="mt-2 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
+                  <p className="text-sm text-yellow-800">
+                    <strong>Atenção:</strong> Esta conta possui saldo de {formatCurrency(parseFloat(deletingAccount?.balance || '0'))}. 
+                    Transfira o dinheiro para outra conta antes de excluir.
+                  </p>
+                </div>
+              )}
+              {parseFloat(deletingAccount?.balance || '0') === 0 && (
+                <p className="mt-2 text-sm text-muted-foreground">
+                  Esta ação não pode ser desfeita.
+                </p>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDeleteAccount}
+              disabled={parseFloat(deletingAccount?.balance || '0') !== 0 || deleteAccountMutation.isPending}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleteAccountMutation.isPending ? 'Excluindo...' : 'Excluir Conta'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
       </div>
     </div>
   );

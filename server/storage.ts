@@ -22,6 +22,7 @@ export interface IStorage {
   createAccount(account: InsertAccount): Promise<Account>;
   updateAccount(accountId: string, updates: Partial<InsertAccount>): Promise<Account>;
   updateAccountBalance(accountId: string, balance: string): Promise<void>;
+  deleteAccount(accountId: string): Promise<void>;
 
   // Credit Cards
   getUserCreditCards(userId: string): Promise<CreditCard[]>;
@@ -108,6 +109,10 @@ export class DatabaseStorage implements IStorage {
 
   async updateAccountBalance(accountId: string, balance: string): Promise<void> {
     await db.update(accounts).set({ balance }).where(eq(accounts.id, accountId));
+  }
+
+  async deleteAccount(accountId: string): Promise<void> {
+    await db.delete(accounts).where(eq(accounts.id, accountId));
   }
 
   // Credit Cards

@@ -11,12 +11,14 @@ Visual Identity: Pharos Capital brand guidelines applied.
 
 ## Recent Changes
 
-- **January 28, 2025**: Implemented account editing and transfer functionality
+- **January 28, 2025**: Implemented comprehensive account management features
   - Added PUT endpoint for updating account information (name, type, bank)
   - Created transfer API endpoint with balance validation and atomic updates
-  - Enhanced accounts component with edit and transfer dialogs
+  - Implemented DELETE endpoint with balance verification for account deletion
+  - Enhanced accounts component with edit, transfer, and delete dialogs
   - Added form validation for transfers including same-account prevention
   - Real-time balance updates and error handling for insufficient funds
+  - Safety measures for account deletion (requires zero balance, confirmation dialog)
 - **January 28, 2025**: Enhanced credit card bank selection with account integration
   - Modified credit card creation form to use dropdown with existing bank accounts
   - Replaced free text input with Select component linking to user's registered accounts

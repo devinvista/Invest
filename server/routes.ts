@@ -255,6 +255,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.delete("/api/accounts/:id", async (req: any, res) => {
+    try {
+      const accountId = req.params.id;
+      
+      // Check if account belongs to user
+      const account = await storage.getAccount(accountId);
+      if (!account || account.userId !== req.userId) {
+        return res.status(404).json({ message: "Conta não encontrada" });
+      }
+      
+      // Check if account has non-zero balance
+      if (parseFloat(account.balance) !== 0) {
+        return res.status(400).json({ message: "Não é possível excluir conta com saldo. Transfira o dinheiro primeiro." });
+      }
+      
+      await storage.deleteAccount(accountId);
+      res.json({ message: "Conta excluída com sucesso" });
+    } catch (error) {
+      res.status(500).json({ message: "Erro ao excluir conta", error: error instanceof Error ? error.message : "Erro desconhecido" });
+    }
+  });
+
   // Credit Cards routes
   app.get("/api/credit-cards", async (req: any, res) => {
     try {
