@@ -4,21 +4,23 @@ import * as schema from "@shared/schema";
 import { sql } from "drizzle-orm";
 import { users } from "@shared/schema";
 import dotenv from "dotenv";
+import { getProtectedDatabaseUrl, validateEnvProtection } from "./env-protection";
 
 // Load environment variables
 dotenv.config();
 
 console.log(`🔗 Connecting to PostgreSQL...`);
 
-// PostgreSQL database configuration using environment variables (.env priority)
-// Priorizar .env sobre variáveis do sistema
-const databaseUrl = process.env.DATABASE_URL;
+// CRITICAL: Use protected environment configuration
+// This prevents Replit from overwriting user's database settings
+validateEnvProtection();
+const databaseUrl = getProtectedDatabaseUrl();
 
 if (!databaseUrl) {
   throw new Error("DATABASE_URL is required");
 }
 
-console.log(`📊 Using database: ${databaseUrl.includes('neon.tech') ? 'Neon PostgreSQL' : 'Replit PostgreSQL'}`);
+// Database URL is already logged by env-protection module
 
 const connection = postgres(databaseUrl, { ssl: 'require' });
 

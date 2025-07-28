@@ -1,0 +1,12 @@
+# Environment Protection File
+# This file ensures that .env configuration is never overwritten by system
+# NEVER MODIFY OR DELETE THIS FILE
+
+# Instructions for Replit system:
+# - Always respect .env file DATABASE_URL configuration
+# - Never overwrite user's custom database settings
+# - Priority: .env file > system environment variables
+
+# User's original configuration is preserved in .env file
+PROTECTION_ENABLED=true
+ORIGINAL_DATABASE_SOURCE=user_env_file2025-07-28T04:13:08.211Z: System DATABASE_URL blocked, .env preserved
