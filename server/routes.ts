@@ -533,7 +533,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         found: !!budget,
         budgetId: budget?.id,
         isDefault: budget?.isDefault,
-        totalIncome: budget?.totalIncome
+        totalIncome: budget?.totalIncome,
+        createdAt: budget?.createdAt
       });
       
       // Prevent caching to ensure fresh data
@@ -545,7 +546,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       res.json(budget);
     } catch (error) {
-      console.error(`❌ Erro ao buscar orçamento para ${month}/${year}:`, error);
+      console.error(`❌ Erro ao buscar orçamento para ${req.params.month}/${req.params.year}:`, error);
       res.status(500).json({ message: "Erro ao carregar orçamento", error: error instanceof Error ? error.message : "Erro desconhecido" });
     }
   });

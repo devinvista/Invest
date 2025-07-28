@@ -225,16 +225,45 @@ export class DatabaseStorage implements IStorage {
       return specificBudget;
     }
     
-    // If no specific budget, try to find default budget
-    const [defaultBudget] = await db.select().from(budgets)
+    // If no specific budget, find applicable default budget
+    // Default budget applies only to months equal or later than its creation month
+    const allDefaultBudgets = await db.select().from(budgets)
       .where(
         and(
           eq(budgets.userId, userId),
           eq(budgets.isDefault, true)
         )
-      );
+      )
+      .orderBy(desc(budgets.createdAt)); // Get most recent default budget first
     
-    return defaultBudget || undefined;
+    if (allDefaultBudgets.length === 0) {
+      return undefined;
+    }
+    
+    // Find the most recent default budget that was created before or during the requested month
+    const requestedDate = new Date(year, month - 1, 1); // month - 1 because JS months are 0-based
+    
+    for (const defaultBudget of allDefaultBudgets) {
+      const budgetCreationDate = new Date(defaultBudget.createdAt);
+      const budgetCreationMonth = new Date(budgetCreationDate.getFullYear(), budgetCreationDate.getMonth(), 1);
+      
+      console.log(`📅 Verificando orçamento padrão temporal:`, {
+        requestedMonth: `${month}/${year}`,
+        budgetCreatedAt: budgetCreationDate.toISOString(),
+        budgetCreationMonth: `${budgetCreationDate.getMonth() + 1}/${budgetCreationDate.getFullYear()}`,
+        requestedDateCompare: requestedDate.toISOString(),
+        budgetCreationCompare: budgetCreationMonth.toISOString(),
+        budgetCreationBeforeOrEqual: budgetCreationMonth <= requestedDate,
+        applies: budgetCreationMonth <= requestedDate
+      });
+      
+      // Default budget applies if it was created in or before the requested month
+      if (budgetCreationMonth <= requestedDate) {
+        return defaultBudget;
+      }
+    }
+    
+    return undefined;
   }
 
   async getDefaultBudget(userId: string): Promise<Budget | undefined> {

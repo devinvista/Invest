@@ -11,6 +11,13 @@ Visual Identity: Pharos Capital brand guidelines applied.
 
 ## Recent Changes
 
+- **January 28, 2025**: Implemented temporal logic for default budgets
+  - Default budgets now only apply to months equal or later than their creation date
+  - Fixed budget update cache issues with proper React Query invalidation
+  - Added comprehensive server-side logging for budget retrieval and temporal logic
+  - Implemented upsert functionality for budget creation (update existing or create new)
+  - Added anti-cache headers to prevent stale data issues
+  - Enhanced debug logs to track temporal budget application
 - **January 28, 2025**: Implemented comprehensive account management features
   - Added PUT endpoint for updating account information (name, type, bank)
   - Created transfer API endpoint with balance validation and atomic updates
