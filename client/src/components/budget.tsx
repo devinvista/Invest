@@ -11,7 +11,7 @@ import { Label } from '@/components/ui/label';
 import { formatCurrency, calculate502020, getProgressColor } from '@/lib/financial-utils';
 import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
-import { Calculator, TrendingUp, TrendingDown, Target, Plus, Edit3 } from 'lucide-react';
+import { Calculator, TrendingUp, TrendingDown, Target, Plus, Edit3, RotateCcw } from 'lucide-react';
 
 export function Budget() {
   const { toast } = useToast();
@@ -616,17 +616,10 @@ export function Budget() {
               </div>
             )}
 
-            {budgetForm.totalIncome && budgetType === 'custom' && (
+            {budgetType === 'custom' && (
               <div className="space-y-6">
-                <div className="text-center">
-                  <h4 className="text-sm font-medium mb-2">Distribuição Personalizada por Categoria</h4>
-                  <p className="text-xs text-muted-foreground">
-                    Distribua os valores do método 50/30/20 entre as categorias de cada grupo
-                  </p>
-                </div>
-
-                {/* Switch para orçamento padrão */}
-                <div className="p-4 bg-muted/30 rounded-lg space-y-3">
+                {/* 1. Switch padrão todos os meses */}
+                <div className="p-4 bg-blue-50 dark:bg-blue-950 rounded-lg space-y-3">
                   <div className="flex items-center justify-center space-x-2">
                     <Switch
                       id="default-budget"
@@ -642,97 +635,34 @@ export function Budget() {
                   </p>
                 </div>
 
-                {/* Edição dos grupos 50/30/20 */}
-                <div className="space-y-4">
-                  <div className="text-center">
-                    <h5 className="text-sm font-medium mb-2">Distribuição dos Grupos</h5>
-                    <p className="text-xs text-muted-foreground">
-                      Ajuste os valores dos grupos conforme sua necessidade
+                {/* 2. Receita total automática */}
+                <div>
+                  <label className="text-sm font-medium text-foreground mb-2 block">
+                    Renda Total Mensal (Calculada Automaticamente)
+                  </label>
+                  <div className="p-4 bg-green-50 dark:bg-green-950 rounded-lg">
+                    <p className="text-2xl font-bold text-green-600">
+                      {formatCurrency(calculateCustomTotals().income)}
                     </p>
-                  </div>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div>
-                      <Label className="text-sm font-medium text-necessities mb-2 block">
-                        Necessidades
-                      </Label>
-                      <Input
-                        type="number"
-                        step="0.01"
-                        value={customGroupBudgets.necessities}
-                        onChange={(e) => setCustomGroupBudgets(prev => ({ ...prev, necessities: e.target.value }))}
-                        className="text-sm"
-                      />
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {((parseFloat(customGroupBudgets.necessities) || 0) / (parseFloat(budgetForm.totalIncome) || 1) * 100).toFixed(1)}% da renda
-                      </p>
-                    </div>
-
-                    <div>
-                      <Label className="text-sm font-medium text-wants mb-2 block">
-                        Desejos
-                      </Label>
-                      <Input
-                        type="number"
-                        step="0.01"
-                        value={customGroupBudgets.wants}
-                        onChange={(e) => setCustomGroupBudgets(prev => ({ ...prev, wants: e.target.value }))}
-                        className="text-sm"
-                      />
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {((parseFloat(customGroupBudgets.wants) || 0) / (parseFloat(budgetForm.totalIncome) || 1) * 100).toFixed(1)}% da renda
-                      </p>
-                    </div>
-
-                    <div>
-                      <Label className="text-sm font-medium text-savings mb-2 block">
-                        Poupança
-                      </Label>
-                      <Input
-                        type="number"
-                        step="0.01"
-                        value={customGroupBudgets.savings}
-                        onChange={(e) => setCustomGroupBudgets(prev => ({ ...prev, savings: e.target.value }))}
-                        className="text-sm"
-                      />
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {((parseFloat(customGroupBudgets.savings) || 0) / (parseFloat(budgetForm.totalIncome) || 1) * 100).toFixed(1)}% da renda
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex justify-center">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        const allocation = calculate502020(parseFloat(budgetForm.totalIncome) || 0);
-                        setCustomGroupBudgets({
-                          necessities: allocation.necessities.toString(),
-                          wants: allocation.wants.toString(),
-                          savings: allocation.savings.toString(),
-                        });
-                      }}
-                      className="text-xs"
-                    >
-                      Recalcular 50/30/20
-                    </Button>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Soma automática das categorias de receita configuradas abaixo
+                    </p>
                   </div>
                 </div>
 
-                {/* Categorias de Receita */}
+                {/* 3. Categorias de Receita */}
                 <div className="space-y-3">
                   <div className="space-y-2">
                     <div className="flex justify-between items-center">
-                      <h5 className="font-medium text-sm text-green-600">
-                        Receitas
-                      </h5>
+                      <h4 className="font-medium text-sm text-green-600">
+                        Categorias de Receita
+                      </h4>
                       <Badge variant="outline" className="text-green-600">
-                        Total: {formatCurrency(calculateCustomTotals().income)}
+                        {categories.filter(cat => cat.transactionType === 'income').length} categorias
                       </Badge>
                     </div>
                     <p className="text-xs text-muted-foreground">
-                      Distribua sua renda total entre as diferentes fontes de receita
+                      Configure os valores esperados para cada fonte de receita
                     </p>
                   </div>
                   
@@ -757,116 +687,214 @@ export function Budget() {
                   </div>
                 </div>
 
-                {/* Custom category budget inputs */}
-                {['necessities', 'wants', 'savings'].map(type => {
-                  const typeCategories = categories.filter(cat => cat.type === type);
-                  const customTotals = calculateCustomTotals();
-                  const typeTotal = customTotals[type as keyof typeof customTotals];
-                  const availableAmount = getAvailableAmount(type);
-                  const maxAllowed = parseFloat(customGroupBudgets[type as keyof typeof customGroupBudgets]) || 0;
-                  const typeColor = type === 'necessities' ? 'text-necessities' : 
-                                  type === 'wants' ? 'text-wants' : 'text-savings';
-                  const typeLabel = type === 'necessities' ? 'Necessidades (50%)' : 
-                                   type === 'wants' ? 'Desejos (30%)' : 'Poupança (20%)';
-
-                  return (
-                    <div key={type} className="space-y-3">
-                      <div className="space-y-2">
-                        <div className="flex justify-between items-center">
-                          <h5 className={`font-medium text-sm ${typeColor}`}>
-                            {typeLabel}
-                          </h5>
-                          <div className="flex gap-2">
-                            <Badge variant="outline" className={typeColor}>
-                              Usado: {formatCurrency(typeTotal)}
-                            </Badge>
-                            <Badge variant="secondary">
-                              Disponível: {formatCurrency(availableAmount)}
-                            </Badge>
-                          </div>
-                        </div>
-                        
-                        <div className="bg-muted/30 rounded-lg p-2">
-                          <div className="flex justify-between text-xs text-muted-foreground mb-1">
-                            <span>Limite máximo: {formatCurrency(maxAllowed)}</span>
-                            <span>{((typeTotal / maxAllowed) * 100).toFixed(1)}% usado</span>
-                          </div>
-                          <Progress 
-                            value={(typeTotal / maxAllowed) * 100} 
-                            className="h-2"
-                          />
-                        </div>
-                      </div>
-                      
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                        {typeCategories.map(category => (
-                          <div key={category.id} className="space-y-1">
-                            <label className="text-xs font-medium text-foreground block">
-                              {category.name}
-                            </label>
-                            <Input
-                              type="number"
-                              step="0.01"
-                              placeholder="0,00"
-                              value={customCategoryBudgets[category.id] || ''}
-                              onChange={(e) => handleCustomBudgetChange(category.id, e.target.value, type)}
-                              className="text-sm"
-                            />
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  );
-                })}
-                
-                {/* Summary */}
-                <div className="bg-muted/50 p-4 rounded-lg">
-                  <div className="text-center mb-4">
-                    <h4 className="text-sm font-medium mb-1">Resumo da Distribuição</h4>
+                {/* 4. Distribuição dos Grupos 50/30/20 */}
+                <div className="space-y-4">
+                  <div className="text-center">
+                    <h4 className="text-sm font-medium mb-2">Distribuição dos Grupos de Despesas 50/30/20</h4>
                     <p className="text-xs text-muted-foreground">
-                      Receita total calculada automaticamente pela soma das categorias de receita
+                      Ajuste os valores dos grupos conforme sua estratégia financeira
                     </p>
                   </div>
                   
-                  <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-center">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
-                      <p className="text-xs text-green-600">Receitas</p>
-                      <p className="font-medium text-green-600">{formatCurrency(calculateCustomTotals().income)}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {calculateCustomTotals().income > 0 ? 'Total planejado' : 'Não configurado'}
+                      <Label className="text-sm font-medium text-necessities mb-2 block">
+                        Necessidades (50%)
+                      </Label>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        value={customGroupBudgets.necessities}
+                        onChange={(e) => setCustomGroupBudgets(prev => ({ ...prev, necessities: e.target.value }))}
+                        className="text-sm"
+                      />
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {calculateCustomTotals().income > 0 && 
+                          `${((parseFloat(customGroupBudgets.necessities) || 0) / calculateCustomTotals().income * 100).toFixed(1)}% da renda`
+                        }
                       </p>
                     </div>
+
                     <div>
-                      <p className="text-xs text-necessities">Necessidades</p>
-                      <p className="font-medium text-necessities">{formatCurrency(calculateCustomTotals().necessities)}</p>
-                      <p className="text-xs text-muted-foreground">
-                        de {formatCurrency(parseFloat(customGroupBudgets.necessities) || 0)}
+                      <Label className="text-sm font-medium text-wants mb-2 block">
+                        Desejos (30%)
+                      </Label>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        value={customGroupBudgets.wants}
+                        onChange={(e) => setCustomGroupBudgets(prev => ({ ...prev, wants: e.target.value }))}
+                        className="text-sm"
+                      />
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {calculateCustomTotals().income > 0 && 
+                          `${((parseFloat(customGroupBudgets.wants) || 0) / calculateCustomTotals().income * 100).toFixed(1)}% da renda`
+                        }
                       </p>
                     </div>
+
                     <div>
-                      <p className="text-xs text-wants">Desejos</p>
-                      <p className="font-medium text-wants">{formatCurrency(calculateCustomTotals().wants)}</p>
-                      <p className="text-xs text-muted-foreground">
-                        de {formatCurrency(parseFloat(customGroupBudgets.wants) || 0)}
+                      <Label className="text-sm font-medium text-savings mb-2 block">
+                        Poupança (20%)
+                      </Label>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        value={customGroupBudgets.savings}
+                        onChange={(e) => setCustomGroupBudgets(prev => ({ ...prev, savings: e.target.value }))}
+                        className="text-sm"
+                      />
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {calculateCustomTotals().income > 0 && 
+                          `${((parseFloat(customGroupBudgets.savings) || 0) / calculateCustomTotals().income * 100).toFixed(1)}% da renda`
+                        }
                       </p>
                     </div>
-                    <div>
-                      <p className="text-xs text-savings">Poupança</p>
-                      <p className="font-medium text-savings">{formatCurrency(calculateCustomTotals().savings)}</p>
+                  </div>
+
+                  <div className="flex justify-center">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        const totalIncome = calculateCustomTotals().income;
+                        if (totalIncome > 0) {
+                          const allocation = calculate502020(totalIncome);
+                          setCustomGroupBudgets({
+                            necessities: allocation.necessities.toString(),
+                            wants: allocation.wants.toString(),
+                            savings: allocation.savings.toString(),
+                          });
+                        }
+                      }}
+                      className="text-xs"
+                    >
+                      <RotateCcw className="h-3 w-3 mr-1" />
+                      Recalcular com base na receita total
+                    </Button>
+                  </div>
+                </div>
+
+                {/* 5. Distribuição por categorias de despesas */}
+                <div className="space-y-4">
+                  <div className="text-center">
+                    <h4 className="text-sm font-medium mb-1">Distribuição por Categorias de Despesas</h4>
+                    <p className="text-xs text-muted-foreground">
+                      Configure valores específicos para cada categoria dentro dos limites dos grupos
+                    </p>
+                  </div>
+
+                  {/* Custom category budget inputs */}
+                  {['necessities', 'wants', 'savings'].map(type => {
+                    const typeCategories = categories.filter(cat => cat.type === type);
+                    const customTotals = calculateCustomTotals();
+                    const typeTotal = customTotals[type as keyof typeof customTotals];
+                    const availableAmount = getAvailableAmount(type);
+                    const maxAllowed = parseFloat(customGroupBudgets[type as keyof typeof customGroupBudgets]) || 0;
+                    const typeColor = type === 'necessities' ? 'text-necessities' : 
+                                    type === 'wants' ? 'text-wants' : 'text-savings';
+                    const typeLabel = type === 'necessities' ? 'Necessidades (50%)' : 
+                                     type === 'wants' ? 'Desejos (30%)' : 'Poupança (20%)';
+
+                    return (
+                      <div key={type} className="space-y-3">
+                        <div className="space-y-2">
+                          <div className="flex justify-between items-center">
+                            <h5 className={`font-medium text-sm ${typeColor}`}>
+                              {typeLabel}
+                            </h5>
+                            <div className="flex gap-2">
+                              <Badge variant="outline" className={typeColor}>
+                                Usado: {formatCurrency(typeTotal)}
+                              </Badge>
+                              <Badge variant="secondary">
+                                Disponível: {formatCurrency(availableAmount)}
+                              </Badge>
+                            </div>
+                          </div>
+                          
+                          <div className="bg-muted/30 rounded-lg p-2">
+                            <div className="flex justify-between text-xs text-muted-foreground mb-1">
+                              <span>Limite máximo: {formatCurrency(maxAllowed)}</span>
+                              <span>{maxAllowed > 0 ? ((typeTotal / maxAllowed) * 100).toFixed(1) : 0}% usado</span>
+                            </div>
+                            <Progress 
+                              value={maxAllowed > 0 ? (typeTotal / maxAllowed) * 100 : 0} 
+                              className="h-2"
+                            />
+                          </div>
+                        </div>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                          {typeCategories.map(category => (
+                            <div key={category.id} className="space-y-1">
+                              <label className="text-xs font-medium text-foreground block">
+                                {category.name}
+                              </label>
+                              <Input
+                                type="number"
+                                step="0.01"
+                                placeholder="0,00"
+                                value={customCategoryBudgets[category.id] || ''}
+                                onChange={(e) => handleCustomBudgetChange(category.id, e.target.value, type)}
+                                className="text-sm"
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })}
+                  
+                  {/* Summary */}
+                  <div className="bg-muted/50 p-4 rounded-lg">
+                    <div className="text-center mb-4">
+                      <h4 className="text-sm font-medium mb-1">Resumo da Distribuição</h4>
                       <p className="text-xs text-muted-foreground">
-                        de {formatCurrency(parseFloat(customGroupBudgets.savings) || 0)}
+                        Receita total calculada automaticamente pela soma das categorias de receita
                       </p>
                     </div>
-                    <div>
-                      <p className="text-xs text-muted-foreground">Total Orçado</p>
-                      <p className="font-medium">{formatCurrency(
-                        (parseFloat(customGroupBudgets.necessities) || 0) + 
-                        (parseFloat(customGroupBudgets.wants) || 0) + 
-                        (parseFloat(customGroupBudgets.savings) || 0)
-                      )}</p>
-                      <p className="text-xs text-muted-foreground">
-                        Despesas planejadas
-                      </p>
+                    
+                    <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-center">
+                      <div>
+                        <p className="text-xs text-green-600">Receitas</p>
+                        <p className="font-medium text-green-600">{formatCurrency(calculateCustomTotals().income)}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {calculateCustomTotals().income > 0 ? 'Total planejado' : 'Não configurado'}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-necessities">Necessidades</p>
+                        <p className="font-medium text-necessities">{formatCurrency(calculateCustomTotals().necessities)}</p>
+                        <p className="text-xs text-muted-foreground">
+                          de {formatCurrency(parseFloat(customGroupBudgets.necessities) || 0)}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-wants">Desejos</p>
+                        <p className="font-medium text-wants">{formatCurrency(calculateCustomTotals().wants)}</p>
+                        <p className="text-xs text-muted-foreground">
+                          de {formatCurrency(parseFloat(customGroupBudgets.wants) || 0)}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-savings">Poupança</p>
+                        <p className="font-medium text-savings">{formatCurrency(calculateCustomTotals().savings)}</p>
+                        <p className="text-xs text-muted-foreground">
+                          de {formatCurrency(parseFloat(customGroupBudgets.savings) || 0)}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-muted-foreground">Total Orçado</p>
+                        <p className="font-medium">{formatCurrency(
+                          (parseFloat(customGroupBudgets.necessities) || 0) + 
+                          (parseFloat(customGroupBudgets.wants) || 0) + 
+                          (parseFloat(customGroupBudgets.savings) || 0)
+                        )}</p>
+                        <p className="text-xs text-muted-foreground">
+                          Despesas planejadas
+                        </p>
+                      </div>
                     </div>
                   </div>
                 </div>
