@@ -181,7 +181,7 @@ export function Budget() {
         <div>
           <h1 className="text-2xl font-bold text-foreground">Orçamento Pessoal</h1>
           <p className="mt-1 text-muted-foreground">Gerencie suas finanças com o método 50/30/20</p>
-          {isUsingDefaultBudget && (
+          {budget?.isDefault && (
             <Badge variant="secondary" className="mt-2">
               <Target className="w-3 h-3 mr-1" />
               Usando orçamento padrão
