@@ -7,15 +7,19 @@ OrçaFácil is a comprehensive personal finance management application built wit
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
-Visual Identity: BTG Pactual brand guidelines applied.
+Visual Identity: Pharos Capital brand guidelines applied.
 
 ## Recent Changes
 
-- **January 28, 2025**: Applied BTG Pactual visual identity
+- **January 28, 2025**: Applied Pharos Capital visual identity
   - Implemented official color palette (#195AB4 primary, complementary colors)
   - Changed typography to DM Sans (Moderat alternative)
-  - Added BTG logo component to header
-  - Updated all UI components with BTG styling
+  - Added Pharos Capital logo component to header
+  - Updated all UI components with Pharos Capital styling
+- **January 28, 2025**: Updated branding from BTG Pactual to Pharos Capital
+  - Changed all logos and references
+  - Updated "powered by" text to Pharos Capital
+  - Renamed components and CSS classes
 - **January 28, 2025**: Created admin user account
   - Username: tom
   - Password: tom123

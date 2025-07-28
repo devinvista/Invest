@@ -5,9 +5,9 @@
 @tailwind utilities;
 
 :root {
-  /* BTG Pactual Brand Colors - Light Mode */
+  /* Pharos Capital Brand Colors - Light Mode */
   --background: hsl(0, 0%, 100%); /* FFFFFF */
-  --foreground: hsl(220, 85%, 8%); /* 05132A - BTG Dark Blue */
+  --foreground: hsl(220, 85%, 8%); /* 05132A - Pharos Dark Blue */
   --muted: hsl(219, 100%, 97%); /* D2E5FF - Light Blue */
   --muted-foreground: hsl(218, 62%, 57%); /* 549CFF - Medium Blue */
   --popover: hsl(0, 0%, 100%);
@@ -16,7 +16,7 @@
   --card-foreground: hsl(220, 85%, 8%);
   --border: hsl(219, 100%, 90%); /* B1D2FF */
   --input: hsl(219, 100%, 95%); /* D2E5FF */
-  --primary: hsl(218, 78%, 42%); /* 195AB4 - BTG Primary Blue */
+  --primary: hsl(218, 78%, 42%); /* 195AB4 - Pharos Primary Blue */
   --primary-foreground: hsl(0, 0%, 100%);
   --secondary: hsl(219, 100%, 97%); /* D2E5FF */
   --secondary-foreground: hsl(220, 85%, 8%);
@@ -27,18 +27,18 @@
   --ring: hsl(218, 78%, 42%);
   --radius: 0.5rem;
   
-  /* BTG Pactual Financial Colors */
-  --success: hsl(157, 69%, 38%); /* 149A5A - BTG Green */
+  /* Pharos Capital Financial Colors */
+  --success: hsl(157, 69%, 38%); /* 149A5A - Pharos Green */
   --success-foreground: hsl(0, 0%, 98%);
-  --warning: hsl(37, 90%, 51%); /* E8B73D - BTG Yellow */
+  --warning: hsl(37, 90%, 51%); /* E8B73D - Pharos Yellow */
   --warning-foreground: hsl(0, 0%, 98%);
-  --chart-1: hsl(218, 78%, 42%); /* 195AB4 - BTG Primary */
-  --chart-2: hsl(217, 100%, 64%); /* 549CFF - BTG Light Blue */
-  --chart-3: hsl(157, 69%, 38%); /* 149A5A - BTG Green */
-  --chart-4: hsl(37, 90%, 51%); /* E8B73D - BTG Yellow */
-  --chart-5: hsl(4, 65%, 54%); /* CE363F - BTG Red */
+  --chart-1: hsl(218, 78%, 42%); /* 195AB4 - Pharos Primary */
+  --chart-2: hsl(217, 100%, 64%); /* 549CFF - Pharos Light Blue */
+  --chart-3: hsl(157, 69%, 38%); /* 149A5A - Pharos Green */
+  --chart-4: hsl(37, 90%, 51%); /* E8B73D - Pharos Yellow */
+  --chart-5: hsl(4, 65%, 54%); /* CE363F - Pharos Red */
   
-  /* BTG Financial Categories */
+  /* Pharos Financial Categories */
   --necessities: hsl(218, 78%, 42%); /* Primary Blue */
   --wants: hsl(37, 90%, 51%); /* Yellow */
   --savings: hsl(157, 69%, 38%); /* Green */
@@ -47,8 +47,8 @@
 }
 
 .dark {
-  /* BTG Pactual Brand Colors - Dark Mode */
-  --background: hsl(220, 85%, 8%); /* 05132A - BTG Dark Blue */
+  /* Pharos Capital Brand Colors - Dark Mode */
+  --background: hsl(220, 85%, 8%); /* 05132A - Pharos Dark Blue */
   --foreground: hsl(0, 0%, 98%);
   --muted: hsl(218, 70%, 15%); /* 0B2859 - Darker Blue */
   --muted-foreground: hsl(218, 62%, 57%); /* 549CFF */
@@ -68,7 +68,7 @@
   --destructive-foreground: hsl(0, 0%, 98%);
   --ring: hsl(217, 100%, 64%);
   
-  /* BTG Dark mode financial colors */
+  /* Pharos Dark mode financial colors */
   --success: hsl(157, 69%, 38%); /* 149A5A */
   --success-foreground: hsl(0, 0%, 98%);
   --warning: hsl(37, 90%, 51%); /* E8B73D */
@@ -106,20 +106,20 @@
     @apply bg-card border border-border rounded-lg p-6 shadow-sm hover:shadow-md transition-all duration-200;
   }
   
-  .btg-card {
+  .pharos-card {
     @apply bg-card border border-border rounded-lg p-6 shadow-sm hover:shadow-lg transition-all duration-300 hover:border-primary/20;
   }
   
-  .btg-button {
+  .pharos-button {
     @apply inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background;
   }
   
-  .btg-button-primary {
-    @apply btg-button bg-primary text-primary-foreground hover:bg-primary/90 h-10 py-2 px-4;
+  .pharos-button-primary {
+    @apply pharos-button bg-primary text-primary-foreground hover:bg-primary/90 h-10 py-2 px-4;
   }
   
-  .btg-button-secondary {
-    @apply btg-button bg-secondary text-secondary-foreground hover:bg-secondary/80 h-10 py-2 px-4;
+  .pharos-button-secondary {
+    @apply pharos-button bg-secondary text-secondary-foreground hover:bg-secondary/80 h-10 py-2 px-4;
   }
   
   .metric-value {
@@ -154,11 +154,11 @@
     @apply w-5 h-5 mr-3 flex-shrink-0;
   }
   
-  .btg-gradient {
+  .pharos-gradient {
     background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--chart-2)) 100%);
   }
   
-  .btg-text-gradient {
+  .pharos-text-gradient {
     background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--chart-2)) 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;

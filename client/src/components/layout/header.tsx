@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { BTGLogo } from '@/components/ui/btg-logo';
+import { PharosLogo } from '@/components/ui/pharos-logo';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -44,7 +44,7 @@ export function Header({ onToggleSidebar }: HeaderProps) {
               <Menu className="h-5 w-5" />
             </Button>
             <div className="ml-2 lg:ml-0">
-              <BTGLogo />
+              <PharosLogo />
             </div>
           </div>
 
