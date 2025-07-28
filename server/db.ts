@@ -1,37 +1,66 @@
-import 'dotenv/config';
-import { Pool, neonConfig } from '@neondatabase/serverless';
-import { drizzle } from 'drizzle-orm/neon-serverless';
-import ws from "ws";
+import { drizzle } from "drizzle-orm/postgres-js";
+import postgres from "postgres";
 import * as schema from "@shared/schema";
+import { sql } from "drizzle-orm";
+import { users } from "@shared/schema";
+import dotenv from "dotenv";
 
-// Configuração para WebSocket (necessário para Neon)
-neonConfig.webSocketConstructor = ws;
+// Carregar variáveis de ambiente
+dotenv.config();
 
-// Função para ler DATABASE_URL do .env prioritariamente
-function getDatabaseUrl() {
-  // Primeiro tenta ler do .env, depois das variáveis de ambiente do sistema
-  const envFileUrl = process.env.DATABASE_URL;
-  
-  if (!envFileUrl) {
-    throw new Error(
-      "DATABASE_URL must be configured in .env file. This project requires PostgreSQL.",
-    );
-  }
-  
-  return envFileUrl;
+console.log(`🔗 Conectando ao PostgreSQL...`);
+
+// Configuração do banco PostgreSQL usando variáveis de ambiente
+if (!process.env.DATABASE_URL) {
+  throw new Error("DATABASE_URL is required");
 }
 
-const databaseUrl = getDatabaseUrl();
+const connection = postgres(process.env.DATABASE_URL, { ssl: 'require' });
 
-// Log para confirmar que está usando o banco configurado no .env
-console.log(`[DB] Using PostgreSQL from .env: ${databaseUrl.split('@')[1]?.split('/')[0] || 'configured database'}`);
+// Configurar Drizzle com PostgreSQL
+export const db = drizzle(connection, { schema });
 
-export const pool = new Pool({ 
-  connectionString: databaseUrl,
-  // Configurações para conexão estável
-  max: 20,
-  idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 2000,
-});
+// Testar conexão
+export async function testConnection() {
+  try {
+    await db.execute(sql`SELECT 1`);
+    console.log("✅ Conexão PostgreSQL estabelecida com sucesso!");
+    return true;
+  } catch (error) {
+    console.error("❌ Erro ao conectar com PostgreSQL:", error);
+    return false;
+  }
+}
 
-export const db = drizzle({ client: pool, schema });
+// Reset completo do banco
+export async function resetDatabase() {
+  const { resetDatabase: resetDB } = await import("./reset-database");
+  return await resetDB();
+}
+
+// Inicializar tabelas usando Drizzle
+export async function initializeTables() {
+  try {
+    console.log("🏗️ Inicializando tabelas do schema PostgreSQL...");
+    
+    // With Drizzle and PostgreSQL Neon, schema is managed by migrations
+    // Check if we need to create initial test data
+    try {
+      const userCount = await db.select().from(users).limit(1);
+      if (userCount.length === 0) {
+        console.log("🌱 Criando dados básicos de teste...");
+        const { createSimpleSeedData } = await import("./simple-postgres-seed");
+        await createSimpleSeedData();
+      }
+    } catch (error) {
+      console.log("🌱 Tabelas não existem ainda, criando dados básicos...");
+      const { createSimpleSeedData } = await import("./simple-postgres-seed");
+      await createSimpleSeedData();
+    }
+    
+    console.log("✅ Inicialização das tabelas concluída!");
+  } catch (error) {
+    console.error("❌ Erro na inicialização do banco:", error);
+    throw error;
+  }
+}
