@@ -11,6 +11,11 @@ Visual Identity: Pharos Capital brand guidelines applied.
 
 ## Recent Changes
 
+- **January 28, 2025**: Fixed income categories classification - removed from 50/30/20 system
+  - Income categories (Salário, Renda Extra, Rendimentos, Outras Receitas) no longer have 50/30/20 classification
+  - Updated database schema to allow null type for income categories
+  - Income categories now properly excluded from budget methodology visualization
+  - Only expense categories (necessities, wants, savings) appear in 50/30/20 budget system
 - **January 28, 2025**: Migration from Replit Agent completed and default categories created
   - Successfully migrated project from Replit Agent to standard Replit environment
   - All required packages installed and working properly with Node.js 20

@@ -157,10 +157,9 @@ const defaultCategories = [
     description: "Poupança para objetivos específicos (casa, carro, aposentadoria)"
   },
 
-  // RECEITAS - Fontes de renda
+  // RECEITAS - Fontes de renda (sem classificação 50/30/20)
   {
     name: "Salário",
-    type: "necessities" as const, // Categoriza como necessidade para o sistema
     transactionType: "income" as const,
     color: "#2E7D32",
     icon: "DollarSign",
@@ -168,7 +167,6 @@ const defaultCategories = [
   },
   {
     name: "Renda Extra",
-    type: "wants" as const, // Categoriza como desejo para o sistema
     transactionType: "income" as const,
     color: "#388E3C",
     icon: "Plus",
@@ -176,7 +174,6 @@ const defaultCategories = [
   },
   {
     name: "Rendimentos",
-    type: "savings" as const, // Categoriza como poupança para o sistema
     transactionType: "income" as const,
     color: "#43A047",
     icon: "PiggyBank",
@@ -184,7 +181,6 @@ const defaultCategories = [
   },
   {
     name: "Outras Receitas",
-    type: "wants" as const,
     transactionType: "income" as const,
     color: "#4CAF50",
     icon: "Wallet",

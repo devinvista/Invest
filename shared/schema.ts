@@ -50,7 +50,7 @@ export const categories = pgTable("categories", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: uuid("user_id").references(() => users.id).notNull(),
   name: text("name").notNull(),
-  type: categoryTypeEnum("type").notNull(), // necessities, wants, savings, income
+  type: categoryTypeEnum("type"), // necessities, wants, savings (null for income)
   transactionType: transactionTypeEnum("transaction_type").notNull(), // income, expense, transfer
   color: text("color").default("#1565C0"),
   icon: text("icon").default("Circle"),
