@@ -11,6 +11,15 @@ Visual Identity: Pharos Capital brand guidelines applied.
 
 ## Recent Changes
 
+- **January 28, 2025**: Enhanced budget system with personalized category allocation and flexible 50/30/20 adjustments
+  - Implemented personalized budget allocation allowing users to distribute values within 50/30/20 framework
+  - Added budget_categories table to store individual category budget allocations
+  - Created three budget types: Default (all months), Specific (single month), and Custom (per category)
+  - Custom budget mode respects 50/30/20 limits while allowing distribution flexibility
+  - Real-time feedback shows used/available amounts and prevents exceeding group limits
+  - Added ability to adjust 50/30/20 values manually with percentage and difference tracking
+  - Implemented "Recalcular 50/30/20" button to restore automatic calculations
+  - Enhanced APIs to support budget categories creation and retrieval
 - **January 28, 2025**: Fixed income categories classification - removed from 50/30/20 system
   - Income categories (Salário, Renda Extra, Rendimentos, Outras Receitas) no longer have 50/30/20 classification
   - Updated database schema to allow null type for income categories

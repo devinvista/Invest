@@ -409,50 +409,132 @@ export function Budget() {
             </div>
 
             {budgetForm.totalIncome && budgetType !== 'custom' && (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                  <label className="text-sm font-medium text-necessities mb-2 block">
-                    Necessidades (50%)
-                  </label>
-                  <Input
-                    type="number"
-                    step="0.01"
-                    value={budgetForm.necessitiesBudget}
-                    onChange={(e) => setBudgetForm(prev => ({ ...prev, necessitiesBudget: e.target.value }))}
-                  />
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Alimentação, moradia, transporte, saúde
+              <div className="space-y-4">
+                <div className="text-center">
+                  <div className="flex items-center justify-center gap-4 mb-2">
+                    <h4 className="text-sm font-medium">Distribuição 50/30/20</h4>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleIncomeChange(budgetForm.totalIncome)}
+                      className="text-xs"
+                    >
+                      Recalcular 50/30/20
+                    </Button>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Valores calculados automaticamente, mas você pode ajustá-los conforme necessário
                   </p>
                 </div>
 
-                <div>
-                  <label className="text-sm font-medium text-wants mb-2 block">
-                    Desejos (30%)
-                  </label>
-                  <Input
-                    type="number"
-                    step="0.01"
-                    value={budgetForm.wantsBudget}
-                    onChange={(e) => setBudgetForm(prev => ({ ...prev, wantsBudget: e.target.value }))}
-                  />
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Entretenimento, compras, hobbies
-                  </p>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label className="text-sm font-medium text-necessities mb-2 block">
+                      Necessidades (50%)
+                    </label>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      value={budgetForm.necessitiesBudget}
+                      onChange={(e) => setBudgetForm(prev => ({ ...prev, necessitiesBudget: e.target.value }))}
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Alimentação, moradia, transporte, saúde
+                    </p>
+                  </div>
+
+                  <div>
+                    <label className="text-sm font-medium text-wants mb-2 block">
+                      Desejos (30%)
+                    </label>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      value={budgetForm.wantsBudget}
+                      onChange={(e) => setBudgetForm(prev => ({ ...prev, wantsBudget: e.target.value }))}
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Entretenimento, compras, hobbies
+                    </p>
+                  </div>
+
+                  <div>
+                    <label className="text-sm font-medium text-savings mb-2 block">
+                      Poupança (20%)
+                    </label>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      value={budgetForm.savingsBudget}
+                      onChange={(e) => setBudgetForm(prev => ({ ...prev, savingsBudget: e.target.value }))}
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Investimentos, reserva de emergência
+                    </p>
+                  </div>
                 </div>
 
-                <div>
-                  <label className="text-sm font-medium text-savings mb-2 block">
-                    Poupança (20%)
-                  </label>
-                  <Input
-                    type="number"
-                    step="0.01"
-                    value={budgetForm.savingsBudget}
-                    onChange={(e) => setBudgetForm(prev => ({ ...prev, savingsBudget: e.target.value }))}
-                  />
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Investimentos, reserva de emergência
-                  </p>
+                {/* Budget validation and summary */}
+                <div className="bg-muted/30 p-4 rounded-lg">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                    <div>
+                      <p className="text-xs text-muted-foreground">Renda Total</p>
+                      <p className="font-medium">{formatCurrency(parseFloat(budgetForm.totalIncome))}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-necessities">Necessidades</p>
+                      <p className="font-medium text-necessities">{formatCurrency(parseFloat(budgetForm.necessitiesBudget) || 0)}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {((parseFloat(budgetForm.necessitiesBudget) || 0) / (parseFloat(budgetForm.totalIncome) || 1) * 100).toFixed(1)}%
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-wants">Desejos</p>
+                      <p className="font-medium text-wants">{formatCurrency(parseFloat(budgetForm.wantsBudget) || 0)}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {((parseFloat(budgetForm.wantsBudget) || 0) / (parseFloat(budgetForm.totalIncome) || 1) * 100).toFixed(1)}%
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-savings">Poupança</p>
+                      <p className="font-medium text-savings">{formatCurrency(parseFloat(budgetForm.savingsBudget) || 0)}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {((parseFloat(budgetForm.savingsBudget) || 0) / (parseFloat(budgetForm.totalIncome) || 1) * 100).toFixed(1)}%
+                      </p>
+                    </div>
+                  </div>
+                  
+                  {/* Show difference from original 50/30/20 if modified */}
+                  {(() => {
+                    const incomeValue = parseFloat(budgetForm.totalIncome) || 0;
+                    const allocation = calculate502020(incomeValue);
+                    const currentTotal = (parseFloat(budgetForm.necessitiesBudget) || 0) + 
+                                       (parseFloat(budgetForm.wantsBudget) || 0) + 
+                                       (parseFloat(budgetForm.savingsBudget) || 0);
+                    const originalTotal = allocation.necessities + allocation.wants + allocation.savings;
+                    const difference = currentTotal - originalTotal;
+                    
+                    if (Math.abs(difference) > 0.01) {
+                      return (
+                        <div className="mt-3 pt-3 border-t border-border">
+                          <div className="flex justify-between items-center text-sm">
+                            <span className="text-muted-foreground">
+                              Diferença do 50/30/20 original:
+                            </span>
+                            <span className={`font-medium ${difference > 0 ? 'text-red-600' : 'text-green-600'}`}>
+                              {difference > 0 ? '+' : ''}{formatCurrency(difference)}
+                            </span>
+                          </div>
+                          {difference > 0 && (
+                            <p className="text-xs text-red-600 mt-1">
+                              Orçamento excede a renda em {formatCurrency(difference)}
+                            </p>
+                          )}
+                        </div>
+                      );
+                    }
+                    return null;
+                  })()}
                 </div>
               </div>
             )}
