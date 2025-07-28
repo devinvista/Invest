@@ -45,6 +45,8 @@ Visual Identity: Pharos Capital brand guidelines applied.
   - Created admin user account (tom/tom123) with working authentication
   - Verified application functionality including login system
   - All core features operational: authentication, database connectivity, API endpoints
+  - Removed conflicting .env file to ensure PostgreSQL environment variables from Replit take precedence
+  - Confirmed project uses only PostgreSQL (no native/local database)
 - **January 28, 2025**: Improved visual experience with soft gradient background
   - Replaced harsh white background with soft blue-gray gradient (from-background via-slate-50 to-blue-50/30)
   - Applied consistent gradient background across all pages (dashboard, investments, accounts, budget, cards, goals, reports, education)
