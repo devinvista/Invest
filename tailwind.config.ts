@@ -51,6 +51,13 @@ export default {
           "4": "var(--chart-4)",
           "5": "var(--chart-5)",
         },
+        success: "var(--success)",
+        warning: "var(--warning)",
+        expense: "var(--expense)",
+        income: "var(--income)",
+        necessities: "var(--necessities)",
+        wants: "var(--wants)",
+        savings: "var(--savings)",
         sidebar: {
           DEFAULT: "var(--sidebar-background)",
           foreground: "var(--sidebar-foreground)",

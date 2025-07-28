@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
+import { BTGLogo } from '@/components/ui/btg-logo';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,7 +13,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Bell, Search, Menu, User, Settings, LogOut, ChartLine } from 'lucide-react';
+import { Bell, Search, Menu, User, Settings, LogOut } from 'lucide-react';
 
 interface HeaderProps {
   onToggleSidebar: () => void;
@@ -29,7 +30,7 @@ export function Header({ onToggleSidebar }: HeaderProps) {
   };
 
   return (
-    <header className="bg-white dark:bg-gray-900 border-b border-border fixed top-0 w-full z-50 h-16">
+    <header className="bg-background border-b border-border fixed top-0 w-full z-50 h-16">
       <div className="px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo and mobile menu */}
@@ -42,9 +43,8 @@ export function Header({ onToggleSidebar }: HeaderProps) {
             >
               <Menu className="h-5 w-5" />
             </Button>
-            <div className="flex items-center ml-2 lg:ml-0">
-              <ChartLine className="h-8 w-8 text-primary mr-3" />
-              <h1 className="text-xl font-bold text-foreground">OrçaFácil</h1>
+            <div className="ml-2 lg:ml-0">
+              <BTGLogo />
             </div>
           </div>
 
