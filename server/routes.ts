@@ -572,21 +572,57 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/budget", async (req: any, res) => {
     try {
-      const budgetData = insertBudgetSchema.parse({ ...req.body, userId: req.userId });
+      const { budgetCategories, ...budgetBody } = req.body;
+      const budgetData = insertBudgetSchema.parse({ ...budgetBody, userId: req.userId });
       const budget = await storage.createBudget(budgetData);
+      
+      // Se foram enviadas categorias personalizadas, salvar elas
+      if (budgetCategories && Array.isArray(budgetCategories)) {
+        await storage.createBudgetCategories(budget.id, budgetCategories);
+      }
       
       console.log(`✅ Orçamento criado/atualizado para usuário ${req.userId}:`, {
         id: budget.id,
         month: budgetData.month,
         year: budgetData.year,
         isDefault: budgetData.isDefault,
-        totalIncome: budgetData.totalIncome
+        totalIncome: budgetData.totalIncome,
+        categoriesCount: budgetCategories?.length || 0
       });
       
       res.json(budget);
     } catch (error) {
       console.error('❌ Erro ao criar orçamento:', error);
       res.status(400).json({ message: "Erro ao criar orçamento", error: error instanceof Error ? error.message : "Erro desconhecido" });
+    }
+  });
+
+  // Budget categories routes
+  app.get("/api/budget/:budgetId/categories", async (req: any, res) => {
+    try {
+      const { budgetId } = req.params;
+      const budgetCategories = await storage.getBudgetCategories(budgetId);
+      res.json(budgetCategories);
+    } catch (error) {
+      console.error('❌ Erro ao carregar categorias do orçamento:', error);
+      res.status(500).json({ message: "Erro ao carregar categorias do orçamento", error: error instanceof Error ? error.message : "Erro desconhecido" });
+    }
+  });
+
+  app.post("/api/budget/:budgetId/categories", async (req: any, res) => {
+    try {
+      const { budgetId } = req.params;
+      const { categories } = req.body;
+      
+      if (!Array.isArray(categories)) {
+        return res.status(400).json({ message: "Categorias devem ser um array" });
+      }
+      
+      await storage.createBudgetCategories(budgetId, categories);
+      res.json({ message: "Categorias do orçamento atualizadas com sucesso" });
+    } catch (error) {
+      console.error('❌ Erro ao salvar categorias do orçamento:', error);
+      res.status(500).json({ message: "Erro ao salvar categorias do orçamento", error: error instanceof Error ? error.message : "Erro desconhecido" });
     }
   });
 

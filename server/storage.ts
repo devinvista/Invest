@@ -1,9 +1,10 @@
 import { 
-  users, accounts, creditCards, categories, transactions, assets, goals, budgets,
+  users, accounts, creditCards, categories, transactions, assets, goals, budgets, budgetCategories,
   type User, type InsertUser, type Account, type InsertAccount, 
   type CreditCard, type InsertCreditCard, type Category, type InsertCategory,
   type Transaction, type InsertTransaction, type Asset, type InsertAsset,
-  type Goal, type InsertGoal, type Budget, type InsertBudget
+  type Goal, type InsertGoal, type Budget, type InsertBudget,
+  type BudgetCategory, type InsertBudgetCategory
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc, gte, lte, sum } from "drizzle-orm";
@@ -55,6 +56,11 @@ export interface IStorage {
   getDefaultBudget(userId: string): Promise<Budget | undefined>;
   createBudget(budget: InsertBudget): Promise<Budget>;
   updateBudgetSpending(budgetId: string, necessities: string, wants: string, savings: string): Promise<void>;
+  
+  // Budget Categories
+  getBudgetCategories(budgetId: string): Promise<(BudgetCategory & { category: Category })[]>;
+  createBudgetCategories(budgetId: string, categories: { categoryId: string; allocatedAmount: string }[]): Promise<void>;
+  deleteBudgetCategories(budgetId: string): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -315,6 +321,39 @@ export class DatabaseStorage implements IStorage {
         savingsSpent: savings
       })
       .where(eq(budgets.id, budgetId));
+  }
+
+  // Budget Categories
+  async getBudgetCategories(budgetId: string): Promise<(BudgetCategory & { category: Category })[]> {
+    const result = await db.select()
+      .from(budgetCategories)
+      .leftJoin(categories, eq(budgetCategories.categoryId, categories.id))
+      .where(eq(budgetCategories.budgetId, budgetId));
+    
+    return result.map(row => ({
+      ...row.budget_categories,
+      category: row.categories!
+    }));
+  }
+
+  async createBudgetCategories(budgetId: string, categoryData: { categoryId: string; allocatedAmount: string }[]): Promise<void> {
+    // Primeiro, remover categorias existentes para este orçamento
+    await this.deleteBudgetCategories(budgetId);
+    
+    // Inserir novas categorias
+    if (categoryData.length > 0) {
+      const budgetCategoryInserts = categoryData.map(cat => ({
+        budgetId,
+        categoryId: cat.categoryId,
+        allocatedAmount: cat.allocatedAmount
+      }));
+      
+      await db.insert(budgetCategories).values(budgetCategoryInserts);
+    }
+  }
+
+  async deleteBudgetCategories(budgetId: string): Promise<void> {
+    await db.delete(budgetCategories).where(eq(budgetCategories.budgetId, budgetId));
   }
 }
 

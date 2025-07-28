@@ -123,6 +123,15 @@ export const budgets = pgTable("budgets", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+// Budget Categories - for individual category budget allocation
+export const budgetCategories = pgTable("budget_categories", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  budgetId: uuid("budget_id").references(() => budgets.id).notNull(),
+  categoryId: uuid("category_id").references(() => categories.id).notNull(),
+  allocatedAmount: decimal("allocated_amount", { precision: 12, scale: 2 }).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 // Relations
 export const usersRelations = relations(users, ({ many }) => ({
   accounts: many(accounts),
@@ -132,6 +141,7 @@ export const usersRelations = relations(users, ({ many }) => ({
   assets: many(assets),
   goals: many(goals),
   budgets: many(budgets),
+  budgetCategories: many(budgetCategories),
 }));
 
 export const accountsRelations = relations(accounts, ({ one, many }) => ({
@@ -164,8 +174,14 @@ export const goalsRelations = relations(goals, ({ one }) => ({
   user: one(users, { fields: [goals.userId], references: [users.id] }),
 }));
 
-export const budgetsRelations = relations(budgets, ({ one }) => ({
+export const budgetsRelations = relations(budgets, ({ one, many }) => ({
   user: one(users, { fields: [budgets.userId], references: [users.id] }),
+  budgetCategories: many(budgetCategories),
+}));
+
+export const budgetCategoriesRelations = relations(budgetCategories, ({ one }) => ({
+  budget: one(budgets, { fields: [budgetCategories.budgetId], references: [budgets.id] }),
+  category: one(categories, { fields: [budgetCategories.categoryId], references: [categories.id] }),
 }));
 
 // Insert schemas
@@ -216,6 +232,11 @@ export const insertBudgetSchema = createInsertSchema(budgets)
     wantsBudget: z.union([z.string(), z.number()]).transform(val => val.toString()),
     savingsBudget: z.union([z.string(), z.number()]).transform(val => val.toString()),
   });
+export const insertBudgetCategorySchema = createInsertSchema(budgetCategories)
+  .omit({ id: true, createdAt: true })
+  .extend({
+    allocatedAmount: z.union([z.string(), z.number()]).transform(val => val.toString()),
+  });
 
 // Types
 export type User = typeof users.$inferSelect;
@@ -234,3 +255,5 @@ export type Goal = typeof goals.$inferSelect;
 export type InsertGoal = z.infer<typeof insertGoalSchema>;
 export type Budget = typeof budgets.$inferSelect;
 export type InsertBudget = z.infer<typeof insertBudgetSchema>;
+export type BudgetCategory = typeof budgetCategories.$inferSelect;
+export type InsertBudgetCategory = z.infer<typeof insertBudgetCategorySchema>;

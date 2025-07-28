@@ -18,7 +18,7 @@ export function Budget() {
   const [selectedMonth, setSelectedMonth] = useState(currentDate.getMonth() + 1);
   const [selectedYear, setSelectedYear] = useState(currentDate.getFullYear());
   const [isEditing, setIsEditing] = useState(false);
-  const [budgetType, setBudgetType] = useState<'default' | 'specific'>('default');
+  const [budgetType, setBudgetType] = useState<'default' | 'specific' | 'custom'>('default');
   const [budgetForm, setBudgetForm] = useState({
     totalIncome: '',
     necessitiesBudget: '',
@@ -26,6 +26,7 @@ export function Budget() {
     savingsBudget: '',
     isDefault: true,
   });
+  const [customCategoryBudgets, setCustomCategoryBudgets] = useState<{[categoryId: string]: string}>({});
 
   const { data: budget, isLoading } = useQuery<any>({
     queryKey: ['/api/budget', selectedMonth, selectedYear],
@@ -98,21 +99,86 @@ export function Budget() {
     });
   };
 
-  const handleBudgetTypeChange = (type: 'default' | 'specific') => {
+  const handleBudgetTypeChange = (type: 'default' | 'specific' | 'custom') => {
     setBudgetType(type);
     setBudgetForm({
       ...budgetForm,
       isDefault: type === 'default',
     });
+    
+    // Se mudou para personalizado, calcular orçamento inicial por categoria
+    if (type === 'custom' && budgetForm.totalIncome) {
+      const incomeValue = parseFloat(budgetForm.totalIncome);
+      const allocation = calculate502020(incomeValue);
+      
+      // Distribuir valores por categoria de forma proporcional
+      const expenseCategories = categories.filter(cat => cat.type && cat.type !== 'income');
+      const necessitiesCategories = expenseCategories.filter(cat => cat.type === 'necessities');
+      const wantsCategories = expenseCategories.filter(cat => cat.type === 'wants');
+      const savingsCategories = expenseCategories.filter(cat => cat.type === 'savings');
+      
+      const newCustomBudgets: {[categoryId: string]: string} = {};
+      
+      // Distribuir valores proporcionalmente entre categorias
+      necessitiesCategories.forEach(cat => {
+        newCustomBudgets[cat.id] = (allocation.necessities / necessitiesCategories.length).toFixed(2);
+      });
+      wantsCategories.forEach(cat => {
+        newCustomBudgets[cat.id] = (allocation.wants / wantsCategories.length).toFixed(2);
+      });
+      savingsCategories.forEach(cat => {
+        newCustomBudgets[cat.id] = (allocation.savings / savingsCategories.length).toFixed(2);
+      });
+      
+      setCustomCategoryBudgets(newCustomBudgets);
+    }
   };
 
   const handleCreateBudget = () => {
-    createBudgetMutation.mutate({
+    const budgetData = {
       totalIncome: parseFloat(budgetForm.totalIncome),
       necessitiesBudget: parseFloat(budgetForm.necessitiesBudget),
       wantsBudget: parseFloat(budgetForm.wantsBudget),
       savingsBudget: parseFloat(budgetForm.savingsBudget),
+    };
+    
+    // Se for orçamento personalizado, incluir categorias individuais
+    if (budgetType === 'custom') {
+      const budgetCategories = Object.entries(customCategoryBudgets)
+        .filter(([_, amount]) => parseFloat(amount) > 0)
+        .map(([categoryId, amount]) => ({
+          categoryId,
+          allocatedAmount: amount
+        }));
+      
+      createBudgetMutation.mutate({
+        ...budgetData,
+        budgetCategories
+      });
+    } else {
+      createBudgetMutation.mutate(budgetData);
+    }
+  };
+  
+  const handleCustomBudgetChange = (categoryId: string, amount: string) => {
+    setCustomCategoryBudgets(prev => ({
+      ...prev,
+      [categoryId]: amount
+    }));
+  };
+  
+  const calculateCustomTotals = () => {
+    const expenseCategories = categories.filter(cat => cat.type && cat.type !== 'income');
+    const totals = { necessities: 0, wants: 0, savings: 0 };
+    
+    expenseCategories.forEach(cat => {
+      const amount = parseFloat(customCategoryBudgets[cat.id] || '0');
+      if (cat.type === 'necessities') totals.necessities += amount;
+      else if (cat.type === 'wants') totals.wants += amount;
+      else if (cat.type === 'savings') totals.savings += amount;
     });
+    
+    return totals;
   };
 
   // Check if using default budget
@@ -247,7 +313,7 @@ export function Budget() {
               <label className="text-sm font-medium text-foreground mb-3 block">
                 Tipo de Orçamento
               </label>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-3 gap-4">
                 <Card 
                   className={`cursor-pointer border-2 transition-all ${
                     budgetType === 'default' 
@@ -285,6 +351,25 @@ export function Budget() {
                     </div>
                   </CardContent>
                 </Card>
+                
+                <Card 
+                  className={`cursor-pointer border-2 transition-all ${
+                    budgetType === 'custom' 
+                      ? 'border-primary bg-primary/5' 
+                      : 'border-border hover:border-primary/30'
+                  }`}
+                  onClick={() => handleBudgetTypeChange('custom')}
+                >
+                  <CardContent className="pt-4 pb-4">
+                    <div className="text-center">
+                      <Edit3 className="h-6 w-6 mx-auto mb-2 text-primary" />
+                      <h4 className="font-medium text-sm">Personalizado</h4>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Por categoria individual
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
               </div>
             </div>
 
@@ -301,7 +386,7 @@ export function Budget() {
               />
             </div>
 
-            {budgetForm.totalIncome && (
+            {budgetForm.totalIncome && budgetType !== 'custom' && (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                   <label className="text-sm font-medium text-necessities mb-2 block">
@@ -346,6 +431,81 @@ export function Budget() {
                   <p className="text-xs text-muted-foreground mt-1">
                     Investimentos, reserva de emergência
                   </p>
+                </div>
+              </div>
+            )}
+
+            {budgetForm.totalIncome && budgetType === 'custom' && (
+              <div className="space-y-6">
+                <div className="text-center">
+                  <h4 className="text-sm font-medium mb-2">Distribuição Personalizada por Categoria</h4>
+                  <p className="text-xs text-muted-foreground">
+                    Configure o valor específico para cada categoria de despesa
+                  </p>
+                </div>
+
+                {/* Custom category budget inputs */}
+                {['necessities', 'wants', 'savings'].map(type => {
+                  const typeCategories = categories.filter(cat => cat.type === type);
+                  const customTotals = calculateCustomTotals();
+                  const typeTotal = customTotals[type as keyof typeof customTotals];
+                  const typeColor = type === 'necessities' ? 'text-necessities' : 
+                                  type === 'wants' ? 'text-wants' : 'text-savings';
+                  const typeLabel = type === 'necessities' ? 'Necessidades' : 
+                                   type === 'wants' ? 'Desejos' : 'Poupança';
+
+                  return (
+                    <div key={type} className="space-y-3">
+                      <div className="flex justify-between items-center">
+                        <h5 className={`font-medium text-sm ${typeColor}`}>
+                          {typeLabel}
+                        </h5>
+                        <Badge variant="outline" className={typeColor}>
+                          Total: {formatCurrency(typeTotal)}
+                        </Badge>
+                      </div>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                        {typeCategories.map(category => (
+                          <div key={category.id} className="space-y-1">
+                            <label className="text-xs font-medium text-foreground block">
+                              {category.name}
+                            </label>
+                            <Input
+                              type="number"
+                              step="0.01"
+                              placeholder="0,00"
+                              value={customCategoryBudgets[category.id] || ''}
+                              onChange={(e) => handleCustomBudgetChange(category.id, e.target.value)}
+                              className="text-sm"
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
+                
+                {/* Summary */}
+                <div className="bg-muted/50 p-4 rounded-lg">
+                  <div className="grid grid-cols-4 gap-4 text-center">
+                    <div>
+                      <p className="text-xs text-muted-foreground">Renda Total</p>
+                      <p className="font-medium">{formatCurrency(parseFloat(budgetForm.totalIncome))}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-necessities">Necessidades</p>
+                      <p className="font-medium text-necessities">{formatCurrency(calculateCustomTotals().necessities)}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-wants">Desejos</p>
+                      <p className="font-medium text-wants">{formatCurrency(calculateCustomTotals().wants)}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-savings">Poupança</p>
+                      <p className="font-medium text-savings">{formatCurrency(calculateCustomTotals().savings)}</p>
+                    </div>
+                  </div>
                 </div>
               </div>
             )}
