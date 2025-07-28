@@ -73,7 +73,7 @@ export function Investments() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
+      <div className="min-h-screen bg-gradient-to-br from-background via-slate-50 to-blue-50/30">
         <div className="p-6 space-y-8">
           <div className="animate-pulse">
             <div className="h-32 bg-muted rounded-2xl mb-6"></div>
@@ -188,7 +188,7 @@ export function Investments() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
+    <div className="min-h-screen bg-gradient-to-br from-background via-slate-50 to-blue-50/30">
       <div className="p-6 space-y-6">
         {/* Hero Section */}
         <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary via-primary to-chart-2 p-8 text-white">

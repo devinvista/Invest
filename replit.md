@@ -11,6 +11,11 @@ Visual Identity: Pharos Capital brand guidelines applied.
 
 ## Recent Changes
 
+- **January 28, 2025**: Improved visual experience with soft gradient background
+  - Replaced harsh white background with soft blue-gray gradient (from-background via-slate-50 to-blue-50/30)
+  - Applied consistent gradient background across all pages (dashboard, investments, accounts, budget, cards, goals, reports, education)
+  - Enhanced overall visual comfort while maintaining professional light tone
+  - Updated root CSS background color to soft light blue-gray (hsl(210, 20%, 98%))
 - **January 28, 2025**: Created comprehensive investments page
   - Developed modern investments dashboard with glassmorphism design
   - Implemented portfolio overview with real-time data visualization

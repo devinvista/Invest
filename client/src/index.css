@@ -6,7 +6,7 @@
 
 :root {
   /* Pharos Capital Brand Colors - Light Mode */
-  --background: hsl(0, 0%, 100%); /* FFFFFF */
+  --background: hsl(210, 20%, 98%); /* F8FAFB - Soft light blue-gray */
   --foreground: hsl(220, 85%, 8%); /* 05132A - Pharos Dark Blue */
   --muted: hsl(219, 100%, 97%); /* D2E5FF - Light Blue */
   --muted-foreground: hsl(218, 62%, 57%); /* 549CFF - Medium Blue */

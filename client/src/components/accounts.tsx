@@ -120,13 +120,15 @@ export function Accounts() {
 
   if (isLoading) {
     return (
-      <div className="p-6">
-        <div className="animate-pulse space-y-6">
-          <div className="h-8 w-64 bg-muted rounded"></div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {[...Array(4)].map((_, i) => (
-              <div key={i} className="h-32 bg-muted rounded-xl"></div>
-            ))}
+      <div className="min-h-screen bg-gradient-to-br from-background via-slate-50 to-blue-50/30">
+        <div className="p-6">
+          <div className="animate-pulse space-y-6">
+            <div className="h-8 w-64 bg-muted rounded"></div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {[...Array(4)].map((_, i) => (
+                <div key={i} className="h-32 bg-muted rounded-xl"></div>
+              ))}
+            </div>
           </div>
         </div>
       </div>
@@ -134,7 +136,8 @@ export function Accounts() {
   }
 
   return (
-    <div className="p-6 space-y-8">
+    <div className="min-h-screen bg-gradient-to-br from-background via-slate-50 to-blue-50/30">
+      <div className="p-6 space-y-8">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
         <div>
@@ -324,6 +327,7 @@ export function Accounts() {
           </Form>
         </DialogContent>
       </Dialog>
+      </div>
     </div>
   );
 }
