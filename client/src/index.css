@@ -385,4 +385,23 @@
   .chart-gradient-2 {
     background: linear-gradient(135deg, hsl(var(--chart-2)), hsl(var(--chart-3)));
   }
+
+  /* High contrast text and numbers for charts */
+  .chart-number-vibrant {
+    color: hsl(var(--vibrant-purple));
+    font-weight: 700;
+    text-shadow: 0 0 10px hsl(var(--vibrant-purple) / 0.3);
+  }
+  
+  .chart-label-vibrant {
+    color: hsl(var(--vibrant-teal));
+    font-weight: 600;
+    font-size: 13px;
+  }
+  
+  .tooltip-vibrant {
+    background: linear-gradient(135deg, hsl(var(--card)), hsl(var(--vibrant-purple) / 0.05));
+    border: 2px solid hsl(var(--vibrant-purple) / 0.5);
+    box-shadow: 0 12px 30px hsl(var(--vibrant-purple) / 0.25);
+  }
 }

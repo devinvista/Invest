@@ -126,7 +126,7 @@ export function Dashboard() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="bg-white/10 rounded-xl p-4 backdrop-blur-sm">
                 <p className="text-white/80 text-sm mb-1">Patrimônio Total</p>
-                <p className="text-2xl font-bold">
+                <p className="text-2xl font-bold chart-number-vibrant">
                   {balanceVisible ? formatCurrency(totalBalance) : '••••••'}
                 </p>
                 <div className="flex items-center mt-2 text-sm">
@@ -137,7 +137,7 @@ export function Dashboard() {
               
               <div className="bg-white/10 rounded-xl p-4 backdrop-blur-sm">
                 <p className="text-white/80 text-sm mb-1">Receitas</p>
-                <p className="text-2xl font-bold">
+                <p className="text-2xl font-bold text-vibrant-lime">
                   {balanceVisible ? formatCurrency(monthlyIncome) : '••••••'}
                 </p>
                 <p className="text-sm text-white/70 mt-2">Este mês</p>
@@ -145,7 +145,7 @@ export function Dashboard() {
               
               <div className="bg-white/10 rounded-xl p-4 backdrop-blur-sm">
                 <p className="text-white/80 text-sm mb-1">Despesas</p>
-                <p className="text-2xl font-bold">
+                <p className="text-2xl font-bold text-vibrant-pink">
                   {balanceVisible ? formatCurrency(monthlyExpenses) : '••••••'}
                 </p>
                 <p className="text-sm text-white/70 mt-2">Este mês</p>
@@ -209,26 +209,36 @@ export function Dashboard() {
                         <stop offset="95%" stopColor="hsl(var(--vibrant-pink))" stopOpacity={0}/>
                       </linearGradient>
                     </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--vibrant-purple) / 0.2)" strokeWidth={1} />
                     <XAxis 
                       dataKey="month" 
                       axisLine={false}
                       tickLine={false}
-                      tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }}
+                      tick={{ fontSize: 13, fill: 'hsl(var(--vibrant-purple))', fontWeight: 600 }}
                     />
                     <YAxis 
                       axisLine={false}
                       tickLine={false}
-                      tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }}
+                      tick={{ fontSize: 13, fill: 'hsl(var(--vibrant-purple))', fontWeight: 600 }}
                       tickFormatter={(value) => formatCurrency(value)}
                     />
                     <Tooltip 
                       formatter={(value) => [formatCurrency(Number(value)), 'Patrimônio']}
-                      labelStyle={{ color: 'hsl(var(--foreground))' }}
+                      labelStyle={{ 
+                        color: 'hsl(var(--vibrant-purple))', 
+                        fontWeight: 'bold',
+                        fontSize: '14px'
+                      }}
                       contentStyle={{ 
                         backgroundColor: 'hsl(var(--card))', 
-                        border: '1px solid hsl(var(--border))',
-                        borderRadius: '8px'
+                        border: '2px solid hsl(var(--vibrant-purple))',
+                        borderRadius: '12px',
+                        boxShadow: '0 8px 25px hsl(var(--vibrant-purple) / 0.2)'
+                      }}
+                      itemStyle={{
+                        color: 'hsl(var(--vibrant-pink))',
+                        fontWeight: 'bold',
+                        fontSize: '15px'
                       }}
                     />
                     <Area 
@@ -268,7 +278,25 @@ export function Dashboard() {
                             <Cell key={`cell-${index}`} fill={entry.color} />
                           ))}
                         </Pie>
-                        <Tooltip formatter={(value) => formatCurrency(Number(value))} />
+                        <Tooltip 
+                          formatter={(value) => [formatCurrency(Number(value)), 'Valor']}
+                          labelStyle={{ 
+                            color: 'hsl(var(--vibrant-teal))', 
+                            fontWeight: 'bold',
+                            fontSize: '14px'
+                          }}
+                          contentStyle={{ 
+                            backgroundColor: 'hsl(var(--card))', 
+                            border: '2px solid hsl(var(--vibrant-teal))',
+                            borderRadius: '12px',
+                            boxShadow: '0 8px 25px hsl(var(--vibrant-teal) / 0.2)'
+                          }}
+                          itemStyle={{
+                            color: 'hsl(var(--vibrant-lime))',
+                            fontWeight: 'bold',
+                            fontSize: '15px'
+                          }}
+                        />
                       </RechartsPieChart>
                     </ResponsiveContainer>
                   </div>
@@ -277,12 +305,12 @@ export function Dashboard() {
                       <div key={index} className="flex items-center justify-between">
                         <div className="flex items-center space-x-2">
                           <div 
-                            className="w-3 h-3 rounded-full" 
+                            className="w-4 h-4 rounded-full shadow-lg border-2 border-white dark:border-gray-800" 
                             style={{ backgroundColor: item.color }}
                           />
-                          <span className="text-sm font-medium">{item.name}</span>
+                          <span className="text-sm font-semibold text-foreground">{item.name}</span>
                         </div>
-                        <span className="text-sm text-muted-foreground">
+                        <span className="text-sm font-bold" style={{ color: item.color }}>
                           {formatCurrency(item.value)}
                         </span>
                       </div>
@@ -324,19 +352,19 @@ export function Dashboard() {
                   recentTransactions.slice(0, 5).map((transaction, index) => (
                     <div key={index} className="flex items-center justify-between p-3 rounded-lg hover:bg-accent transition-colors">
                       <div className="flex items-center space-x-3">
-                        <div className={`p-2 rounded-lg ${transaction.type === 'income' ? 'bg-success/10' : 'bg-expense/10'}`}>
+                        <div className={`p-2 rounded-lg ${transaction.type === 'income' ? 'bg-vibrant-lime/20' : 'bg-vibrant-pink/20'}`}>
                           {transaction.type === 'income' ? (
-                            <ArrowUpCircle className="h-4 w-4 text-success" />
+                            <ArrowUpCircle className="h-4 w-4 text-vibrant-lime" />
                           ) : (
-                            <ArrowDownCircle className="h-4 w-4 text-expense" />
+                            <ArrowDownCircle className="h-4 w-4 text-vibrant-pink" />
                           )}
                         </div>
                         <div>
-                          <p className="font-medium text-sm">{transaction.description}</p>
-                          <p className="text-xs text-muted-foreground">{formatDate(transaction.date)}</p>
+                          <p className="font-semibold text-sm text-foreground">{transaction.description}</p>
+                          <p className="text-xs font-medium text-vibrant-teal">{formatDate(transaction.date)}</p>
                         </div>
                       </div>
-                      <div className={`font-semibold ${transaction.type === 'income' ? 'text-success' : 'text-expense'}`}>
+                      <div className={`font-bold text-lg ${transaction.type === 'income' ? 'text-vibrant-lime' : 'text-vibrant-pink'}`}>
                         {transaction.type === 'income' ? '+' : '-'}{formatCurrency(Math.abs(transaction.amount))}
                       </div>
                     </div>
@@ -374,17 +402,20 @@ export function Dashboard() {
                       <div key={index} className="space-y-3">
                         <div className="flex items-center justify-between">
                           <div>
-                            <p className="font-medium text-sm">{goal.name}</p>
-                            <p className="text-xs text-muted-foreground">
+                            <p className="font-semibold text-sm text-foreground">{goal.name}</p>
+                            <p className="text-xs font-medium text-vibrant-orange">
                               {formatCurrency(goal.currentAmount)} de {formatCurrency(goal.targetAmount)}
                             </p>
                           </div>
-                          <Badge variant={progress >= 100 ? 'default' : 'secondary'}>
+                          <Badge 
+                            variant={progress >= 100 ? 'default' : 'secondary'}
+                            className={`font-bold ${progress >= 100 ? 'bg-vibrant-lime text-black' : 'bg-vibrant-orange text-white'}`}
+                          >
                             {Math.round(progress)}%
                           </Badge>
                         </div>
                         <Progress value={Math.min(progress, 100)} gradient="orange" className="h-2" />
-                        <p className="text-xs text-muted-foreground">
+                        <p className="text-xs font-medium text-vibrant-teal">
                           Meta para {formatDate(goal.targetDate)}
                         </p>
                       </div>
