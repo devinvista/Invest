@@ -280,6 +280,85 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Investment routes
+  app.get("/api/investments", async (req: any, res) => {
+    try {
+      const assets = await storage.getUserAssets(req.userId);
+      const totalValue = assets.reduce((sum, asset) => sum + parseFloat(asset.currentValue), 0);
+      const appliedValue = assets.reduce((sum, asset) => sum + parseFloat(asset.purchaseValue), 0);
+      const totalProfit = totalValue - appliedValue;
+      const profitabilityPercent = appliedValue > 0 ? (totalProfit / appliedValue) * 100 : 0;
+
+      // Mock portfolio evolution data
+      const portfolioEvolution = [
+        { month: 'Jul/24', applied: 100000, profit: 105000 },
+        { month: 'Ago/24', applied: 110000, profit: 115000 },
+        { month: 'Set/24', applied: 120000, profit: 125000 },
+        { month: 'Out/24', applied: 130000, profit: 135000 },
+        { month: 'Nov/24', applied: 140000, profit: 145000 },
+        { month: 'Dez/24', applied: 150000, profit: 155000 },
+        { month: 'Jan/25', applied: appliedValue, profit: totalValue }
+      ];
+
+      // Group assets by type for distribution
+      const assetDistribution = {};
+      const typeColors = {
+        'stock': '#3B82F6',
+        'crypto': '#F59E0B',
+        'bond': '#10B981',
+        'fund': '#EF4444',
+        'etf': '#8B5CF6',
+        'other': '#6B7280'
+      };
+
+      assets.forEach(asset => {
+        const type = asset.type || 'other';
+        const typeName = {
+          'stock': 'Ações',
+          'crypto': 'Criptomoedas', 
+          'bond': 'Renda Fixa',
+          'fund': 'Fundos',
+          'etf': 'ETFs',
+          'other': 'Outros'
+        }[type] || 'Outros';
+
+        if (!assetDistribution[type]) {
+          assetDistribution[type] = {
+            name: typeName,
+            value: 0,
+            percentage: 0,
+            color: typeColors[type] || typeColors.other
+          };
+        }
+        assetDistribution[type].value += parseFloat(asset.currentValue);
+      });
+
+      // Calculate percentages
+      Object.values(assetDistribution).forEach((dist: any) => {
+        dist.percentage = totalValue > 0 ? (dist.value / totalValue) * 100 : 0;
+      });
+
+      res.json({
+        totalValue,
+        appliedValue,
+        totalProfit,
+        profitabilityPercent,
+        variation: totalProfit,
+        variationPercent: profitabilityPercent,
+        assets: assets.map(asset => ({
+          ...asset,
+          variationPercent: parseFloat(asset.purchasePrice) > 0 ? 
+            ((parseFloat(asset.currentPrice) - parseFloat(asset.purchasePrice)) / parseFloat(asset.purchasePrice)) * 100 : 0,
+          percentage: totalValue > 0 ? (parseFloat(asset.currentValue) / totalValue) * 100 : 0
+        })),
+        portfolioEvolution,
+        assetDistribution: Object.values(assetDistribution)
+      });
+    } catch (error) {
+      res.status(500).json({ message: "Erro ao carregar investimentos", error: error instanceof Error ? error.message : "Erro desconhecido" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

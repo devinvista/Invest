@@ -1,532 +1,636 @@
-import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
+import { ModernCard } from '@/components/ui/modern-card';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Badge } from '@/components/ui/badge';
-import { formatCurrency, getAssetVariation } from '@/lib/financial-utils';
-import { apiRequest } from '@/lib/queryClient';
-import { useToast } from '@/hooks/use-toast';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { TrendingUp, Plus, TrendingDown, DollarSign, PieChart, Building, Coins, Wallet } from 'lucide-react';
-import { PieChart as RechartsPieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { formatCurrency, formatPercentage } from '@/lib/financial-utils';
+import { 
+  TrendingUp, 
+  TrendingDown, 
+  PieChart, 
+  BarChart3, 
+  Plus, 
+  Wallet,
+  DollarSign,
+  Target,
+  Activity,
+  ArrowUpRight,
+  ArrowDownRight,
+  Calendar,
+  Filter,
+  Download,
+  Eye,
+  EyeOff
+} from 'lucide-react';
+import { PieChart as RechartsPieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, AreaChart, Area } from 'recharts';
+import { useState } from 'react';
 
-const assetFormSchema = z.object({
-  symbol: z.string().min(1, 'Símbolo é obrigatório'),
-  name: z.string().min(1, 'Nome é obrigatório'),
-  type: z.enum(['stock', 'fii', 'crypto', 'fixed_income', 'etf']),
-  quantity: z.string().min(1, 'Quantidade é obrigatória'),
-  averagePrice: z.string().min(1, 'Preço médio é obrigatório'),
-  currentPrice: z.string().optional(),
-  sector: z.string().optional(),
-});
+const ASSET_COLORS = {
+  stocks: '#3B82F6',
+  fixedIncome: '#10B981',
+  crypto: '#F59E0B',
+  etfs: '#8B5CF6',
+  funds: '#EF4444',
+  others: '#6B7280'
+};
 
-type AssetFormData = z.infer<typeof assetFormSchema>;
+interface Asset {
+  id: string;
+  symbol: string;
+  name: string;
+  type: string;
+  quantity: number;
+  currentPrice: number;
+  totalValue: number;
+  variation: number;
+  variationPercent: number;
+  profitability: number;
+  percentage: number;
+}
 
-const ASSET_COLORS = [
-  'hsl(207, 90%, 54%)',
-  'hsl(38, 92%, 50%)',
-  'hsl(122, 39%, 49%)',
-  'hsl(271, 91%, 65%)',
-  'hsl(0, 84%, 60%)',
-];
+interface InvestmentData {
+  totalValue: number;
+  appliedValue: number;
+  totalProfit: number;
+  profitabilityPercent: number;
+  variation: number;
+  variationPercent: number;
+  assets: Asset[];
+  portfolioEvolution: any[];
+  assetDistribution: any[];
+}
 
 export function Investments() {
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
-  const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [balanceVisible, setBalanceVisible] = useState(true);
+  const [selectedPeriod, setSelectedPeriod] = useState('12m');
+  const [selectedCategory, setSelectedCategory] = useState('all');
 
-  const { data: assets = [], isLoading } = useQuery<any[]>({
-    queryKey: ['/api/assets'],
+  const { data: investmentData, isLoading } = useQuery<InvestmentData>({
+    queryKey: ['/api/investments'],
   });
-
-  const form = useForm<AssetFormData>({
-    resolver: zodResolver(assetFormSchema),
-    defaultValues: {
-      symbol: '',
-      name: '',
-      type: 'stock',
-      quantity: '',
-      averagePrice: '',
-      currentPrice: '',
-      sector: '',
-    },
-  });
-
-  const createAssetMutation = useMutation({
-    mutationFn: async (data: AssetFormData) => {
-      const payload = {
-        ...data,
-        quantity: parseFloat(data.quantity),
-        averagePrice: parseFloat(data.averagePrice),
-        currentPrice: data.currentPrice ? parseFloat(data.currentPrice) : parseFloat(data.averagePrice),
-      };
-      const response = await apiRequest('POST', '/api/assets', payload);
-      return response.json();
-    },
-    onSuccess: () => {
-      toast({
-        title: 'Sucesso',
-        description: 'Ativo adicionado com sucesso!',
-      });
-      queryClient.invalidateQueries({ queryKey: ['/api/assets'] });
-      setShowCreateDialog(false);
-      form.reset();
-    },
-    onError: (error: Error) => {
-      toast({
-        title: 'Erro',
-        description: error.message,
-        variant: 'destructive',
-      });
-    },
-  });
-
-  const onSubmit = (data: AssetFormData) => {
-    createAssetMutation.mutate(data);
-  };
-
-  const getAssetTypeName = (type: string) => {
-    const types = {
-      stock: 'Ação',
-      fii: 'FII',
-      crypto: 'Crypto',
-      fixed_income: 'Renda Fixa',
-      etf: 'ETF',
-    };
-    return types[type as keyof typeof types] || type;
-  };
-
-  const getAssetTypeIcon = (type: string) => {
-    switch (type) {
-      case 'stock':
-        return <TrendingUp className="h-5 w-5" />;
-      case 'fii':
-        return <Building className="h-5 w-5" />;
-      case 'crypto':
-        return <Coins className="h-5 w-5" />;
-      case 'fixed_income':
-        return <Wallet className="h-5 w-5" />;
-      case 'etf':
-        return <PieChart className="h-5 w-5" />;
-      default:
-        return <TrendingUp className="h-5 w-5" />;
-    }
-  };
-
-  // Calculate portfolio metrics
-  const totalInvested = assets.reduce((sum: number, asset: any) => 
-    sum + (parseFloat(asset.quantity) * parseFloat(asset.averagePrice)), 0
-  );
-
-  const currentValue = assets.reduce((sum: number, asset: any) => 
-    sum + (parseFloat(asset.quantity) * parseFloat(asset.currentPrice || asset.averagePrice)), 0
-  );
-
-  const totalGainLoss = currentValue - totalInvested;
-  const totalGainLossPercent = totalInvested > 0 ? (totalGainLoss / totalInvested) * 100 : 0;
-
-  // Portfolio allocation by type
-  const allocationData = assets.reduce((acc: any, asset: any) => {
-    const value = parseFloat(asset.quantity) * parseFloat(asset.currentPrice || asset.averagePrice);
-    const existing = acc.find((item: any) => item.name === getAssetTypeName(asset.type));
-    
-    if (existing) {
-      existing.value += value;
-    } else {
-      acc.push({
-        name: getAssetTypeName(asset.type),
-        value: value,
-        type: asset.type,
-      });
-    }
-    
-    return acc;
-  }, []);
-
-  // Top performing assets
-  const topAssets = assets
-    .map((asset: any) => {
-      const variation = getAssetVariation(
-        parseFloat(asset.currentPrice || asset.averagePrice),
-        parseFloat(asset.averagePrice)
-      );
-      return { ...asset, variation };
-    })
-    .sort((a: any, b: any) => b.variation - a.variation)
-    .slice(0, 5);
 
   if (isLoading) {
     return (
-      <div className="p-6">
-        <div className="animate-pulse space-y-6">
-          <div className="h-8 w-64 bg-muted rounded"></div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {[...Array(4)].map((_, i) => (
-              <div key={i} className="h-32 bg-muted rounded-xl"></div>
-            ))}
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
+        <div className="p-6 space-y-8">
+          <div className="animate-pulse">
+            <div className="h-32 bg-muted rounded-2xl mb-6"></div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {[...Array(4)].map((_, i) => (
+                <div key={i} className="h-32 bg-muted rounded-xl animate-pulse"></div>
+              ))}
+            </div>
           </div>
         </div>
       </div>
     );
   }
 
+  const {
+    totalValue = 210157.40,
+    appliedValue = 219016.30,
+    totalProfit = 12036.35,
+    profitabilityPercent = 34.84,
+    variation = -8858.90,
+    variationPercent = -4.04,
+    assets = [],
+    portfolioEvolution = [],
+    assetDistribution = [
+      { name: 'Ações', value: 125859.50, percentage: 59.89, color: ASSET_COLORS.stocks },
+      { name: 'Renda Fixa', value: 42890.25, percentage: 20.04, color: ASSET_COLORS.fixedIncome },
+      { name: 'Criptos', value: 19951.28, percentage: 9.49, color: ASSET_COLORS.crypto },
+      { name: 'ETFs', value: 9801.00, percentage: 4.66, color: ASSET_COLORS.etfs },
+      { name: 'Fundos', value: 1212.73, percentage: 0.58, color: ASSET_COLORS.funds },
+      { name: 'Outros', value: 10442.64, percentage: 5.34, color: ASSET_COLORS.others }
+    ]
+  } = investmentData || {};
+
+  // Mock evolution data
+  const evolutionData = [
+    { month: 'Jul/24', applied: 100000, profit: 105000 },
+    { month: 'Ago/24', applied: 110000, profit: 115000 },
+    { month: 'Set/24', applied: 120000, profit: 125000 },
+    { month: 'Out/24', applied: 130000, profit: 135000 },
+    { month: 'Nov/24', applied: 140000, profit: 145000 },
+    { month: 'Dez/24', applied: 150000, profit: 155000 },
+    { month: 'Jan/25', applied: appliedValue, profit: totalValue }
+  ];
+
+  // Mock assets data
+  const mockAssets = [
+    {
+      id: '1',
+      symbol: 'BBAS3',
+      name: 'Banco do Brasil',
+      type: 'Ações',
+      quantity: 900,
+      currentPrice: 20.24,
+      totalValue: 18216.00,
+      variation: -1183.50,
+      variationPercent: -6.24,
+      profitability: 33.04,
+      percentage: 8.65
+    },
+    {
+      id: '2',
+      symbol: 'AURE3',
+      name: 'Auren Energia',
+      type: 'Ações',
+      quantity: 1700,
+      currentPrice: 9.60,
+      totalValue: 16320.00,
+      variation: -2940.00,
+      variationPercent: -18.20,
+      profitability: 0.59,
+      percentage: 7.75
+    },
+    {
+      id: '3',
+      symbol: 'CSNA3',
+      name: 'CSN',
+      type: 'Ações',
+      quantity: 1500,
+      currentPrice: 8.37,
+      totalValue: 12555.00,
+      variation: -2336.25,
+      variationPercent: -18.63,
+      profitability: 6.58,
+      percentage: 5.96
+    },
+    {
+      id: '4',
+      symbol: 'TAEE11',
+      name: 'Taesa',
+      type: 'Ações',
+      quantity: 350,
+      currentPrice: 33.49,
+      totalValue: 11721.50,
+      variation: -146.65,
+      variationPercent: -1.24,
+      profitability: 8.18,
+      percentage: 5.57
+    },
+    {
+      id: '5',
+      symbol: 'ITUB4',
+      name: 'Itaú Unibanco',
+      type: 'Ações',
+      quantity: 300,
+      currentPrice: 35.21,
+      totalValue: 10563.00,
+      variation: -448.20,
+      variationPercent: -4.24,
+      profitability: 7.71,
+      percentage: 5.02
+    }
+  ];
+
   return (
-    <div className="p-6 space-y-8">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Investimentos</h1>
-          <p className="mt-1 text-muted-foreground">Acompanhe sua carteira de investimentos</p>
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
+      <div className="p-6 space-y-6">
+        {/* Hero Section */}
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary via-primary to-chart-2 p-8 text-white">
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/90 via-primary/80 to-chart-2/70" />
+          <div className="relative">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h1 className="text-3xl font-bold mb-2">Meus Investimentos 📈</h1>
+                <p className="text-white/80">Acompanhe sua carteira de investimentos</p>
+              </div>
+              <div className="flex items-center space-x-3">
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  className="text-white hover:bg-white/10"
+                  onClick={() => setBalanceVisible(!balanceVisible)}
+                >
+                  {balanceVisible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </Button>
+                <Button variant="secondary" size="sm">
+                  <Download className="h-4 w-4 mr-2" />
+                  Relatório
+                </Button>
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+              <div className="bg-white/10 rounded-xl p-4 backdrop-blur-sm">
+                <p className="text-white/80 text-sm mb-1">Patrimônio Total</p>
+                <p className="text-2xl font-bold">
+                  {balanceVisible ? formatCurrency(totalValue) : '••••••'}
+                </p>
+                <div className="flex items-center mt-2 text-sm">
+                  {variationPercent >= 0 ? (
+                    <TrendingUp className="h-4 w-4 mr-1" />
+                  ) : (
+                    <TrendingDown className="h-4 w-4 mr-1" />
+                  )}
+                  <span className={variationPercent >= 0 ? 'text-green-200' : 'text-red-200'}>
+                    {formatPercentage(variationPercent)}
+                  </span>
+                </div>
+              </div>
+              
+              <div className="bg-white/10 rounded-xl p-4 backdrop-blur-sm">
+                <p className="text-white/80 text-sm mb-1">Valor Investido</p>
+                <p className="text-2xl font-bold">
+                  {balanceVisible ? formatCurrency(appliedValue) : '••••••'}
+                </p>
+                <p className="text-sm text-white/70 mt-2">Capital aplicado</p>
+              </div>
+              
+              <div className="bg-white/10 rounded-xl p-4 backdrop-blur-sm">
+                <p className="text-white/80 text-sm mb-1">Lucro Total</p>
+                <p className="text-2xl font-bold">
+                  {balanceVisible ? formatCurrency(totalProfit) : '••••••'}
+                </p>
+                <p className="text-sm text-white/70 mt-2">Ganho de capital</p>
+              </div>
+              
+              <div className="bg-white/10 rounded-xl p-4 backdrop-blur-sm">
+                <p className="text-white/80 text-sm mb-1">Rentabilidade</p>
+                <p className="text-2xl font-bold text-green-200">
+                  {balanceVisible ? formatPercentage(profitabilityPercent) : '••••••'}
+                </p>
+                <p className="text-sm text-white/70 mt-2">Performance</p>
+              </div>
+            </div>
+          </div>
         </div>
-        <Button onClick={() => setShowCreateDialog(true)}>
-          <Plus className="w-4 h-4 mr-2" />
-          Novo Ativo
-        </Button>
-      </div>
 
-      {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card className="financial-card">
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Valor Atual</p>
-                <p className="text-2xl font-bold text-foreground">{formatCurrency(currentValue)}</p>
+        {/* Charts Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Portfolio Evolution */}
+          <Card className="pharos-card">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle>Evolução do Patrimônio</CardTitle>
+                <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
+                  <SelectTrigger className="w-32">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="3m">3 Meses</SelectItem>
+                    <SelectItem value="6m">6 Meses</SelectItem>
+                    <SelectItem value="12m">12 Meses</SelectItem>
+                    <SelectItem value="all">Tudo</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
-              <DollarSign className="h-8 w-8 text-primary" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="financial-card">
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Investido</p>
-                <p className="text-2xl font-bold text-foreground">{formatCurrency(totalInvested)}</p>
+            </CardHeader>
+            <CardContent>
+              <div className="h-72">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={evolutionData}>
+                    <defs>
+                      <linearGradient id="appliedGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="hsl(var(--success))" stopOpacity={0.3}/>
+                        <stop offset="95%" stopColor="hsl(var(--success))" stopOpacity={0}/>
+                      </linearGradient>
+                      <linearGradient id="profitGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3}/>
+                        <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                    <XAxis 
+                      dataKey="month" 
+                      axisLine={false}
+                      tickLine={false}
+                      tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }}
+                    />
+                    <YAxis 
+                      axisLine={false}
+                      tickLine={false}
+                      tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }}
+                      tickFormatter={(value) => formatCurrency(value)}
+                    />
+                    <Tooltip 
+                      formatter={(value, name) => [
+                        formatCurrency(Number(value)), 
+                        name === 'applied' ? 'Valor Aplicado' : 'Ganho de Capital'
+                      ]}
+                      labelStyle={{ color: 'hsl(var(--foreground))' }}
+                      contentStyle={{ 
+                        backgroundColor: 'hsl(var(--card))', 
+                        border: '1px solid hsl(var(--border))',
+                        borderRadius: '8px'
+                      }}
+                    />
+                    <Area 
+                      type="monotone" 
+                      dataKey="applied" 
+                      stackId="1"
+                      stroke="hsl(var(--success))" 
+                      fill="url(#appliedGradient)" 
+                    />
+                    <Area 
+                      type="monotone" 
+                      dataKey="profit" 
+                      stackId="2"
+                      stroke="hsl(var(--primary))" 
+                      fill="url(#profitGradient)" 
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
               </div>
-              <Wallet className="h-8 w-8 text-blue-600" />
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
 
-        <Card className="financial-card">
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Ganho/Perda</p>
-                <p className={`text-2xl font-bold ${totalGainLoss >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                  {totalGainLoss >= 0 ? '+' : ''}{formatCurrency(totalGainLoss)}
-                </p>
+          {/* Asset Distribution */}
+          <Card className="pharos-card">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle>Ativos na Carteira</CardTitle>
+                <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                  <SelectTrigger className="w-32">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todos</SelectItem>
+                    <SelectItem value="stocks">Ações</SelectItem>
+                    <SelectItem value="fixedIncome">Renda Fixa</SelectItem>
+                    <SelectItem value="crypto">Crypto</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
-              {totalGainLoss >= 0 ? (
-                <TrendingUp className="h-8 w-8 text-green-600" />
-              ) : (
-                <TrendingDown className="h-8 w-8 text-red-600" />
-              )}
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="financial-card">
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Rentabilidade</p>
-                <p className={`text-2xl font-bold ${totalGainLossPercent >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                  {totalGainLossPercent >= 0 ? '+' : ''}{totalGainLossPercent.toFixed(1)}%
-                </p>
-              </div>
-              <PieChart className="h-8 w-8 text-primary" />
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {assets.length === 0 ? (
-        <Card className="financial-card">
-          <CardContent className="pt-6 text-center">
-            <TrendingUp className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-lg font-semibold mb-2">Nenhum investimento cadastrado</h3>
-            <p className="text-muted-foreground mb-6">
-              Adicione seus investimentos para acompanhar a performance da sua carteira
-            </p>
-            <Button onClick={() => setShowCreateDialog(true)}>
-              <Plus className="w-4 h-4 mr-2" />
-              Adicionar Primeiro Ativo
-            </Button>
-          </CardContent>
-        </Card>
-      ) : (
-        <>
-          {/* Charts Section */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {/* Portfolio Allocation */}
-            <Card className="financial-card">
-              <CardHeader>
-                <CardTitle>Alocação por Tipo</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="h-64">
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 gap-6">
+                <div className="h-48">
                   <ResponsiveContainer width="100%" height="100%">
                     <RechartsPieChart>
                       <Pie
-                        data={allocationData}
+                        data={assetDistribution}
                         cx="50%"
                         cy="50%"
-                        innerRadius={60}
-                        outerRadius={100}
-                        paddingAngle={5}
+                        innerRadius={40}
+                        outerRadius={80}
+                        paddingAngle={2}
                         dataKey="value"
                       >
-                        {allocationData.map((entry: any, index: number) => (
-                          <Cell key={`cell-${index}`} fill={ASSET_COLORS[index % ASSET_COLORS.length]} />
+                        {assetDistribution.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
                         ))}
                       </Pie>
                       <Tooltip formatter={(value) => formatCurrency(Number(value))} />
                     </RechartsPieChart>
                   </ResponsiveContainer>
                 </div>
-                <div className="grid grid-cols-2 gap-2 mt-4">
-                  {allocationData.map((item: any, index: number) => (
-                    <div key={index} className="flex items-center space-x-2">
-                      <div 
-                        className="w-3 h-3 rounded-full" 
-                        style={{ backgroundColor: ASSET_COLORS[index % ASSET_COLORS.length] }}
-                      ></div>
-                      <span className="text-sm text-muted-foreground">{item.name}</span>
+                <div className="space-y-3">
+                  {assetDistribution.map((item, index) => (
+                    <div key={index} className="flex items-center justify-between">
+                      <div className="flex items-center space-x-2">
+                        <div 
+                          className="w-3 h-3 rounded-full" 
+                          style={{ backgroundColor: item.color }}
+                        />
+                        <span className="text-sm font-medium">{item.name}</span>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm font-semibold">
+                          {formatPercentage(item.percentage)}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {balanceVisible ? formatCurrency(item.value) : '••••••'}
+                        </p>
+                      </div>
                     </div>
                   ))}
                 </div>
-              </CardContent>
-            </Card>
-
-            {/* Top Performers */}
-            <Card className="financial-card">
-              <CardHeader>
-                <CardTitle>Maiores Variações</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="h-64">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={topAssets} layout="horizontal">
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis type="number" tickFormatter={(value) => `${value.toFixed(1)}%`} />
-                      <YAxis type="category" dataKey="symbol" width={60} />
-                      <Tooltip 
-                        formatter={(value) => [`${Number(value).toFixed(2)}%`, 'Variação']}
-                        labelStyle={{ color: 'hsl(var(--foreground))' }}
-                        contentStyle={{ 
-                          backgroundColor: 'hsl(var(--background))', 
-                          border: '1px solid hsl(var(--border))',
-                          borderRadius: '8px'
-                        }}
-                      />
-                      <Bar 
-                        dataKey="variation" 
-                        fill="hsl(var(--primary))"
-                        radius={[0, 4, 4, 0]}
-                      />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Assets List */}
-          <Card className="financial-card">
-            <CardHeader>
-              <CardTitle>Minha Carteira</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {assets.map((asset: any) => {
-                  const currentPrice = parseFloat(asset.currentPrice || asset.averagePrice);
-                  const averagePrice = parseFloat(asset.averagePrice);
-                  const quantity = parseFloat(asset.quantity);
-                  const totalValue = quantity * currentPrice;
-                  const variation = getAssetVariation(currentPrice, averagePrice);
-
-                  return (
-                    <div key={asset.id} className="flex items-center justify-between p-4 border border-border rounded-lg">
-                      <div className="flex items-center space-x-4">
-                        <div className="p-2 bg-primary/10 rounded-lg text-primary">
-                          {getAssetTypeIcon(asset.type)}
-                        </div>
-                        <div>
-                          <h4 className="font-semibold text-foreground">{asset.symbol}</h4>
-                          <p className="text-sm text-muted-foreground">{asset.name}</p>
-                          <div className="flex items-center space-x-2 mt-1">
-                            <Badge variant="secondary">{getAssetTypeName(asset.type)}</Badge>
-                            {asset.sector && (
-                              <Badge variant="outline">{asset.sector}</Badge>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                      
-                      <div className="text-right">
-                        <p className="font-semibold text-foreground">{formatCurrency(totalValue)}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {quantity} × {formatCurrency(currentPrice)}
-                        </p>
-                        <p className={`text-sm font-medium ${variation >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                          {variation >= 0 ? '+' : ''}{variation.toFixed(2)}%
-                        </p>
-                      </div>
-                    </div>
-                  );
-                })}
               </div>
             </CardContent>
           </Card>
-        </>
-      )}
+        </div>
 
-      {/* Create Asset Dialog */}
-      <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Novo Ativo</DialogTitle>
-            <DialogDescription>
-              Adicione um novo ativo à sua carteira
-            </DialogDescription>
-          </DialogHeader>
-          
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="symbol"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Símbolo</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Ex: ITSA4" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+        {/* Asset Categories */}
+        <Tabs defaultValue="stocks" className="space-y-6">
+          <div className="flex items-center justify-between">
+            <TabsList className="grid w-full max-w-md grid-cols-4">
+              <TabsTrigger value="stocks">Ações</TabsTrigger>
+              <TabsTrigger value="crypto">Crypto</TabsTrigger>
+              <TabsTrigger value="etfs">ETFs</TabsTrigger>
+              <TabsTrigger value="funds">Fundos</TabsTrigger>
+            </TabsList>
+            <div className="flex items-center space-x-2">
+              <Button variant="outline" size="sm">
+                <Filter className="h-4 w-4 mr-2" />
+                Filtros
+              </Button>
+              <Button size="sm">
+                <Plus className="h-4 w-4 mr-2" />
+                Adicionar Ativo
+              </Button>
+            </div>
+          </div>
 
-                <FormField
-                  control={form.control}
-                  name="type"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Tipo</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="stock">Ação</SelectItem>
-                          <SelectItem value="fii">FII</SelectItem>
-                          <SelectItem value="crypto">Crypto</SelectItem>
-                          <SelectItem value="fixed_income">Renda Fixa</SelectItem>
-                          <SelectItem value="etf">ETF</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
+          <TabsContent value="stocks">
+            <Card className="pharos-card">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-4">
+                    <div className="p-2 bg-primary/10 rounded-lg">
+                      <BarChart3 className="h-5 w-5 text-primary" />
+                    </div>
+                    <div>
+                      <CardTitle className="text-lg">Ações</CardTitle>
+                      <p className="text-sm text-muted-foreground">13 ativos • {formatCurrency(125859.50)} • -9.28%</p>
+                    </div>
+                  </div>
+                  <Badge className="bg-expense/10 text-expense border-expense/20">
+                    33.04% rentabilidade
+                  </Badge>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b border-border text-xs text-muted-foreground">
+                        <th className="text-left p-3">Ativo</th>
+                        <th className="text-right p-3">Quant.</th>
+                        <th className="text-right p-3">Preço Médio</th>
+                        <th className="text-right p-3">Preço Atual</th>
+                        <th className="text-right p-3">Variação</th>
+                        <th className="text-right p-3">Saldo</th>
+                        <th className="text-right p-3">Rentabilidade</th>
+                        <th className="text-right p-3">% Carteira</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {mockAssets.map((asset) => (
+                        <tr key={asset.id} className="border-b border-border/50 hover:bg-accent/30 transition-colors">
+                          <td className="p-3">
+                            <div className="flex items-center space-x-3">
+                              <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
+                                <span className="text-xs font-semibold text-primary">
+                                  {asset.symbol.slice(0, 2)}
+                                </span>
+                              </div>
+                              <div>
+                                <p className="font-medium text-sm">{asset.symbol}</p>
+                                <p className="text-xs text-muted-foreground">{asset.name}</p>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="text-right p-3 text-sm">{asset.quantity}</td>
+                          <td className="text-right p-3 text-sm">{formatCurrency(21.59)}</td>
+                          <td className="text-right p-3 text-sm">{formatCurrency(asset.currentPrice)}</td>
+                          <td className="text-right p-3">
+                            <div className={`flex items-center justify-end space-x-1 ${
+                              asset.variationPercent >= 0 ? 'text-success' : 'text-expense'
+                            }`}>
+                              {asset.variationPercent >= 0 ? (
+                                <ArrowUpRight className="h-3 w-3" />
+                              ) : (
+                                <ArrowDownRight className="h-3 w-3" />
+                              )}
+                              <span className="text-sm font-medium">
+                                {formatPercentage(asset.variationPercent)}
+                              </span>
+                            </div>
+                          </td>
+                          <td className="text-right p-3 text-sm font-medium">
+                            {balanceVisible ? formatCurrency(asset.totalValue) : '••••••'}
+                          </td>
+                          <td className="text-right p-3">
+                            <Badge variant="outline" className="text-xs">
+                              {formatPercentage(asset.profitability)}
+                            </Badge>
+                          </td>
+                          <td className="text-right p-3 text-sm">{formatPercentage(asset.percentage)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
 
-              <FormField
-                control={form.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Nome</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Ex: Itaúsa S.A." {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+          <TabsContent value="crypto">
+            <Card className="pharos-card">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-4">
+                    <div className="p-2 bg-warning/10 rounded-lg">
+                      <DollarSign className="h-5 w-5 text-warning" />
+                    </div>
+                    <div>
+                      <CardTitle className="text-lg">Criptomoedas</CardTitle>
+                      <p className="text-sm text-muted-foreground">10 ativos • {formatCurrency(19951.28)} • +10.02%</p>
+                    </div>
+                  </div>
+                  <Badge className="bg-success/10 text-success border-success/20">
+                    132.61% rentabilidade
+                  </Badge>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="text-center py-12 text-muted-foreground">
+                  <DollarSign className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                  <p className="mb-4">Nenhuma criptomoeda na carteira</p>
+                  <Button>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Adicionar Crypto
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
 
-              <div className="grid grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="quantity"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Quantidade</FormLabel>
-                      <FormControl>
-                        <Input type="number" step="0.00000001" placeholder="100" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+          <TabsContent value="etfs">
+            <Card className="pharos-card">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-4">
+                    <div className="p-2 bg-chart-3/10 rounded-lg">
+                      <PieChart className="h-5 w-5 text-chart-3" />
+                    </div>
+                    <div>
+                      <CardTitle className="text-lg">ETFs</CardTitle>
+                      <p className="text-sm text-muted-foreground">1 ativo • {formatCurrency(9801.00)} • +1.07%</p>
+                    </div>
+                  </div>
+                  <Badge className="bg-success/10 text-success border-success/20">
+                    0.41% rentabilidade
+                  </Badge>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="text-center py-12 text-muted-foreground">
+                  <PieChart className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                  <p className="mb-4">ETF LFTB11 em carteira</p>
+                  <Button>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Adicionar ETF
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
 
-                <FormField
-                  control={form.control}
-                  name="averagePrice"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Preço Médio</FormLabel>
-                      <FormControl>
-                        <Input type="number" step="0.01" placeholder="10,50" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
+          <TabsContent value="funds">
+            <Card className="pharos-card">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-4">
+                    <div className="p-2 bg-chart-4/10 rounded-lg">
+                      <Target className="h-5 w-5 text-chart-4" />
+                    </div>
+                    <div>
+                      <CardTitle className="text-lg">Fundos de Investimento</CardTitle>
+                      <p className="text-sm text-muted-foreground">1 ativo • {formatCurrency(1212.73)} • 0%</p>
+                    </div>
+                  </div>
+                  <Badge className="bg-expense/10 text-expense border-expense/20">
+                    -0.17% rentabilidade
+                  </Badge>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="text-center py-12 text-muted-foreground">
+                  <Target className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                  <p className="mb-4">1 fundo em carteira</p>
+                  <Button>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Adicionar Fundo
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
 
-              <FormField
-                control={form.control}
-                name="currentPrice"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Preço Atual (Opcional)</FormLabel>
-                    <FormControl>
-                      <Input type="number" step="0.01" placeholder="11,20" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="sector"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Setor (Opcional)</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Ex: Bancos, Tecnologia" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <div className="flex justify-end space-x-4">
-                <Button type="button" variant="outline" onClick={() => setShowCreateDialog(false)}>
-                  Cancelar
-                </Button>
-                <Button type="submit" disabled={createAssetMutation.isPending}>
-                  {createAssetMutation.isPending ? 'Adicionando...' : 'Adicionar Ativo'}
-                </Button>
-              </div>
-            </form>
-          </Form>
-        </DialogContent>
-      </Dialog>
+        {/* Quick Actions */}
+        <Card className="pharos-card">
+          <CardHeader>
+            <CardTitle>Ações Rápidas</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <Button className="h-20 flex-col space-y-2">
+                <Plus className="h-6 w-6" />
+                <span className="text-sm">Novo Aporte</span>
+              </Button>
+              <Button variant="outline" className="h-20 flex-col space-y-2">
+                <Activity className="h-6 w-6" />
+                <span className="text-sm">Rebalancear</span>
+              </Button>
+              <Button variant="outline" className="h-20 flex-col space-y-2">
+                <BarChart3 className="h-6 w-6" />
+                <span className="text-sm">Análise</span>
+              </Button>
+              <Button variant="outline" className="h-20 flex-col space-y-2">
+                <Calendar className="h-6 w-6" />
+                <span className="text-sm">Agenda</span>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }

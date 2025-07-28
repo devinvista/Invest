@@ -11,6 +11,13 @@ Visual Identity: Pharos Capital brand guidelines applied.
 
 ## Recent Changes
 
+- **January 28, 2025**: Created comprehensive investments page
+  - Developed modern investments dashboard with glassmorphism design
+  - Implemented portfolio overview with real-time data visualization
+  - Added asset distribution pie chart and evolution area chart
+  - Created tabbed interface for different asset categories (Ações, Crypto, ETFs, Fundos)
+  - Built detailed asset table with performance metrics and variations
+  - Added investment API endpoint with portfolio calculations
 - **January 28, 2025**: Applied Pharos Capital visual identity
   - Implemented official color palette (#195AB4 primary, complementary colors)
   - Changed typography to DM Sans (Moderat alternative)
