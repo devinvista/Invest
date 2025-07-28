@@ -18,7 +18,9 @@ export interface IStorage {
 
   // Accounts
   getUserAccounts(userId: string): Promise<Account[]>;
+  getAccount(accountId: string): Promise<Account | undefined>;
   createAccount(account: InsertAccount): Promise<Account>;
+  updateAccount(accountId: string, updates: Partial<InsertAccount>): Promise<Account>;
   updateAccountBalance(accountId: string, balance: string): Promise<void>;
 
   // Credit Cards
@@ -86,9 +88,22 @@ export class DatabaseStorage implements IStorage {
     return await db.select().from(accounts).where(eq(accounts.userId, userId));
   }
 
+  async getAccount(accountId: string): Promise<Account | undefined> {
+    const [account] = await db.select().from(accounts).where(eq(accounts.id, accountId));
+    return account || undefined;
+  }
+
   async createAccount(account: InsertAccount): Promise<Account> {
     const [newAccount] = await db.insert(accounts).values(account).returning();
     return newAccount;
+  }
+
+  async updateAccount(accountId: string, updates: Partial<InsertAccount>): Promise<Account> {
+    const [updatedAccount] = await db.update(accounts)
+      .set(updates)
+      .where(eq(accounts.id, accountId))
+      .returning();
+    return updatedAccount;
   }
 
   async updateAccountBalance(accountId: string, balance: string): Promise<void> {

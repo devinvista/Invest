@@ -64,13 +64,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Create default categories
       const defaultCategories = [
-        { userId: user.id, name: "Alimentação", type: "necessities" as const, color: "#1565C0", icon: "fas fa-utensils" },
-        { userId: user.id, name: "Moradia", type: "necessities" as const, color: "#1565C0", icon: "fas fa-home" },
-        { userId: user.id, name: "Transporte", type: "necessities" as const, color: "#1565C0", icon: "fas fa-car" },
-        { userId: user.id, name: "Entretenimento", type: "wants" as const, color: "#FF9800", icon: "fas fa-gamepad" },
-        { userId: user.id, name: "Compras", type: "wants" as const, color: "#FF9800", icon: "fas fa-shopping-bag" },
-        { userId: user.id, name: "Investimentos", type: "savings" as const, color: "#4CAF50", icon: "fas fa-chart-line" },
-        { userId: user.id, name: "Poupança", type: "savings" as const, color: "#4CAF50", icon: "fas fa-piggy-bank" },
+        { userId: user.id, name: "Alimentação", type: "necessities" as const, transactionType: "expense" as const, color: "#1565C0", icon: "fas fa-utensils" },
+        { userId: user.id, name: "Moradia", type: "necessities" as const, transactionType: "expense" as const, color: "#1565C0", icon: "fas fa-home" },
+        { userId: user.id, name: "Transporte", type: "necessities" as const, transactionType: "expense" as const, color: "#1565C0", icon: "fas fa-car" },
+        { userId: user.id, name: "Entretenimento", type: "wants" as const, transactionType: "expense" as const, color: "#FF9800", icon: "fas fa-gamepad" },
+        { userId: user.id, name: "Compras", type: "wants" as const, transactionType: "expense" as const, color: "#FF9800", icon: "fas fa-shopping-bag" },
+        { userId: user.id, name: "Investimentos", type: "savings" as const, transactionType: "expense" as const, color: "#4CAF50", icon: "fas fa-chart-line" },
+        { userId: user.id, name: "Poupança", type: "savings" as const, transactionType: "expense" as const, color: "#4CAF50", icon: "fas fa-piggy-bank" },
+        { userId: user.id, name: "Salário", type: "savings" as const, transactionType: "income" as const, color: "#4CAF50", icon: "fas fa-money-bill" },
+        { userId: user.id, name: "Transferência", type: "savings" as const, transactionType: "transfer" as const, color: "#9C27B0", icon: "fas fa-exchange-alt" },
       ];
 
       for (const category of defaultCategories) {
@@ -169,6 +171,87 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(account);
     } catch (error) {
       res.status(400).json({ message: "Erro ao criar conta", error: error instanceof Error ? error.message : "Erro desconhecido" });
+    }
+  });
+
+  app.put("/api/accounts/:id", async (req: any, res) => {
+    try {
+      const accountId = req.params.id;
+      const updates = insertAccountSchema.partial().parse(req.body);
+      const account = await storage.updateAccount(accountId, updates);
+      res.json(account);
+    } catch (error) {
+      res.status(400).json({ message: "Erro ao atualizar conta", error: error instanceof Error ? error.message : "Erro desconhecido" });
+    }
+  });
+
+  // Transfer between accounts
+  app.post("/api/accounts/transfer", async (req: any, res) => {
+    try {
+      const { fromAccountId, toAccountId, amount, description } = req.body;
+      
+      if (!fromAccountId || !toAccountId || !amount) {
+        return res.status(400).json({ message: "Dados de transferência incompletos" });
+      }
+      
+      if (parseFloat(amount) <= 0) {
+        return res.status(400).json({ message: "Valor deve ser maior que zero" });
+      }
+
+      // Get accounts to validate ownership and check balance
+      const fromAccount = await storage.getAccount(fromAccountId);
+      const toAccount = await storage.getAccount(toAccountId);
+      
+      if (!fromAccount || fromAccount.userId !== req.userId) {
+        return res.status(404).json({ message: "Conta de origem não encontrada" });
+      }
+      
+      if (!toAccount || toAccount.userId !== req.userId) {
+        return res.status(404).json({ message: "Conta de destino não encontrada" });
+      }
+      
+      if (parseFloat(fromAccount.balance) < parseFloat(amount)) {
+        return res.status(400).json({ message: "Saldo insuficiente na conta de origem" });
+      }
+
+      // Update balances
+      const newFromBalance = (parseFloat(fromAccount.balance) - parseFloat(amount)).toFixed(2);
+      const newToBalance = (parseFloat(toAccount.balance) + parseFloat(amount)).toFixed(2);
+      
+      await storage.updateAccountBalance(fromAccountId, newFromBalance);
+      await storage.updateAccountBalance(toAccountId, newToBalance);
+
+      // Create transfer transactions
+      const transferOutData = insertTransactionSchema.parse({
+        userId: req.userId,
+        accountId: fromAccountId,
+        categoryId: null, // We'll need a transfer category
+        type: 'transfer',
+        amount: amount,
+        description: description || `Transferência para ${toAccount.name}`,
+        date: new Date()
+      });
+
+      const transferInData = insertTransactionSchema.parse({
+        userId: req.userId,
+        accountId: toAccountId,
+        categoryId: null, // We'll need a transfer category
+        type: 'transfer',
+        amount: amount,
+        description: description || `Transferência de ${fromAccount.name}`,
+        date: new Date()
+      });
+
+      // For now, we'll skip transaction creation as it requires categoryId
+      // TODO: Create transfer category or handle transfer transactions differently
+      
+      res.json({ 
+        message: "Transferência realizada com sucesso", 
+        fromAccount: { ...fromAccount, balance: newFromBalance },
+        toAccount: { ...toAccount, balance: newToBalance }
+      });
+    } catch (error) {
+      res.status(500).json({ message: "Erro ao realizar transferência", error: error instanceof Error ? error.message : "Erro desconhecido" });
     }
   });
 

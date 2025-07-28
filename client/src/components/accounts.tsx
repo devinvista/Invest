@@ -13,7 +13,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Building2, Plus, Wallet, CreditCard, PiggyBank, ArrowUpRight, ArrowDownRight, MoreHorizontal } from 'lucide-react';
+import { Building2, Plus, Wallet, CreditCard, PiggyBank, ArrowUpRight, ArrowDownRight, MoreHorizontal, Edit, Send } from 'lucide-react';
 
 const accountFormSchema = z.object({
   name: z.string().min(1, 'Nome é obrigatório'),
@@ -22,12 +22,23 @@ const accountFormSchema = z.object({
   bankName: z.string().optional(),
 });
 
+const transferFormSchema = z.object({
+  fromAccountId: z.string().min(1, 'Conta de origem é obrigatória'),
+  toAccountId: z.string().min(1, 'Conta de destino é obrigatória'),
+  amount: z.string().min(1, 'Valor é obrigatório'),
+  description: z.string().optional(),
+});
+
 type AccountFormData = z.infer<typeof accountFormSchema>;
+type TransferFormData = z.infer<typeof transferFormSchema>;
 
 export function Accounts() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [showTransferDialog, setShowTransferDialog] = useState(false);
+  const [editingAccount, setEditingAccount] = useState<any>(null);
 
   const { data: accounts = [], isLoading } = useQuery<any[]>({
     queryKey: ['/api/accounts'],
@@ -40,6 +51,20 @@ export function Accounts() {
       type: 'checking',
       balance: '',
       bankName: '',
+    },
+  });
+
+  const editForm = useForm<AccountFormData>({
+    resolver: zodResolver(accountFormSchema),
+  });
+
+  const transferForm = useForm<TransferFormData>({
+    resolver: zodResolver(transferFormSchema),
+    defaultValues: {
+      fromAccountId: '',
+      toAccountId: '',
+      amount: '',
+      description: '',
     },
   });
 
@@ -71,8 +96,92 @@ export function Accounts() {
     },
   });
 
+  const updateAccountMutation = useMutation({
+    mutationFn: async (data: AccountFormData) => {
+      const payload = {
+        name: data.name,
+        type: data.type,
+        bankName: data.bankName,
+      };
+      const response = await apiRequest('PUT', `/api/accounts/${editingAccount.id}`, payload);
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: 'Sucesso',
+        description: 'Conta atualizada com sucesso!',
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/accounts'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/dashboard'] });
+      setShowEditDialog(false);
+      setEditingAccount(null);
+    },
+    onError: (error: Error) => {
+      toast({
+        title: 'Erro',
+        description: error.message,
+        variant: 'destructive',
+      });
+    },
+  });
+
+  const transferMutation = useMutation({
+    mutationFn: async (data: TransferFormData) => {
+      const payload = {
+        ...data,
+        amount: parseFloat(data.amount),
+      };
+      const response = await apiRequest('POST', '/api/accounts/transfer', payload);
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: 'Sucesso',
+        description: 'Transferência realizada com sucesso!',
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/accounts'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/dashboard'] });
+      setShowTransferDialog(false);
+      transferForm.reset();
+    },
+    onError: (error: Error) => {
+      toast({
+        title: 'Erro',
+        description: error.message,
+        variant: 'destructive',
+      });
+    },
+  });
+
   const onSubmit = (data: AccountFormData) => {
     createAccountMutation.mutate(data);
+  };
+
+  const onEditSubmit = (data: AccountFormData) => {
+    updateAccountMutation.mutate(data);
+  };
+
+  const onTransferSubmit = (data: TransferFormData) => {
+    if (data.fromAccountId === data.toAccountId) {
+      toast({
+        title: 'Erro',
+        description: 'As contas de origem e destino devem ser diferentes',
+        variant: 'destructive',
+      });
+      return;
+    }
+    transferMutation.mutate(data);
+  };
+
+  const handleEditAccount = (account: any) => {
+    setEditingAccount(account);
+    editForm.reset({
+      name: account.name,
+      type: account.type,
+      balance: account.balance,
+      bankName: account.bankName || '',
+    });
+    setShowEditDialog(true);
   };
 
   const getAccountIcon = (type: string) => {
@@ -144,10 +253,16 @@ export function Accounts() {
           <h1 className="text-2xl font-bold text-foreground">Contas Bancárias</h1>
           <p className="mt-1 text-muted-foreground">Gerencie suas contas e saldos</p>
         </div>
-        <Button onClick={() => setShowCreateDialog(true)}>
-          <Plus className="w-4 h-4 mr-2" />
-          Nova Conta
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => setShowTransferDialog(true)} disabled={accounts.length < 2}>
+            <Send className="w-4 h-4 mr-2" />
+            Transferir
+          </Button>
+          <Button onClick={() => setShowCreateDialog(true)}>
+            <Plus className="w-4 h-4 mr-2" />
+            Nova Conta
+          </Button>
+        </div>
       </div>
 
       {/* Summary Card */}
@@ -199,8 +314,8 @@ export function Accounts() {
                         )}
                       </div>
                     </div>
-                    <Button variant="ghost" size="sm">
-                      <MoreHorizontal className="h-4 w-4" />
+                    <Button variant="ghost" size="sm" onClick={() => handleEditAccount(account)}>
+                      <Edit className="h-4 w-4" />
                     </Button>
                   </div>
                 </CardHeader>
@@ -216,12 +331,12 @@ export function Accounts() {
                     </div>
                     
                     <div className="flex space-x-2">
-                      <Button variant="outline" size="sm" className="flex-1">
-                        <ArrowDownRight className="w-4 h-4 mr-1" />
-                        Receber
+                      <Button variant="outline" size="sm" className="flex-1" onClick={() => handleEditAccount(account)}>
+                        <Edit className="w-4 h-4 mr-1" />
+                        Editar
                       </Button>
-                      <Button variant="outline" size="sm" className="flex-1">
-                        <ArrowUpRight className="w-4 h-4 mr-1" />
+                      <Button variant="outline" size="sm" className="flex-1" onClick={() => setShowTransferDialog(true)} disabled={accounts.length < 2}>
+                        <Send className="w-4 h-4 mr-1" />
                         Transferir
                       </Button>
                     </div>
@@ -321,6 +436,190 @@ export function Accounts() {
                 </Button>
                 <Button type="submit" disabled={createAccountMutation.isPending}>
                   {createAccountMutation.isPending ? 'Criando...' : 'Criar Conta'}
+                </Button>
+              </div>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Account Dialog */}
+      <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Editar Conta</DialogTitle>
+            <DialogDescription>
+              Atualize as informações da conta
+            </DialogDescription>
+          </DialogHeader>
+          
+          <Form {...editForm}>
+            <form onSubmit={editForm.handleSubmit(onEditSubmit)} className="space-y-4">
+              <FormField
+                control={editForm.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Nome da Conta</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Ex: Conta Corrente Principal" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={editForm.control}
+                name="type"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Tipo da Conta</FormLabel>
+                    <FormControl>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecione o tipo" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="checking">Conta Corrente</SelectItem>
+                          <SelectItem value="savings">Poupança</SelectItem>
+                          <SelectItem value="investment">Investimento</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={editForm.control}
+                name="bankName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Banco (Opcional)</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Ex: Itaú, Bradesco, Santander" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <div className="flex justify-end space-x-4">
+                <Button type="button" variant="outline" onClick={() => setShowEditDialog(false)}>
+                  Cancelar
+                </Button>
+                <Button type="submit" disabled={updateAccountMutation.isPending}>
+                  {updateAccountMutation.isPending ? 'Atualizando...' : 'Atualizar'}
+                </Button>
+              </div>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Transfer Dialog */}
+      <Dialog open={showTransferDialog} onOpenChange={setShowTransferDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Transferir entre Contas</DialogTitle>
+            <DialogDescription>
+              Transfira dinheiro entre suas contas
+            </DialogDescription>
+          </DialogHeader>
+          
+          <Form {...transferForm}>
+            <form onSubmit={transferForm.handleSubmit(onTransferSubmit)} className="space-y-4">
+              <FormField
+                control={transferForm.control}
+                name="fromAccountId"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Conta de Origem</FormLabel>
+                    <FormControl>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecione a conta de origem" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {accounts.map((account: any) => (
+                            <SelectItem key={account.id} value={account.id}>
+                              {account.name} - {formatCurrency(parseFloat(account.balance))}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={transferForm.control}
+                name="toAccountId"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Conta de Destino</FormLabel>
+                    <FormControl>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecione a conta de destino" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {accounts.map((account: any) => (
+                            <SelectItem key={account.id} value={account.id}>
+                              {account.name} - {formatCurrency(parseFloat(account.balance))}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={transferForm.control}
+                name="amount"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Valor</FormLabel>
+                    <FormControl>
+                      <Input 
+                        type="number" 
+                        step="0.01" 
+                        placeholder="0,00" 
+                        {...field} 
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={transferForm.control}
+                name="description"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Descrição (Opcional)</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Ex: Transferência para emergência" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <div className="flex justify-end space-x-4">
+                <Button type="button" variant="outline" onClick={() => setShowTransferDialog(false)}>
+                  Cancelar
+                </Button>
+                <Button type="submit" disabled={transferMutation.isPending}>
+                  {transferMutation.isPending ? 'Transferindo...' : 'Transferir'}
                 </Button>
               </div>
             </form>
