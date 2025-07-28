@@ -10,12 +10,17 @@ dotenv.config();
 
 console.log(`🔗 Connecting to PostgreSQL...`);
 
-// PostgreSQL database configuration using environment variables
-if (!process.env.DATABASE_URL) {
+// PostgreSQL database configuration using environment variables (.env priority)
+// Priorizar .env sobre variáveis do sistema
+const databaseUrl = process.env.DATABASE_URL;
+
+if (!databaseUrl) {
   throw new Error("DATABASE_URL is required");
 }
 
-const connection = postgres(process.env.DATABASE_URL, { ssl: 'require' });
+console.log(`📊 Using database: ${databaseUrl.includes('neon.tech') ? 'Neon PostgreSQL' : 'Replit PostgreSQL'}`);
+
+const connection = postgres(databaseUrl, { ssl: 'require' });
 
 // Configure Drizzle with PostgreSQL
 export const db = drizzle(connection, { schema });
