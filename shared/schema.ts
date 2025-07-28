@@ -72,6 +72,9 @@ export const transactions = pgTable("transactions", {
   date: timestamp("date").notNull(),
   installments: integer("installments").default(1),
   currentInstallment: integer("current_installment").default(1),
+  // Campos para controle de transferências para investimento
+  transferToAccountId: uuid("transfer_to_account_id").references(() => accounts.id), // Conta de destino se for transferência
+  isInvestmentTransfer: boolean("is_investment_transfer").default(false).notNull(), // Se é transferência para investimento
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -188,6 +191,8 @@ export const insertTransactionSchema = createInsertSchema(transactions)
     amount: z.union([z.string(), z.number()]).transform(val => val.toString()),
     installments: z.union([z.string(), z.number()]).transform(val => Number(val)).optional(),
     currentInstallment: z.union([z.string(), z.number()]).transform(val => Number(val)).optional(),
+    isInvestmentTransfer: z.boolean().optional(),
+    transferToAccountId: z.string().optional(),
   });
 export const insertAssetSchema = createInsertSchema(assets)
   .omit({ id: true, createdAt: true })

@@ -133,11 +133,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const totalCreditUsed = creditCards.reduce((sum, card) => sum + parseFloat(card.usedAmount), 0);
       
       const monthlyTransactions = await storage.getTransactionsByMonth(userId, currentMonth, currentYear);
+      // Excluir transferências de investimento do cálculo de receitas e despesas
       const monthlyIncome = monthlyTransactions
-        .filter(t => t.type === 'income')
+        .filter(t => t.type === 'income' && !t.isInvestmentTransfer)
         .reduce((sum, t) => sum + parseFloat(t.amount), 0);
       const monthlyExpenses = monthlyTransactions
-        .filter(t => t.type === 'expense')
+        .filter(t => t.type === 'expense' && !t.isInvestmentTransfer)
         .reduce((sum, t) => sum + parseFloat(t.amount), 0);
 
       res.json({
@@ -188,7 +189,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Transfer between accounts
   app.post("/api/accounts/transfer", async (req: any, res) => {
     try {
-      const { fromAccountId, toAccountId, amount, description } = req.body;
+      const { fromAccountId, toAccountId, amount, description, categoryId } = req.body;
       
       if (!fromAccountId || !toAccountId || !amount) {
         return res.status(400).json({ message: "Dados de transferência incompletos" });
@@ -221,12 +222,52 @@ export async function registerRoutes(app: Express): Promise<Server> {
       await storage.updateAccountBalance(fromAccountId, newFromBalance);
       await storage.updateAccountBalance(toAccountId, newToBalance);
 
-      // Note: Transaction records for transfers will be implemented later when category system is fully set up
+      // Verificar se a conta de destino é de investimento
+      const isInvestmentTransfer = toAccount.type === 'investment';
+      
+      // Se for transferência para investimento e tiver categoria, criar registros de transação
+      if (isInvestmentTransfer && categoryId) {
+        // Buscar categoria de transferência padrão caso não seja fornecida categoria específica
+        const categories = await storage.getUserCategories(req.userId);
+        const transferCategory = categories.find(cat => cat.transactionType === 'transfer') || 
+                               categories.find(cat => cat.name === 'Transferência');
+        
+        const finalCategoryId = categoryId || transferCategory?.id;
+        
+        if (finalCategoryId) {
+          // Criar transação de saída (débito da conta origem)
+          await storage.createTransaction({
+            userId: req.userId,
+            accountId: fromAccountId,
+            categoryId: finalCategoryId,
+            type: 'expense',
+            amount: amount,
+            description: description || `Transferência para ${toAccount.name}`,
+            date: new Date(),
+            transferToAccountId: toAccountId,
+            isInvestmentTransfer: true
+          });
+
+          // Criar transação de entrada (crédito da conta destino)
+          await storage.createTransaction({
+            userId: req.userId,
+            accountId: toAccountId,
+            categoryId: finalCategoryId,
+            type: 'income',
+            amount: amount,
+            description: description || `Transferência de ${fromAccount.name}`,
+            date: new Date(),
+            transferToAccountId: fromAccountId,
+            isInvestmentTransfer: true
+          });
+        }
+      }
       
       res.json({ 
         message: "Transferência realizada com sucesso", 
         fromAccount: { ...fromAccount, balance: newFromBalance },
-        toAccount: { ...toAccount, balance: newToBalance }
+        toAccount: { ...toAccount, balance: newToBalance },
+        isInvestmentTransfer
       });
     } catch (error) {
       res.status(500).json({ message: "Erro ao realizar transferência", error: error instanceof Error ? error.message : "Erro desconhecido" });

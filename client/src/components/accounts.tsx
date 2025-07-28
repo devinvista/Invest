@@ -28,6 +28,13 @@ const transferFormSchema = z.object({
   toAccountId: z.string().min(1, 'Conta de destino é obrigatória'),
   amount: z.string().min(1, 'Valor é obrigatório'),
   description: z.string().optional(),
+  categoryId: z.string().optional(),
+}).refine((data) => {
+  // Se toAccountId for de uma conta de investimento, categoryId é obrigatória
+  return true; // Validação será feita no onTransferSubmit
+}, {
+  message: "Categoria é obrigatória para transferências de investimento",
+  path: ["categoryId"]
 });
 
 type AccountFormData = z.infer<typeof accountFormSchema>;
@@ -45,6 +52,10 @@ export function Accounts() {
 
   const { data: accounts = [], isLoading } = useQuery<any[]>({
     queryKey: ['/api/accounts'],
+  });
+
+  const { data: categories = [] } = useQuery<any[]>({
+    queryKey: ['/api/categories'],
   });
 
   const form = useForm<AccountFormData>({
@@ -68,6 +79,7 @@ export function Accounts() {
       toAccountId: '',
       amount: '',
       description: '',
+      categoryId: '',
     },
   });
 
@@ -173,6 +185,18 @@ export function Accounts() {
       });
       return;
     }
+
+    // Verificar se é transferência para investimento e se categoria foi selecionada
+    const toAccount = accounts.find(acc => acc.id === data.toAccountId);
+    if (toAccount?.type === 'investment' && !data.categoryId) {
+      toast({
+        title: 'Erro',
+        description: 'Categoria é obrigatória para transferências de investimento',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     transferMutation.mutate(data);
   };
 
@@ -662,6 +686,42 @@ export function Accounts() {
                   </FormItem>
                 )}
               />
+
+              {/* Campo de categoria aparece quando conta destino é de investimento */}
+              {(() => {
+                const selectedToAccount = accounts.find(acc => acc.id === transferForm.watch('toAccountId'));
+                return selectedToAccount?.type === 'investment' && (
+                  <FormField
+                    control={transferForm.control}
+                    name="categoryId"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Categoria (Obrigatório para investimentos)</FormLabel>
+                        <FormControl>
+                          <Select onValueChange={field.onChange} value={field.value}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Selecione a categoria de investimento" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {categories
+                                .filter(cat => cat.type === 'savings' || cat.transactionType === 'transfer')
+                                .map((category: any) => (
+                                  <SelectItem key={category.id} value={category.id}>
+                                    {category.name}
+                                  </SelectItem>
+                                ))}
+                            </SelectContent>
+                          </Select>
+                        </FormControl>
+                        <FormMessage />
+                        <div className="text-xs text-muted-foreground mt-1">
+                          ⚠️ Transferências para investimento serão registradas como despesas de categoria "savings" (20%) e excluídas do cálculo de resultado do período.
+                        </div>
+                      </FormItem>
+                    )}
+                  />
+                );
+              })()}
 
               <div className="flex justify-end space-x-4">
                 <Button type="button" variant="outline" onClick={() => setShowTransferDialog(false)}>
