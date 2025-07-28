@@ -3,13 +3,14 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useAuth } from '@/lib/auth';
+import { useTheme } from '@/lib/theme';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { ChartLine, Eye, EyeOff, Loader2 } from 'lucide-react';
+import { ChartLine, Eye, EyeOff, Loader2, Sun, Moon } from 'lucide-react';
 
 // Utility functions for phone formatting
 const formatPhoneNumber = (value: string): string => {
@@ -68,6 +69,7 @@ type RegisterFormData = z.infer<typeof registerSchema>;
 
 export function Login() {
   const { login, register } = useAuth();
+  const { theme, setTheme } = useTheme();
   const { toast } = useToast();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -140,7 +142,29 @@ export function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+    <div className="min-h-screen bg-background flex items-center justify-center p-4 relative">
+      {/* Theme Selector */}
+      <div className="absolute top-6 right-6 flex items-center space-x-1 bg-muted/50 backdrop-blur-sm rounded-full p-1 border border-border/50">
+        <Button
+          variant={theme === 'light' ? 'default' : 'ghost'}
+          size="sm"
+          onClick={() => setTheme('light')}
+          className="h-8 px-3 text-xs font-medium rounded-full transition-all"
+        >
+          <Sun className="h-3.5 w-3.5 mr-1.5" />
+          Claro
+        </Button>
+        <Button
+          variant={theme === 'dark' ? 'default' : 'ghost'}
+          size="sm"
+          onClick={() => setTheme('dark')}
+          className="h-8 px-3 text-xs font-medium rounded-full transition-all"
+        >
+          <Moon className="h-3.5 w-3.5 mr-1.5" />
+          Escuro
+        </Button>
+      </div>
+
       <div className="w-full max-w-md">
         {/* Logo and Brand */}
         <div className="text-center mb-8">
