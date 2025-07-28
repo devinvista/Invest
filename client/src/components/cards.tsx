@@ -27,6 +27,7 @@ const cardFormSchema = z.object({
 const expenseFormSchema = z.object({
   amount: z.string().min(1, 'Valor é obrigatório'),
   description: z.string().min(1, 'Descrição é obrigatória'),
+  categoryId: z.string().min(1, 'Categoria é obrigatória'),
 });
 
 const paymentFormSchema = z.object({
@@ -74,6 +75,7 @@ export function Cards() {
     defaultValues: {
       amount: '',
       description: '',
+      categoryId: '',
     },
   });
 
@@ -119,18 +121,13 @@ export function Cards() {
   };
 
   const addExpenseMutation = useMutation({
-    mutationFn: async (data: ExpenseFormData) => {
-      // Find a default expense category
-      const expenseCategory = categories.find((cat: any) => 
-        cat.transactionType === 'expense'
-      );
-      
+    mutationFn: async (data: ExpenseFormData) => {      
       const response = await apiRequest('POST', '/api/transactions', {
         type: 'expense',
         amount: parseFloat(data.amount),
         description: data.description,
         creditCardId: selectedCard.id,
-        categoryId: expenseCategory?.id || categories[0]?.id,
+        categoryId: data.categoryId,
         date: new Date().toISOString(),
       });
       return response.json();
@@ -593,6 +590,40 @@ export function Cards() {
                         {...field} 
                       />
                     </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={expenseForm.control}
+                name="categoryId"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Categoria</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecionar categoria" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {categories
+                          .filter((category: any) => category.transactionType === 'expense')
+                          .map((category: any) => (
+                            <SelectItem key={category.id} value={category.id}>
+                              <div className="flex items-center space-x-2">
+                                <span>{category.name}</span>
+                                <span className="text-xs text-muted-foreground">
+                                  {category.type === 'necessities' && '(Necessidades)'}
+                                  {category.type === 'wants' && '(Desejos)'}
+                                  {category.type === 'savings' && '(Poupança)'}
+                                </span>
+                              </div>
+                            </SelectItem>
+                          ))}
+                      </SelectContent>
+                    </Select>
                     <FormMessage />
                   </FormItem>
                 )}

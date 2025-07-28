@@ -167,11 +167,21 @@ export function TransactionForm({ onSuccess }: TransactionFormProps) {
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    {categories.map((category: any) => (
-                      <SelectItem key={category.id} value={category.id}>
-                        {category.name}
-                      </SelectItem>
-                    ))}
+                    {categories
+                      .filter((category: any) => category.transactionType === transactionType)
+                      .map((category: any) => (
+                        <SelectItem key={category.id} value={category.id}>
+                          <div className="flex items-center space-x-2">
+                            <span>{category.name}</span>
+                            <span className="text-xs text-muted-foreground">
+                              {category.type === 'necessities' && '(Necessidades)'}
+                              {category.type === 'wants' && '(Desejos)'}
+                              {category.type === 'savings' && '(Poupança)'}
+                              {category.transactionType === 'income' && '(Receita)'}
+                            </span>
+                          </div>
+                        </SelectItem>
+                      ))}
                   </SelectContent>
                 </Select>
                 <FormMessage />

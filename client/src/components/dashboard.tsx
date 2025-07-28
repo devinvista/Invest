@@ -368,7 +368,7 @@ export function Dashboard() {
               <div className="space-y-4">
                 {goals.length > 0 ? (
                   goals.slice(0, 3).map((goal, index) => {
-                    const progress = calculateGoalProgress(goal);
+                    const progress = calculateGoalProgress(goal.currentAmount, goal.targetAmount);
                     return (
                       <div key={index} className="space-y-3">
                         <div className="flex items-center justify-between">
