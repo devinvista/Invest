@@ -27,9 +27,9 @@ import { PieChart as RechartsPieChart, Pie, Cell, ResponsiveContainer, LineChart
 import { useState } from 'react';
 
 const COLORS = {
-  necessities: 'hsl(207, 90%, 54%)',
-  wants: 'hsl(38, 92%, 50%)',
-  savings: 'hsl(122, 39%, 49%)',
+  necessities: 'hsl(var(--chart-1))', // Electric Purple
+  wants: 'hsl(var(--chart-4))', // Vibrant Orange 
+  savings: 'hsl(var(--chart-3))', // Electric Lime
 };
 
 interface DashboardData {
@@ -204,8 +204,9 @@ export function Dashboard() {
                   <AreaChart data={wealthData}>
                     <defs>
                       <linearGradient id="colorWealthGradient" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3}/>
-                        <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
+                        <stop offset="5%" stopColor="hsl(var(--vibrant-purple))" stopOpacity={0.4}/>
+                        <stop offset="50%" stopColor="hsl(var(--vibrant-pink))" stopOpacity={0.2}/>
+                        <stop offset="95%" stopColor="hsl(var(--vibrant-pink))" stopOpacity={0}/>
                       </linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
@@ -233,8 +234,8 @@ export function Dashboard() {
                     <Area 
                       type="monotone" 
                       dataKey="value" 
-                      stroke="hsl(var(--primary))" 
-                      strokeWidth={2}
+                      stroke="hsl(var(--vibrant-purple))" 
+                      strokeWidth={3}
                       fill="url(#colorWealthGradient)" 
                     />
                   </AreaChart>
@@ -382,7 +383,7 @@ export function Dashboard() {
                             {Math.round(progress)}%
                           </Badge>
                         </div>
-                        <Progress value={Math.min(progress, 100)} className="h-2" />
+                        <Progress value={Math.min(progress, 100)} gradient="orange" className="h-2" />
                         <p className="text-xs text-muted-foreground">
                           Meta para {formatDate(goal.targetDate)}
                         </p>

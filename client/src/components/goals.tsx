@@ -37,16 +37,16 @@ export function Goals() {
       parseFloat(goal.targetAmount)
     );
     
-    if (progress >= 100) return 'text-green-600';
+    if (progress >= 100) return 'text-vibrant-lime';
     
     const targetDate = new Date(goal.targetDate);
     const today = new Date();
     const monthsRemaining = (targetDate.getFullYear() - today.getFullYear()) * 12 + 
                            (targetDate.getMonth() - today.getMonth());
     
-    if (monthsRemaining < 0) return 'text-red-600';
-    if (monthsRemaining < 3) return 'text-yellow-600';
-    return 'text-blue-600';
+    if (monthsRemaining < 0) return 'text-vibrant-pink';
+    if (monthsRemaining < 3) return 'text-vibrant-orange';
+    return 'text-vibrant-teal';
   };
 
   const getGoalStatusIcon = (goal: any) => {
@@ -55,16 +55,16 @@ export function Goals() {
       parseFloat(goal.targetAmount)
     );
     
-    if (progress >= 100) return <CheckCircle className="h-5 w-5 text-green-600" />;
+    if (progress >= 100) return <CheckCircle className="h-5 w-5 text-vibrant-lime" />;
     
     const targetDate = new Date(goal.targetDate);
     const today = new Date();
     const monthsRemaining = (targetDate.getFullYear() - today.getFullYear()) * 12 + 
                            (targetDate.getMonth() - today.getMonth());
     
-    if (monthsRemaining < 0) return <AlertCircle className="h-5 w-5 text-red-600" />;
-    if (monthsRemaining < 3) return <Clock className="h-5 w-5 text-yellow-600" />;
-    return <Target className="h-5 w-5 text-blue-600" />;
+    if (monthsRemaining < 0) return <AlertCircle className="h-5 w-5 text-vibrant-pink" />;
+    if (monthsRemaining < 3) return <Clock className="h-5 w-5 text-vibrant-orange" />;
+    return <Target className="h-5 w-5 text-vibrant-teal" />;
   };
 
   if (isLoading) {
@@ -130,7 +130,7 @@ export function Goals() {
                 <p className="text-sm font-medium text-muted-foreground">Valor Meta</p>
                 <p className="text-2xl font-bold text-foreground">{formatCurrency(totalTargetAmount)}</p>
               </div>
-              <DollarSign className="h-8 w-8 text-blue-600" />
+              <DollarSign className="h-8 w-8 text-vibrant-purple" />
             </div>
           </CardContent>
         </Card>
@@ -140,9 +140,9 @@ export function Goals() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Já Poupado</p>
-                <p className="text-2xl font-bold text-green-600">{formatCurrency(totalCurrentAmount)}</p>
+                <p className="text-2xl font-bold text-vibrant-teal">{formatCurrency(totalCurrentAmount)}</p>
               </div>
-              <TrendingUp className="h-8 w-8 text-green-600" />
+              <TrendingUp className="h-8 w-8 text-vibrant-teal" />
             </div>
           </CardContent>
         </Card>
@@ -154,7 +154,7 @@ export function Goals() {
                 <p className="text-sm font-medium text-muted-foreground">Aportes Mensais</p>
                 <p className="text-2xl font-bold text-foreground">{formatCurrency(totalMonthlyContribution)}</p>
               </div>
-              <Calendar className="h-8 w-8 text-purple-600" />
+              <Calendar className="h-8 w-8 text-vibrant-orange" />
             </div>
           </CardContent>
         </Card>
@@ -204,7 +204,7 @@ export function Goals() {
                   const remaining = parseFloat(goal.targetAmount) - parseFloat(goal.currentAmount);
 
                   return (
-                    <Card key={goal.id} className="financial-card">
+                    <Card key={goal.id} className="vibrant-card-teal">
                       <CardContent className="pt-6">
                         <div className="flex items-start justify-between mb-4">
                           <div className="flex items-center space-x-3">
@@ -232,7 +232,7 @@ export function Goals() {
                                 {formatCurrency(parseFloat(goal.currentAmount))} de {formatCurrency(parseFloat(goal.targetAmount))}
                               </span>
                             </div>
-                            <Progress value={progress} className="h-3" />
+                            <Progress value={progress} gradient="purple" className="h-3" />
                           </div>
 
                           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">

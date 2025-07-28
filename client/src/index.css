@@ -74,12 +74,12 @@
   --warning: hsl(45, 85%, 55%); /* #F39C12 - Modern orange */
   --warning-foreground: hsl(0, 0%, 100%);
   
-  /* Enhanced chart colors for dark mode - modern palette */
-  --chart-1: hsl(205, 100%, 60%); /* #3399FF - Primary Blue */
-  --chart-2: hsl(180, 70%, 50%); /* #26D0CE - Cyan */
-  --chart-3: hsl(160, 60%, 50%); /* #2ECC71 - Green */
-  --chart-4: hsl(45, 85%, 55%); /* #F39C12 - Orange */
-  --chart-5: hsl(0, 75%, 60%); /* #E74C3C - Red */
+  /* Enhanced chart colors for dark mode - vibrant palette */
+  --chart-1: hsl(270, 75%, 65%); /* Electric Purple */
+  --chart-2: hsl(180, 75%, 55%); /* Electric Teal */
+  --chart-3: hsl(90, 75%, 55%); /* Electric Lime */
+  --chart-4: hsl(25, 90%, 60%); /* Vibrant Orange */
+  --chart-5: hsl(330, 75%, 65%); /* Electric Pink */
   
   /* Modern category colors for dark mode */
   --necessities: hsl(205, 100%, 60%); /* Modern Blue */
@@ -345,5 +345,44 @@
   
   .text-vibrant-blue {
     color: hsl(var(--vibrant-blue));
+  }
+
+  /* Gradient classes for progress bars and visual elements */
+  .gradient-purple {
+    background: linear-gradient(135deg, hsl(var(--vibrant-purple)), hsl(var(--vibrant-pink)));
+  }
+  
+  .gradient-teal {
+    background: linear-gradient(135deg, hsl(var(--vibrant-teal)), hsl(var(--vibrant-lime)));
+  }
+  
+  .gradient-orange {
+    background: linear-gradient(135deg, hsl(var(--vibrant-orange)), hsl(var(--chart-4)));
+  }
+  
+  .gradient-success {
+    background: linear-gradient(135deg, hsl(var(--success)), hsl(var(--vibrant-lime)));
+  }
+
+  /* Progress bar gradients */
+  .progress-gradient-purple {
+    background: linear-gradient(90deg, hsl(var(--vibrant-purple)), hsl(var(--vibrant-pink)));
+  }
+  
+  .progress-gradient-teal {
+    background: linear-gradient(90deg, hsl(var(--vibrant-teal)), hsl(var(--vibrant-lime)));
+  }
+  
+  .progress-gradient-orange {
+    background: linear-gradient(90deg, hsl(var(--vibrant-orange)), hsl(var(--chart-4)));
+  }
+
+  /* Chart gradient definitions */
+  .chart-gradient-1 {
+    background: linear-gradient(135deg, hsl(var(--chart-1)), hsl(var(--chart-5)));
+  }
+  
+  .chart-gradient-2 {
+    background: linear-gradient(135deg, hsl(var(--chart-2)), hsl(var(--chart-3)));
   }
 }

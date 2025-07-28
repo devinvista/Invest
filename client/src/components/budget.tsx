@@ -989,6 +989,7 @@ export function Budget() {
                   </div>
                   <Progress 
                     value={(spendingByType.necessities / parseFloat(budget.necessitiesBudget)) * 100} 
+                    gradient="purple"
                     className="h-2"
                   />
                 </div>
@@ -1028,6 +1029,7 @@ export function Budget() {
                   </div>
                   <Progress 
                     value={(spendingByType.wants / parseFloat(budget.wantsBudget)) * 100} 
+                    gradient="orange"
                     className="h-2"
                   />
                 </div>
@@ -1067,6 +1069,7 @@ export function Budget() {
                   </div>
                   <Progress 
                     value={(spendingByType.savings / parseFloat(budget.savingsBudget)) * 100} 
+                    gradient="teal"
                     className="h-2"
                   />
                 </div>
