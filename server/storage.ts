@@ -249,6 +249,31 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createBudget(budget: InsertBudget): Promise<Budget> {
+    // Check if budget already exists (for update scenario)
+    const existingBudget = await this.getBudget(budget.userId, budget.month || 0, budget.year || 0);
+    
+    if (existingBudget && 
+        ((budget.isDefault && existingBudget.isDefault) || 
+         (!budget.isDefault && !existingBudget.isDefault && 
+          existingBudget.month === budget.month && 
+          existingBudget.year === budget.year))) {
+      
+      // Update existing budget
+      const [updatedBudget] = await db.update(budgets)
+        .set({
+          totalIncome: budget.totalIncome,
+          necessitiesBudget: budget.necessitiesBudget,
+          wantsBudget: budget.wantsBudget,
+          savingsBudget: budget.savingsBudget,
+          isDefault: budget.isDefault,
+        })
+        .where(eq(budgets.id, existingBudget.id))
+        .returning();
+      
+      return updatedBudget;
+    }
+    
+    // Create new budget
     const [newBudget] = await db.insert(budgets).values(budget).returning();
     return newBudget;
   }

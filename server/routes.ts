@@ -529,6 +529,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { month, year } = req.params;
       const budget = await storage.getBudget(req.userId, parseInt(month), parseInt(year));
       
+      console.log(`🔍 Buscando orçamento para usuário ${req.userId}, mês ${month}/${year}:`, {
+        found: !!budget,
+        budgetId: budget?.id,
+        isDefault: budget?.isDefault,
+        totalIncome: budget?.totalIncome
+      });
+      
       // Prevent caching to ensure fresh data
       res.set({
         'Cache-Control': 'no-cache, no-store, must-revalidate',
@@ -538,6 +545,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       res.json(budget);
     } catch (error) {
+      console.error(`❌ Erro ao buscar orçamento para ${month}/${year}:`, error);
       res.status(500).json({ message: "Erro ao carregar orçamento", error: error instanceof Error ? error.message : "Erro desconhecido" });
     }
   });
@@ -548,6 +556,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const budget = await storage.createBudget(budgetData);
       
       console.log(`✅ Orçamento criado/atualizado para usuário ${req.userId}:`, {
+        id: budget.id,
         month: budgetData.month,
         year: budgetData.year,
         isDefault: budgetData.isDefault,
