@@ -14,7 +14,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { CreditCard, Plus, AlertTriangle, Calendar, DollarSign, MoreHorizontal, Wallet } from 'lucide-react';
+import { CreditCard, Plus, AlertTriangle, Calendar, DollarSign, MoreHorizontal, Wallet, ShoppingCart, Banknote } from 'lucide-react';
 
 const cardFormSchema = z.object({
   name: z.string().min(1, 'Nome é obrigatório'),
@@ -24,12 +24,27 @@ const cardFormSchema = z.object({
   bankName: z.string().optional(),
 });
 
+const expenseFormSchema = z.object({
+  amount: z.string().min(1, 'Valor é obrigatório'),
+  description: z.string().min(1, 'Descrição é obrigatória'),
+});
+
+const paymentFormSchema = z.object({
+  amount: z.string().min(1, 'Valor é obrigatório'),
+  accountId: z.string().min(1, 'Conta é obrigatória'),
+});
+
 type CardFormData = z.infer<typeof cardFormSchema>;
+type ExpenseFormData = z.infer<typeof expenseFormSchema>;
+type PaymentFormData = z.infer<typeof paymentFormSchema>;
 
 export function Cards() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [showExpenseDialog, setShowExpenseDialog] = useState(false);
+  const [showPaymentDialog, setShowPaymentDialog] = useState(false);
+  const [selectedCard, setSelectedCard] = useState<any>(null);
 
   const { data: creditCards = [], isLoading } = useQuery<any[]>({
     queryKey: ['/api/credit-cards'],
@@ -47,6 +62,22 @@ export function Cards() {
       closingDay: 15,
       dueDay: 10,
       bankName: 'none',
+    },
+  });
+
+  const expenseForm = useForm<ExpenseFormData>({
+    resolver: zodResolver(expenseFormSchema),
+    defaultValues: {
+      amount: '',
+      description: '',
+    },
+  });
+
+  const paymentForm = useForm<PaymentFormData>({
+    resolver: zodResolver(paymentFormSchema),
+    defaultValues: {
+      amount: '',
+      accountId: '',
     },
   });
 
@@ -81,6 +112,75 @@ export function Cards() {
 
   const onSubmit = (data: CardFormData) => {
     createCardMutation.mutate(data);
+  };
+
+  const addExpenseMutation = useMutation({
+    mutationFn: async (data: ExpenseFormData) => {
+      const response = await apiRequest('POST', '/api/transactions', {
+        type: 'expense',
+        amount: parseFloat(data.amount),
+        description: data.description,
+        creditCardId: selectedCard.id,
+        categoryId: 'default-expense', // Will need to be selected from categories
+      });
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: 'Sucesso',
+        description: 'Despesa adicionada com sucesso!',
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/credit-cards'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/transactions'] });
+      setShowExpenseDialog(false);
+      expenseForm.reset();
+    },
+    onError: (error: Error) => {
+      toast({
+        title: 'Erro',
+        description: error.message,
+        variant: 'destructive',
+      });
+    },
+  });
+
+  const paymentMutation = useMutation({
+    mutationFn: async (data: PaymentFormData) => {
+      const response = await apiRequest('POST', '/api/transactions', {
+        type: 'expense',
+        amount: parseFloat(data.amount),
+        description: `Pagamento fatura ${selectedCard.name}`,
+        accountId: data.accountId,
+        categoryId: 'payment-credit-card',
+      });
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: 'Sucesso',
+        description: 'Pagamento registrado com sucesso!',
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/credit-cards'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/transactions'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/accounts'] });
+      setShowPaymentDialog(false);
+      paymentForm.reset();
+    },
+    onError: (error: Error) => {
+      toast({
+        title: 'Erro',
+        description: error.message,
+        variant: 'destructive',
+      });
+    },
+  });
+
+  const onExpenseSubmit = (data: ExpenseFormData) => {
+    addExpenseMutation.mutate(data);
+  };
+
+  const onPaymentSubmit = (data: PaymentFormData) => {
+    paymentMutation.mutate(data);
   };
 
   const getTotalLimit = () => {
@@ -272,6 +372,34 @@ export function Cards() {
                         </span>
                       </div>
                     )}
+
+                    {/* Action buttons */}
+                    <div className="flex gap-2 pt-2">
+                      <Button 
+                        size="sm" 
+                        variant="outline" 
+                        onClick={() => {
+                          setSelectedCard(card);
+                          setShowExpenseDialog(true);
+                        }}
+                        className="flex-1"
+                      >
+                        <ShoppingCart className="w-4 h-4 mr-1" />
+                        Despesa
+                      </Button>
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        onClick={() => {
+                          setSelectedCard(card);
+                          setShowPaymentDialog(true);
+                        }}
+                        className="flex-1"
+                      >
+                        <Banknote className="w-4 h-4 mr-1" />
+                        Pagar Fatura
+                      </Button>
+                    </div>
                   </CardContent>
                 </Card>
               );
@@ -402,6 +530,147 @@ export function Cards() {
                 </Button>
                 <Button type="submit" disabled={createCardMutation.isPending}>
                   {createCardMutation.isPending ? 'Criando...' : 'Criar Cartão'}
+                </Button>
+              </div>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Add Expense Dialog */}
+      <Dialog open={showExpenseDialog} onOpenChange={setShowExpenseDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Adicionar Despesa</DialogTitle>
+            <DialogDescription>
+              Registre uma nova despesa no cartão {selectedCard?.name}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <Form {...expenseForm}>
+            <form onSubmit={expenseForm.handleSubmit(onExpenseSubmit)} className="space-y-4">
+              <FormField
+                control={expenseForm.control}
+                name="description"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Descrição</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Ex: Supermercado, Restaurante..." {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={expenseForm.control}
+                name="amount"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Valor</FormLabel>
+                    <FormControl>
+                      <Input 
+                        type="number" 
+                        step="0.01" 
+                        placeholder="0,00" 
+                        {...field} 
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <div className="flex justify-end space-x-2 pt-4">
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={() => setShowExpenseDialog(false)}
+                >
+                  Cancelar
+                </Button>
+                <Button 
+                  type="submit" 
+                  disabled={addExpenseMutation.isPending}
+                >
+                  {addExpenseMutation.isPending ? 'Adicionando...' : 'Adicionar Despesa'}
+                </Button>
+              </div>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Payment Dialog */}
+      <Dialog open={showPaymentDialog} onOpenChange={setShowPaymentDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Pagar Fatura</DialogTitle>
+            <DialogDescription>
+              Registre o pagamento da fatura do cartão {selectedCard?.name}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <Form {...paymentForm}>
+            <form onSubmit={paymentForm.handleSubmit(onPaymentSubmit)} className="space-y-4">
+              <FormField
+                control={paymentForm.control}
+                name="amount"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Valor do Pagamento</FormLabel>
+                    <FormControl>
+                      <Input 
+                        type="number" 
+                        step="0.01" 
+                        placeholder="0,00" 
+                        {...field} 
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={paymentForm.control}
+                name="accountId"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Conta de Débito</FormLabel>
+                    <FormControl>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecione a conta" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {accounts.map((account: any) => (
+                            <SelectItem key={account.id} value={account.id}>
+                              {account.name} - {formatCurrency(parseFloat(account.balance))}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <div className="flex justify-end space-x-2 pt-4">
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={() => setShowPaymentDialog(false)}
+                >
+                  Cancelar
+                </Button>
+                <Button 
+                  type="submit" 
+                  disabled={paymentMutation.isPending}
+                >
+                  {paymentMutation.isPending ? 'Processando...' : 'Registrar Pagamento'}
                 </Button>
               </div>
             </form>

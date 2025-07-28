@@ -11,6 +11,13 @@ Visual Identity: Pharos Capital brand guidelines applied.
 
 ## Recent Changes
 
+- **January 28, 2025**: Enhanced credit card management with action buttons
+  - Added "Adicionar Despesa" and "Pagar Fatura" buttons to each credit card
+  - Implemented expense tracking dialog for direct card expense registration
+  - Created payment dialog for recording card invoice payments with account selection
+  - Fixed SelectItem error by replacing empty values with "none" to comply with Radix UI
+  - Added proper form validation and error handling for both actions
+  - Integrated with existing transaction and account systems for real-time updates
 - **January 28, 2025**: Implemented temporal logic for default budgets
   - Default budgets now only apply to months equal or later than their creation date
   - Fixed budget update cache issues with proper React Query invalidation
