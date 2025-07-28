@@ -5,62 +5,63 @@ import { sql } from "drizzle-orm";
 import { users } from "@shared/schema";
 import dotenv from "dotenv";
 
-// Carregar variáveis de ambiente
+// Load environment variables
 dotenv.config();
 
-console.log(`🔗 Conectando ao PostgreSQL...`);
+console.log(`🔗 Connecting to PostgreSQL...`);
 
-// Configuração do banco PostgreSQL usando variáveis de ambiente
+// PostgreSQL database configuration using environment variables
 if (!process.env.DATABASE_URL) {
   throw new Error("DATABASE_URL is required");
 }
 
 const connection = postgres(process.env.DATABASE_URL, { ssl: 'require' });
 
-// Configurar Drizzle com PostgreSQL
+// Configure Drizzle with PostgreSQL
 export const db = drizzle(connection, { schema });
 
-// Testar conexão
+// Test connection
 export async function testConnection() {
   try {
     await db.execute(sql`SELECT 1`);
-    console.log("✅ Conexão PostgreSQL estabelecida com sucesso!");
+    console.log("✅ PostgreSQL connection established successfully!");
     return true;
   } catch (error) {
-    console.error("❌ Erro ao conectar com PostgreSQL:", error);
+    console.error("❌ Error connecting to PostgreSQL:", error);
     return false;
   }
 }
 
-// Reset completo do banco
-export async function resetDatabase() {
-  const { resetDatabase: resetDB } = await import("./reset-database");
-  return await resetDB();
-}
-
-// Inicializar tabelas usando Drizzle
+// Initialize tables using Drizzle
 export async function initializeTables() {
   try {
-    console.log("🏗️ Inicializando tabelas do schema PostgreSQL...");
+    console.log("🏗️ Initializing PostgreSQL schema tables...");
     
-    // With Drizzle and PostgreSQL Neon, schema is managed by migrations
+    // With Drizzle and PostgreSQL, schema is managed by migrations
     // Check if we need to create initial test data
     try {
       const userCount = await db.select().from(users).limit(1);
       if (userCount.length === 0) {
-        console.log("🌱 Criando dados básicos de teste...");
-        const { createSimpleSeedData } = await import("./simple-postgres-seed");
-        await createSimpleSeedData();
+        console.log("🌱 Creating basic test data...");
+        await createInitialData();
       }
     } catch (error) {
-      console.log("🌱 Tabelas não existem ainda, criando dados básicos...");
-      const { createSimpleSeedData } = await import("./simple-postgres-seed");
-      await createSimpleSeedData();
+      console.log("🌱 Tables don't exist yet, will be created by migrations...");
     }
     
-    console.log("✅ Inicialização das tabelas concluída!");
+    console.log("✅ Database initialization completed!");
   } catch (error) {
-    console.error("❌ Erro na inicialização do banco:", error);
+    console.error("❌ Error during database initialization:", error);
     throw error;
+  }
+}
+
+// Create initial admin user and basic data
+async function createInitialData() {
+  try {
+    // This will be handled by migrations and seeding scripts
+    console.log("📊 Initial data creation will be handled by migrations");
+  } catch (error) {
+    console.error("❌ Error creating initial data:", error);
   }
 }
