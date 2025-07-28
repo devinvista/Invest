@@ -62,17 +62,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
         password: hashedPassword,
       });
 
-      // Create default categories
+      // Create default categories following 50/30/20 methodology
       const defaultCategories = [
-        { userId: user.id, name: "Alimentação", type: "necessities" as const, transactionType: "expense" as const, color: "#1565C0", icon: "fas fa-utensils" },
-        { userId: user.id, name: "Moradia", type: "necessities" as const, transactionType: "expense" as const, color: "#1565C0", icon: "fas fa-home" },
-        { userId: user.id, name: "Transporte", type: "necessities" as const, transactionType: "expense" as const, color: "#1565C0", icon: "fas fa-car" },
-        { userId: user.id, name: "Entretenimento", type: "wants" as const, transactionType: "expense" as const, color: "#FF9800", icon: "fas fa-gamepad" },
-        { userId: user.id, name: "Compras", type: "wants" as const, transactionType: "expense" as const, color: "#FF9800", icon: "fas fa-shopping-bag" },
-        { userId: user.id, name: "Investimentos", type: "savings" as const, transactionType: "expense" as const, color: "#4CAF50", icon: "fas fa-chart-line" },
-        { userId: user.id, name: "Poupança", type: "savings" as const, transactionType: "expense" as const, color: "#4CAF50", icon: "fas fa-piggy-bank" },
-        { userId: user.id, name: "Salário", type: "savings" as const, transactionType: "income" as const, color: "#4CAF50", icon: "fas fa-money-bill" },
-        { userId: user.id, name: "Transferência", type: "savings" as const, transactionType: "transfer" as const, color: "#9C27B0", icon: "fas fa-exchange-alt" },
+        // NECESSIDADES (50%) - Gastos essenciais para viver
+        { userId: user.id, name: "Alimentação", type: "necessities" as const, transactionType: "expense" as const, color: "#ef4444", icon: "Utensils", description: "Supermercado, restaurantes básicos, alimentação essencial", isDefault: true },
+        { userId: user.id, name: "Moradia", type: "necessities" as const, transactionType: "expense" as const, color: "#ef4444", icon: "Home", description: "Aluguel, financiamento, condomínio, IPTU", isDefault: true },
+        { userId: user.id, name: "Transporte", type: "necessities" as const, transactionType: "expense" as const, color: "#ef4444", icon: "Car", description: "Combustível, transporte público, manutenção veicular", isDefault: true },
+        { userId: user.id, name: "Saúde", type: "necessities" as const, transactionType: "expense" as const, color: "#ef4444", icon: "Heart", description: "Plano de saúde, medicamentos, consultas médicas", isDefault: true },
+        { userId: user.id, name: "Utilidades", type: "necessities" as const, transactionType: "expense" as const, color: "#ef4444", icon: "Smartphone", description: "Energia elétrica, água, gás, internet, telefone", isDefault: true },
+        { userId: user.id, name: "Educação Básica", type: "necessities" as const, transactionType: "expense" as const, color: "#ef4444", icon: "GraduationCap", description: "Escola, material escolar, cursos profissionalizantes", isDefault: true },
+        { userId: user.id, name: "Seguros", type: "necessities" as const, transactionType: "expense" as const, color: "#ef4444", icon: "CreditCard", description: "Seguro auto, residencial, vida", isDefault: true },
+        
+        // DESEJOS (30%) - Gastos para qualidade de vida e prazer
+        { userId: user.id, name: "Entretenimento", type: "wants" as const, transactionType: "expense" as const, color: "#f59e0b", icon: "Gamepad2", description: "Cinema, jogos, streaming, shows, eventos", isDefault: true },
+        { userId: user.id, name: "Compras Pessoais", type: "wants" as const, transactionType: "expense" as const, color: "#f59e0b", icon: "ShoppingBag", description: "Roupas, acessórios, cosméticos, eletrônicos", isDefault: true },
+        { userId: user.id, name: "Restaurantes", type: "wants" as const, transactionType: "expense" as const, color: "#f59e0b", icon: "Coffee", description: "Restaurantes, delivery, cafés, lanches", isDefault: true },
+        { userId: user.id, name: "Viagens", type: "wants" as const, transactionType: "expense" as const, color: "#f59e0b", icon: "Plane", description: "Férias, passeios, hospedagem, turismo", isDefault: true },
+        { userId: user.id, name: "Hobbies", type: "wants" as const, transactionType: "expense" as const, color: "#f59e0b", icon: "Music", description: "Esportes, música, arte, coleções", isDefault: true },
+        { userId: user.id, name: "Beleza e Bem-estar", type: "wants" as const, transactionType: "expense" as const, color: "#f59e0b", icon: "Dumbbell", description: "Academia, salão, spa, massagem", isDefault: true },
+        { userId: user.id, name: "Presentes", type: "wants" as const, transactionType: "expense" as const, color: "#f59e0b", icon: "Gift", description: "Presentes para família e amigos", isDefault: true },
+        
+        // POUPANÇA E INVESTIMENTOS (20%) - Construção de patrimônio
+        { userId: user.id, name: "Reserva de Emergência", type: "savings" as const, transactionType: "expense" as const, color: "#22c55e", icon: "PiggyBank", description: "Poupança para emergências (6-12 meses de gastos)", isDefault: true },
+        { userId: user.id, name: "Investimentos", type: "savings" as const, transactionType: "expense" as const, color: "#22c55e", icon: "Target", description: "Ações, fundos, renda fixa, previdência", isDefault: true },
+        { userId: user.id, name: "Objetivos", type: "savings" as const, transactionType: "expense" as const, color: "#22c55e", icon: "Wallet", description: "Poupança para metas específicas", isDefault: true },
+        
+        // RECEITAS
+        { userId: user.id, name: "Salário", type: "necessities" as const, transactionType: "income" as const, color: "#22c55e", icon: "Briefcase", description: "Salário principal do trabalho", isDefault: true },
+        { userId: user.id, name: "Renda Extra", type: "necessities" as const, transactionType: "income" as const, color: "#22c55e", icon: "CircleDollarSign", description: "Freelances, trabalhos extras, vendas", isDefault: true },
+        { userId: user.id, name: "Investimentos (Receita)", type: "necessities" as const, transactionType: "income" as const, color: "#22c55e", icon: "DollarSign", description: "Dividendos, juros, rendimentos", isDefault: true },
+        { userId: user.id, name: "Outros", type: "necessities" as const, transactionType: "income" as const, color: "#22c55e", icon: "Building", description: "Outras fontes de renda", isDefault: true },
       ];
 
       for (const category of defaultCategories) {

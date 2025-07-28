@@ -11,6 +11,15 @@ Visual Identity: Pharos Capital brand guidelines applied.
 
 ## Recent Changes
 
+- **January 28, 2025**: Comprehensive 50/30/20 categorization system revision
+  - Created detailed default categories following proper 50/30/20 methodology
+  - Necessities (50%): 7 essential categories including housing, food, transport, health, utilities
+  - Wants (30%): 7 lifestyle categories including entertainment, dining, travel, hobbies  
+  - Savings (20%): 3 investment categories including emergency fund, investments, goals
+  - Income categories: 4 revenue sources including salary, extra income, investment returns
+  - Added comprehensive category descriptions explaining the 50/30/20 methodology
+  - Enhanced category interface with color-coded badges and visual explanations
+  - Updated new user registration to create robust default category structure
 - **January 28, 2025**: Enhanced credit card management with action buttons
   - Added "Adicionar Despesa" and "Pagar Fatura" buttons to each credit card
   - Implemented expense tracking dialog for direct card expense registration

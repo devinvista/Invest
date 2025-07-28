@@ -231,16 +231,23 @@ export function Categories() {
 
   const typeLabels = {
     income: 'Receitas',
-    necessities: 'Necessidades',
-    wants: 'Desejos',
-    savings: 'Poupança',
+    necessities: 'Necessidades (50%)',
+    wants: 'Desejos (30%)',
+    savings: 'Poupança e Investimentos (20%)',
   };
 
   const typeColors = {
-    income: 'bg-green-100 text-green-800',
-    necessities: 'bg-blue-100 text-blue-800',
-    wants: 'bg-purple-100 text-purple-800',
-    savings: 'bg-orange-100 text-orange-800',
+    income: 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300',
+    necessities: 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300',
+    wants: 'bg-amber-100 text-amber-800 dark:bg-amber-900/20 dark:text-amber-300',
+    savings: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/20 dark:text-emerald-300',
+  };
+
+  const typeDescriptions = {
+    income: 'Todas as suas fontes de renda',
+    necessities: 'Gastos essenciais que você não pode evitar (até 50% da renda)',
+    wants: 'Gastos de qualidade de vida e entretenimento (até 30% da renda)',
+    savings: 'Reserva de emergência e investimentos para o futuro (pelo menos 20% da renda)',
   };
 
   if (isLoading) {
@@ -267,7 +274,7 @@ export function Categories() {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h1 className="text-2xl font-bold text-foreground">Categorias</h1>
-            <p className="mt-1 text-muted-foreground">Organize suas receitas e despesas</p>
+            <p className="mt-1 text-muted-foreground">Organize suas finanças seguindo a regra 50/30/20</p>
           </div>
           
           <div className="mt-4 sm:mt-0 flex items-center space-x-4">
@@ -430,11 +437,62 @@ export function Categories() {
           </div>
         </div>
 
+        {/* 50/30/20 Method Info */}
+        <Card className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950/20 dark:to-purple-950/20 border-blue-200 dark:border-blue-800">
+          <CardContent className="pt-6">
+            <div className="flex items-start space-x-4">
+              <Target className="w-8 h-8 text-blue-600 mt-1" />
+              <div>
+                <h3 className="text-lg font-semibold text-blue-900 dark:text-blue-100 mb-2">
+                  Metodologia 50/30/20
+                </h3>
+                <p className="text-blue-700 dark:text-blue-200 text-sm mb-3">
+                  Um método simples para organizar suas finanças e construir patrimônio:
+                </p>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="bg-white/60 dark:bg-gray-800/60 rounded-lg p-3">
+                    <div className="flex items-center space-x-2 mb-1">
+                      <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                      <span className="text-sm font-medium text-red-700 dark:text-red-300">50% Necessidades</span>
+                    </div>
+                    <p className="text-xs text-gray-600 dark:text-gray-300">
+                      Gastos essenciais como moradia, alimentação, transporte e saúde
+                    </p>
+                  </div>
+                  <div className="bg-white/60 dark:bg-gray-800/60 rounded-lg p-3">
+                    <div className="flex items-center space-x-2 mb-1">
+                      <div className="w-3 h-3 bg-amber-500 rounded-full"></div>
+                      <span className="text-sm font-medium text-amber-700 dark:text-amber-300">30% Desejos</span>
+                    </div>
+                    <p className="text-xs text-gray-600 dark:text-gray-300">
+                      Entretenimento, restaurantes, viagens e outros prazeres da vida
+                    </p>
+                  </div>
+                  <div className="bg-white/60 dark:bg-gray-800/60 rounded-lg p-3">
+                    <div className="flex items-center space-x-2 mb-1">
+                      <div className="w-3 h-3 bg-emerald-500 rounded-full"></div>
+                      <span className="text-sm font-medium text-emerald-700 dark:text-emerald-300">20% Poupança</span>
+                    </div>
+                    <p className="text-xs text-gray-600 dark:text-gray-300">
+                      Reserva de emergência e investimentos para o futuro
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Categories Grid */}
         {Object.entries(groupedCategories).map(([type, typeCategories]: [string, any[]]) => (
           <div key={type}>
-            <div className="flex items-center space-x-2 mb-4">
-              <h2 className="text-lg font-semibold text-foreground">{typeLabels[type as keyof typeof typeLabels]}</h2>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4">
+              <div>
+                <h2 className="text-lg font-semibold text-foreground">{typeLabels[type as keyof typeof typeLabels]}</h2>
+                <p className="text-sm text-muted-foreground mt-1">
+                  {typeDescriptions[type as keyof typeof typeDescriptions]}
+                </p>
+              </div>
               <Badge className={typeColors[type as keyof typeof typeColors]}>
                 {typeCategories.length} {typeCategories.length === 1 ? 'categoria' : 'categorias'}
               </Badge>
