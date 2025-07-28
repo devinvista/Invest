@@ -221,29 +221,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       await storage.updateAccountBalance(fromAccountId, newFromBalance);
       await storage.updateAccountBalance(toAccountId, newToBalance);
 
-      // Create transfer transactions
-      const transferOutData = insertTransactionSchema.parse({
-        userId: req.userId,
-        accountId: fromAccountId,
-        categoryId: null, // We'll need a transfer category
-        type: 'transfer',
-        amount: amount,
-        description: description || `Transferência para ${toAccount.name}`,
-        date: new Date()
-      });
-
-      const transferInData = insertTransactionSchema.parse({
-        userId: req.userId,
-        accountId: toAccountId,
-        categoryId: null, // We'll need a transfer category
-        type: 'transfer',
-        amount: amount,
-        description: description || `Transferência de ${fromAccount.name}`,
-        date: new Date()
-      });
-
-      // For now, we'll skip transaction creation as it requires categoryId
-      // TODO: Create transfer category or handle transfer transactions differently
+      // Note: Transaction records for transfers will be implemented later when category system is fully set up
       
       res.json({ 
         message: "Transferência realizada com sucesso", 
