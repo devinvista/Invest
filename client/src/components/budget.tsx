@@ -29,6 +29,11 @@ export function Budget() {
 
   const { data: budget, isLoading } = useQuery<any>({
     queryKey: ['/api/budget', selectedMonth, selectedYear],
+    queryFn: () => fetch(`/api/budget/${selectedMonth}/${selectedYear}`, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+      }
+    }).then(res => res.json()),
   });
 
   const { data: transactions = [] } = useQuery<any[]>({
@@ -59,7 +64,16 @@ export function Budget() {
         title: 'Sucesso',
         description: 'Orçamento criado com sucesso!',
       });
+      // Invalidar todas as queries relacionadas ao orçamento
       queryClient.invalidateQueries({ queryKey: ['/api/budget'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/budget', selectedMonth, selectedYear] });
+      queryClient.invalidateQueries({ queryKey: ['/api/dashboard'] });
+      // Forçar refetch imediato da query atual
+      queryClient.refetchQueries({ queryKey: ['/api/budget', selectedMonth, selectedYear] });
+      // Pequeno delay para garantir que o servidor processou a mudança
+      setTimeout(() => {
+        queryClient.invalidateQueries({ queryKey: ['/api/budget', selectedMonth, selectedYear] });
+      }, 100);
       setIsEditing(false);
     },
     onError: (error: Error) => {

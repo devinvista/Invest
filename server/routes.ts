@@ -528,6 +528,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { month, year } = req.params;
       const budget = await storage.getBudget(req.userId, parseInt(month), parseInt(year));
+      
+      // Prevent caching to ensure fresh data
+      res.set({
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0'
+      });
+      
       res.json(budget);
     } catch (error) {
       res.status(500).json({ message: "Erro ao carregar orçamento", error: error instanceof Error ? error.message : "Erro desconhecido" });
@@ -538,8 +546,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const budgetData = insertBudgetSchema.parse({ ...req.body, userId: req.userId });
       const budget = await storage.createBudget(budgetData);
+      
+      console.log(`✅ Orçamento criado/atualizado para usuário ${req.userId}:`, {
+        month: budgetData.month,
+        year: budgetData.year,
+        isDefault: budgetData.isDefault,
+        totalIncome: budgetData.totalIncome
+      });
+      
       res.json(budget);
     } catch (error) {
+      console.error('❌ Erro ao criar orçamento:', error);
       res.status(400).json({ message: "Erro ao criar orçamento", error: error instanceof Error ? error.message : "Erro desconhecido" });
     }
   });
