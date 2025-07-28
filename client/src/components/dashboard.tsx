@@ -27,9 +27,17 @@ import { PieChart as RechartsPieChart, Pie, Cell, ResponsiveContainer, LineChart
 import { useState } from 'react';
 
 const COLORS = {
-  necessities: 'hsl(var(--chart-1))', // Electric Purple
-  wants: 'hsl(var(--chart-4))', // Vibrant Orange 
-  savings: 'hsl(var(--chart-3))', // Electric Lime
+  necessities: '#9333ea', // Electric Purple
+  wants: '#f97316', // Vibrant Orange 
+  savings: '#84cc16', // Electric Lime
+};
+
+const VIBRANT_COLORS = {
+  purple: '#9333ea',
+  pink: '#ec4899', 
+  teal: '#06b6d4',
+  orange: '#f97316',
+  lime: '#84cc16'
 };
 
 interface DashboardData {
@@ -204,48 +212,49 @@ export function Dashboard() {
                   <AreaChart data={wealthData}>
                     <defs>
                       <linearGradient id="colorWealthGradient" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="hsl(var(--vibrant-purple))" stopOpacity={0.4}/>
-                        <stop offset="50%" stopColor="hsl(var(--vibrant-pink))" stopOpacity={0.2}/>
-                        <stop offset="95%" stopColor="hsl(var(--vibrant-pink))" stopOpacity={0}/>
+                        <stop offset="0%" stopColor={VIBRANT_COLORS.purple} stopOpacity={0.9}/>
+                        <stop offset="40%" stopColor={VIBRANT_COLORS.pink} stopOpacity={0.7}/>
+                        <stop offset="70%" stopColor={VIBRANT_COLORS.teal} stopOpacity={0.4}/>
+                        <stop offset="100%" stopColor={VIBRANT_COLORS.lime} stopOpacity={0.1}/>
                       </linearGradient>
                     </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--vibrant-purple) / 0.2)" strokeWidth={1} />
+                    <CartesianGrid strokeDasharray="3 3" stroke={VIBRANT_COLORS.purple} strokeWidth={2} strokeOpacity={0.4} />
                     <XAxis 
                       dataKey="month" 
                       axisLine={false}
                       tickLine={false}
-                      tick={{ fontSize: 13, fill: 'hsl(var(--vibrant-purple))', fontWeight: 600 }}
+                      tick={{ fontSize: 14, fill: VIBRANT_COLORS.purple, fontWeight: 700 }}
                     />
                     <YAxis 
                       axisLine={false}
                       tickLine={false}
-                      tick={{ fontSize: 13, fill: 'hsl(var(--vibrant-purple))', fontWeight: 600 }}
+                      tick={{ fontSize: 14, fill: VIBRANT_COLORS.purple, fontWeight: 700 }}
                       tickFormatter={(value) => formatCurrency(value)}
                     />
                     <Tooltip 
                       formatter={(value) => [formatCurrency(Number(value)), 'Patrimônio']}
                       labelStyle={{ 
-                        color: 'hsl(var(--vibrant-purple))', 
+                        color: VIBRANT_COLORS.purple, 
                         fontWeight: 'bold',
-                        fontSize: '14px'
+                        fontSize: '16px'
                       }}
                       contentStyle={{ 
-                        backgroundColor: 'hsl(var(--card))', 
-                        border: '2px solid hsl(var(--vibrant-purple))',
+                        backgroundColor: 'rgba(0, 0, 0, 0.9)', 
+                        border: `3px solid ${VIBRANT_COLORS.purple}`,
                         borderRadius: '12px',
-                        boxShadow: '0 8px 25px hsl(var(--vibrant-purple) / 0.2)'
+                        boxShadow: `0 15px 35px ${VIBRANT_COLORS.purple}40`
                       }}
                       itemStyle={{
-                        color: 'hsl(var(--vibrant-pink))',
+                        color: VIBRANT_COLORS.pink,
                         fontWeight: 'bold',
-                        fontSize: '15px'
+                        fontSize: '16px'
                       }}
                     />
                     <Area 
                       type="monotone" 
                       dataKey="value" 
-                      stroke="hsl(var(--vibrant-purple))" 
-                      strokeWidth={3}
+                      stroke={VIBRANT_COLORS.purple} 
+                      strokeWidth={5}
                       fill="url(#colorWealthGradient)" 
                     />
                   </AreaChart>
