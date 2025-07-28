@@ -46,7 +46,7 @@ export function Cards() {
       limit: '',
       closingDay: 15,
       dueDay: 10,
-      bankName: '',
+      bankName: 'none',
     },
   });
 
@@ -55,6 +55,7 @@ export function Cards() {
       const payload = {
         ...data,
         limit: parseFloat(data.limit),
+        bankName: data.bankName === 'none' ? undefined : data.bankName,
       };
       const response = await apiRequest('POST', '/api/credit-cards', payload);
       return response.json();
@@ -317,11 +318,11 @@ export function Cards() {
                           <SelectValue placeholder="Selecione um banco ou deixe vazio" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">Nenhum banco selecionado</SelectItem>
+                          <SelectItem value="none">Nenhum banco selecionado</SelectItem>
                           {accounts
                             .filter((account: any) => account.bankName)
                             .map((account: any) => (
-                              <SelectItem key={account.id} value={account.bankName}>
+                              <SelectItem key={account.id} value={account.bankName || 'unknown'}>
                                 {account.bankName} - {account.name}
                               </SelectItem>
                             ))
