@@ -29,6 +29,11 @@ export function Budget() {
     isDefault: true,
   });
   const [customCategoryBudgets, setCustomCategoryBudgets] = useState<{[categoryId: string]: string}>({});
+  const [customGroupBudgets, setCustomGroupBudgets] = useState({
+    necessities: '',
+    wants: '',
+    savings: '',
+  });
 
   const { data: budget, isLoading } = useQuery<any>({
     queryKey: ['/api/budget', selectedMonth, selectedYear],
@@ -99,6 +104,15 @@ export function Budget() {
       wantsBudget: allocation.wants.toString(),
       savingsBudget: allocation.savings.toString(),
     });
+
+    // Para orçamento personalizado, também atualizar os grupos personalizados
+    if (budgetType === 'custom') {
+      setCustomGroupBudgets({
+        necessities: allocation.necessities.toString(),
+        wants: allocation.wants.toString(),
+        savings: allocation.savings.toString(),
+      });
+    }
   };
 
   const handleBudgetTypeChange = (type: 'default' | 'specific' | 'custom') => {
@@ -108,9 +122,18 @@ export function Budget() {
       isDefault: type === 'default',
     });
     
-    // Se mudou para personalizado, limpar orçamentos personalizados
+    // Se mudou para personalizado, limpar orçamentos personalizados e inicializar grupos
     if (type === 'custom') {
       setCustomCategoryBudgets({});
+      // Inicializar grupos com valores 50/30/20 se há renda
+      if (budgetForm.totalIncome) {
+        const allocation = calculate502020(parseFloat(budgetForm.totalIncome));
+        setCustomGroupBudgets({
+          necessities: allocation.necessities.toString(),
+          wants: allocation.wants.toString(),
+          savings: allocation.savings.toString(),
+        });
+      }
     }
   };
 
@@ -118,13 +141,12 @@ export function Budget() {
     let budgetData;
     
     if (budgetType === 'custom') {
-      // Para orçamento personalizado, usar os totais calculados das categorias
-      const customTotals = calculateCustomTotals();
+      // Para orçamento personalizado, usar os valores dos grupos personalizados
       budgetData = {
-        totalIncome: parseFloat(budgetForm.totalIncome),
-        necessitiesBudget: customTotals.necessities,
-        wantsBudget: customTotals.wants,
-        savingsBudget: customTotals.savings,
+        totalIncome: parseFloat(customGroupBudgets.necessities) + parseFloat(customGroupBudgets.wants) + parseFloat(customGroupBudgets.savings),
+        necessitiesBudget: parseFloat(customGroupBudgets.necessities),
+        wantsBudget: parseFloat(customGroupBudgets.wants),
+        savingsBudget: parseFloat(customGroupBudgets.savings),
         isDefault: budgetForm.isDefault, // Permitir orçamento personalizado como padrão
       };
       
@@ -162,13 +184,19 @@ export function Budget() {
     const currentCategoryAmount = parseFloat(customCategoryBudgets[categoryId] || '0');
     const otherCategoriesTotal = currentTypeTotal - currentCategoryAmount;
     
-    // Calcular limite máximo baseado no 50/30/20
-    const incomeValue = parseFloat(budgetForm.totalIncome) || 0;
-    const allocation = calculate502020(incomeValue);
-    const maxAllowed = categoryType === 'necessities' ? allocation.necessities :
-                     categoryType === 'wants' ? allocation.wants : allocation.savings;
+    // Para categorias de receita, não há limite
+    if (categoryType === 'income') {
+      setCustomCategoryBudgets(prev => ({
+        ...prev,
+        [categoryId]: amount
+      }));
+      return;
+    }
     
-    // Verificar se o novo valor não excede o limite
+    // Para categorias de despesa, verificar limite baseado nos grupos personalizados
+    const maxAllowed = parseFloat(customGroupBudgets[categoryType as keyof typeof customGroupBudgets]) || 0;
+    
+    // Verificar se o novo valor não excede o limite do grupo
     if (otherCategoriesTotal + newAmount > maxAllowed) {
       const maxPossible = maxAllowed - otherCategoriesTotal;
       setCustomCategoryBudgets(prev => ({
@@ -185,24 +213,27 @@ export function Budget() {
   };
   
   const calculateCustomTotals = () => {
-    const expenseCategories = categories.filter(cat => cat.type && cat.type !== 'income');
-    const totals = { necessities: 0, wants: 0, savings: 0 };
+    const allCategories = categories;
+    const totals = { necessities: 0, wants: 0, savings: 0, income: 0 };
     
-    expenseCategories.forEach(cat => {
+    allCategories.forEach(cat => {
       const amount = parseFloat(customCategoryBudgets[cat.id] || '0');
       if (cat.type === 'necessities') totals.necessities += amount;
       else if (cat.type === 'wants') totals.wants += amount;
       else if (cat.type === 'savings') totals.savings += amount;
+      else if (cat.transactionType === 'income') totals.income += amount;
     });
     
     return totals;
   };
   
   const getAvailableAmount = (type: string) => {
-    const incomeValue = parseFloat(budgetForm.totalIncome) || 0;
-    const allocation = calculate502020(incomeValue);
-    const maxAllowed = type === 'necessities' ? allocation.necessities :
-                     type === 'wants' ? allocation.wants : allocation.savings;
+    if (type === 'income') {
+      // Para receita, não há limite
+      return Infinity;
+    }
+    
+    const maxAllowed = parseFloat(customGroupBudgets[type as keyof typeof customGroupBudgets]) || 0;
     const currentTotal = calculateCustomTotals()[type as keyof ReturnType<typeof calculateCustomTotals>];
     return maxAllowed - currentTotal;
   };
@@ -569,16 +600,128 @@ export function Budget() {
                   </p>
                 </div>
 
+                {/* Edição dos grupos 50/30/20 */}
+                <div className="space-y-4">
+                  <div className="text-center">
+                    <h5 className="text-sm font-medium mb-2">Distribuição dos Grupos</h5>
+                    <p className="text-xs text-muted-foreground">
+                      Ajuste os valores dos grupos conforme sua necessidade
+                    </p>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                      <Label className="text-sm font-medium text-necessities mb-2 block">
+                        Necessidades
+                      </Label>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        value={customGroupBudgets.necessities}
+                        onChange={(e) => setCustomGroupBudgets(prev => ({ ...prev, necessities: e.target.value }))}
+                        className="text-sm"
+                      />
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {((parseFloat(customGroupBudgets.necessities) || 0) / (parseFloat(budgetForm.totalIncome) || 1) * 100).toFixed(1)}% da renda
+                      </p>
+                    </div>
+
+                    <div>
+                      <Label className="text-sm font-medium text-wants mb-2 block">
+                        Desejos
+                      </Label>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        value={customGroupBudgets.wants}
+                        onChange={(e) => setCustomGroupBudgets(prev => ({ ...prev, wants: e.target.value }))}
+                        className="text-sm"
+                      />
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {((parseFloat(customGroupBudgets.wants) || 0) / (parseFloat(budgetForm.totalIncome) || 1) * 100).toFixed(1)}% da renda
+                      </p>
+                    </div>
+
+                    <div>
+                      <Label className="text-sm font-medium text-savings mb-2 block">
+                        Poupança
+                      </Label>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        value={customGroupBudgets.savings}
+                        onChange={(e) => setCustomGroupBudgets(prev => ({ ...prev, savings: e.target.value }))}
+                        className="text-sm"
+                      />
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {((parseFloat(customGroupBudgets.savings) || 0) / (parseFloat(budgetForm.totalIncome) || 1) * 100).toFixed(1)}% da renda
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex justify-center">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        const allocation = calculate502020(parseFloat(budgetForm.totalIncome) || 0);
+                        setCustomGroupBudgets({
+                          necessities: allocation.necessities.toString(),
+                          wants: allocation.wants.toString(),
+                          savings: allocation.savings.toString(),
+                        });
+                      }}
+                      className="text-xs"
+                    >
+                      Recalcular 50/30/20
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Categorias de Receita */}
+                <div className="space-y-3">
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-center">
+                      <h5 className="font-medium text-sm text-green-600">
+                        Receitas
+                      </h5>
+                      <Badge variant="outline" className="text-green-600">
+                        Total: {formatCurrency(calculateCustomTotals().income)}
+                      </Badge>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Distribua sua renda total entre as diferentes fontes de receita
+                    </p>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                    {categories
+                      .filter(cat => cat.transactionType === 'income')
+                      .map(category => (
+                        <div key={category.id} className="space-y-1">
+                          <label className="text-xs font-medium text-foreground block">
+                            {category.name}
+                          </label>
+                          <Input
+                            type="number"
+                            step="0.01"
+                            placeholder="0,00"
+                            value={customCategoryBudgets[category.id] || ''}
+                            onChange={(e) => handleCustomBudgetChange(category.id, e.target.value, 'income')}
+                            className="text-sm"
+                          />
+                        </div>
+                      ))}
+                  </div>
+                </div>
+
                 {/* Custom category budget inputs */}
                 {['necessities', 'wants', 'savings'].map(type => {
                   const typeCategories = categories.filter(cat => cat.type === type);
                   const customTotals = calculateCustomTotals();
                   const typeTotal = customTotals[type as keyof typeof customTotals];
                   const availableAmount = getAvailableAmount(type);
-                  const incomeValue = parseFloat(budgetForm.totalIncome) || 0;
-                  const allocation = calculate502020(incomeValue);
-                  const maxAllowed = type === 'necessities' ? allocation.necessities :
-                                   type === 'wants' ? allocation.wants : allocation.savings;
+                  const maxAllowed = parseFloat(customGroupBudgets[type as keyof typeof customGroupBudgets]) || 0;
                   const typeColor = type === 'necessities' ? 'text-necessities' : 
                                   type === 'wants' ? 'text-wants' : 'text-savings';
                   const typeLabel = type === 'necessities' ? 'Necessidades (50%)' : 
@@ -643,30 +786,44 @@ export function Budget() {
                     </p>
                   </div>
                   
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                  <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-center">
                     <div>
-                      <p className="text-xs text-muted-foreground">Renda Total</p>
-                      <p className="font-medium">{formatCurrency(parseFloat(budgetForm.totalIncome))}</p>
+                      <p className="text-xs text-green-600">Receitas</p>
+                      <p className="font-medium text-green-600">{formatCurrency(calculateCustomTotals().income)}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {calculateCustomTotals().income > 0 ? 'Total planejado' : 'Não configurado'}
+                      </p>
                     </div>
                     <div>
                       <p className="text-xs text-necessities">Necessidades</p>
                       <p className="font-medium text-necessities">{formatCurrency(calculateCustomTotals().necessities)}</p>
                       <p className="text-xs text-muted-foreground">
-                        de {formatCurrency(calculate502020(parseFloat(budgetForm.totalIncome) || 0).necessities)}
+                        de {formatCurrency(parseFloat(customGroupBudgets.necessities) || 0)}
                       </p>
                     </div>
                     <div>
                       <p className="text-xs text-wants">Desejos</p>
                       <p className="font-medium text-wants">{formatCurrency(calculateCustomTotals().wants)}</p>
                       <p className="text-xs text-muted-foreground">
-                        de {formatCurrency(calculate502020(parseFloat(budgetForm.totalIncome) || 0).wants)}
+                        de {formatCurrency(parseFloat(customGroupBudgets.wants) || 0)}
                       </p>
                     </div>
                     <div>
                       <p className="text-xs text-savings">Poupança</p>
                       <p className="font-medium text-savings">{formatCurrency(calculateCustomTotals().savings)}</p>
                       <p className="text-xs text-muted-foreground">
-                        de {formatCurrency(calculate502020(parseFloat(budgetForm.totalIncome) || 0).savings)}
+                        de {formatCurrency(parseFloat(customGroupBudgets.savings) || 0)}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">Total Orçado</p>
+                      <p className="font-medium">{formatCurrency(
+                        (parseFloat(customGroupBudgets.necessities) || 0) + 
+                        (parseFloat(customGroupBudgets.wants) || 0) + 
+                        (parseFloat(customGroupBudgets.savings) || 0)
+                      )}</p>
+                      <p className="text-xs text-muted-foreground">
+                        Despesas planejadas
                       </p>
                     </div>
                   </div>
