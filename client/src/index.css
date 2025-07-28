@@ -87,6 +87,14 @@
   --savings: hsl(160, 60%, 50%); /* Modern Green */
   --income: hsl(160, 60%, 50%); /* Modern Green */
   --expense: hsl(0, 75%, 60%); /* Modern Red */
+  
+  /* Vibrant secondary colors for dark theme */
+  --vibrant-purple: hsl(270, 75%, 65%); /* #B084FF - Electric Purple */
+  --vibrant-pink: hsl(330, 75%, 65%); /* #FF84D6 - Electric Pink */
+  --vibrant-teal: hsl(180, 75%, 55%); /* #40E0D0 - Electric Teal */
+  --vibrant-lime: hsl(90, 75%, 55%); /* #ADFF2F - Electric Lime */
+  --vibrant-orange: hsl(25, 90%, 60%); /* #FF7F50 - Vibrant Orange */
+  --vibrant-blue: hsl(220, 85%, 65%); /* #6B9FFF - Electric Blue */
 }
 
 @layer base {
@@ -126,6 +134,55 @@
   
   .pharos-card:hover {
     border-color: hsl(var(--primary) / 0.3);
+  }
+
+  /* Vibrant card variants for dark theme */
+  .vibrant-card-purple {
+    @apply bg-card border rounded-xl p-6 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1;
+    border-color: hsl(var(--vibrant-purple) / 0.3);
+    background: linear-gradient(135deg, hsl(var(--card)) 0%, hsl(var(--vibrant-purple) / 0.05) 100%);
+  }
+  
+  .vibrant-card-purple:hover {
+    border-color: hsl(var(--vibrant-purple) / 0.6);
+    background: linear-gradient(135deg, hsl(var(--card)) 0%, hsl(var(--vibrant-purple) / 0.1) 100%);
+    box-shadow: 0 10px 25px hsl(var(--vibrant-purple) / 0.2);
+  }
+
+  .vibrant-card-teal {
+    @apply bg-card border rounded-xl p-6 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1;
+    border-color: hsl(var(--vibrant-teal) / 0.3);
+    background: linear-gradient(135deg, hsl(var(--card)) 0%, hsl(var(--vibrant-teal) / 0.05) 100%);
+  }
+  
+  .vibrant-card-teal:hover {
+    border-color: hsl(var(--vibrant-teal) / 0.6);
+    background: linear-gradient(135deg, hsl(var(--card)) 0%, hsl(var(--vibrant-teal) / 0.1) 100%);
+    box-shadow: 0 10px 25px hsl(var(--vibrant-teal) / 0.2);
+  }
+
+  .vibrant-card-pink {
+    @apply bg-card border rounded-xl p-6 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1;
+    border-color: hsl(var(--vibrant-pink) / 0.3);
+    background: linear-gradient(135deg, hsl(var(--card)) 0%, hsl(var(--vibrant-pink) / 0.05) 100%);
+  }
+  
+  .vibrant-card-pink:hover {
+    border-color: hsl(var(--vibrant-pink) / 0.6);
+    background: linear-gradient(135deg, hsl(var(--card)) 0%, hsl(var(--vibrant-pink) / 0.1) 100%);
+    box-shadow: 0 10px 25px hsl(var(--vibrant-pink) / 0.2);
+  }
+
+  .vibrant-card-orange {
+    @apply bg-card border rounded-xl p-6 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1;
+    border-color: hsl(var(--vibrant-orange) / 0.3);
+    background: linear-gradient(135deg, hsl(var(--card)) 0%, hsl(var(--vibrant-orange) / 0.05) 100%);
+  }
+  
+  .vibrant-card-orange:hover {
+    border-color: hsl(var(--vibrant-orange) / 0.6);
+    background: linear-gradient(135deg, hsl(var(--card)) 0%, hsl(var(--vibrant-orange) / 0.1) 100%);
+    box-shadow: 0 10px 25px hsl(var(--vibrant-orange) / 0.2);
   }
 
   /* Dark theme specific enhancements */
@@ -263,5 +320,30 @@
   
   .bg-savings {
     background-color: hsl(var(--savings));
+  }
+
+  /* Vibrant icon colors */
+  .text-vibrant-purple {
+    color: hsl(var(--vibrant-purple));
+  }
+  
+  .text-vibrant-pink {
+    color: hsl(var(--vibrant-pink));
+  }
+  
+  .text-vibrant-teal {
+    color: hsl(var(--vibrant-teal));
+  }
+  
+  .text-vibrant-orange {
+    color: hsl(var(--vibrant-orange));
+  }
+  
+  .text-vibrant-lime {
+    color: hsl(var(--vibrant-lime));
+  }
+  
+  .text-vibrant-blue {
+    color: hsl(var(--vibrant-blue));
   }
 }

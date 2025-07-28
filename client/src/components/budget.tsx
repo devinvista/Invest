@@ -367,9 +367,9 @@ export function Budget() {
 
       {!budget && !isEditing ? (
         // No budget created yet
-        <Card className="financial-card">
+        <Card className="vibrant-card-pink">
           <CardContent className="pt-6 text-center">
-            <Calculator className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+            <Calculator className="h-12 w-12 text-vibrant-pink mx-auto mb-4" />
             <h3 className="text-lg font-semibold mb-2">Crie seu primeiro orçamento</h3>
             <p className="text-muted-foreground mb-6">
               Configure seu orçamento usando o método 50/30/20 para organizar suas finanças

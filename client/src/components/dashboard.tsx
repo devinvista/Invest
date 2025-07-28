@@ -160,28 +160,28 @@ export function Dashboard() {
             title="Taxa de Poupança"
             value={`${savingsRate.toFixed(1)}%`}
             icon={Target}
-            iconColor="text-success"
+            iconColor="text-vibrant-lime"
             description="Do salário"
           />
           <ModernCard
             title="Cartão de Crédito"
             value={balanceVisible ? formatCurrency(totalCreditUsed) : '••••••'}
             icon={CreditCard}
-            iconColor="text-warning"
+            iconColor="text-vibrant-orange"
             description="Utilizado"
           />
           <ModernCard
             title="Metas Ativas"
             value={goals.length.toString()}
             icon={Star}
-            iconColor="text-primary"
+            iconColor="text-vibrant-purple"
             description="Objetivos"
           />
           <ModernCard
             title="Investimentos"
             value={balanceVisible ? formatCurrency(47890) : '••••••'}
             icon={BarChart3}
-            iconColor="text-chart-3"
+            iconColor="text-vibrant-teal"
             trend={{ value: 5.8, label: "este mês", positive: true }}
           />
         </div>
@@ -189,7 +189,7 @@ export function Dashboard() {
         {/* Charts and Data */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Wealth Evolution */}
-          <Card className="pharos-card">
+          <Card className="vibrant-card-purple">
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
                 <span>Evolução Patrimonial</span>
@@ -244,7 +244,7 @@ export function Dashboard() {
           </Card>
 
           {/* Budget Distribution */}
-          <Card className="pharos-card">
+          <Card className="vibrant-card-teal">
             <CardHeader>
               <CardTitle>Regra 50/30/20</CardTitle>
             </CardHeader>
@@ -307,7 +307,7 @@ export function Dashboard() {
         {/* Recent Transactions & Goals */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Recent Transactions */}
-          <Card className="pharos-card">
+          <Card className="vibrant-card-pink">
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
                 <span>Transações Recentes</span>
@@ -355,7 +355,7 @@ export function Dashboard() {
           </Card>
 
           {/* Financial Goals */}
-          <Card className="pharos-card">
+          <Card className="vibrant-card-orange">
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
                 <span>Metas Financeiras</span>

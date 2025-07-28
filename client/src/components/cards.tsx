@@ -267,40 +267,40 @@ export function Cards() {
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="financial-card">
+        <Card className="vibrant-card-purple">
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Limite Total</p>
                 <p className="text-2xl font-bold text-foreground">{formatCurrency(getTotalLimit())}</p>
               </div>
-              <CreditCard className="h-8 w-8 text-primary" />
+              <CreditCard className="h-8 w-8 text-vibrant-purple" />
             </div>
           </CardContent>
         </Card>
 
-        <Card className="financial-card">
+        <Card className="vibrant-card-orange">
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Usado</p>
-                <p className="text-2xl font-bold text-orange-600">{formatCurrency(getTotalUsed())}</p>
+                <p className="text-2xl font-bold text-vibrant-orange">{formatCurrency(getTotalUsed())}</p>
               </div>
-              <DollarSign className="h-8 w-8 text-orange-600" />
+              <DollarSign className="h-8 w-8 text-vibrant-orange" />
             </div>
           </CardContent>
         </Card>
 
-        <Card className="financial-card">
+        <Card className="vibrant-card-teal">
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Disponível</p>
-                <p className="text-2xl font-bold text-green-600">
+                <p className="text-2xl font-bold text-vibrant-teal">
                   {formatCurrency(getTotalLimit() - getTotalUsed())}
                 </p>
               </div>
-              <Wallet className="h-8 w-8 text-green-600" />
+              <Wallet className="h-8 w-8 text-vibrant-teal" />
             </div>
           </CardContent>
         </Card>
