@@ -54,6 +54,10 @@ export function Cards() {
     queryKey: ['/api/accounts'],
   });
 
+  const { data: categories = [] } = useQuery<any[]>({
+    queryKey: ['/api/categories'],
+  });
+
   const form = useForm<CardFormData>({
     resolver: zodResolver(cardFormSchema),
     defaultValues: {
@@ -116,12 +120,18 @@ export function Cards() {
 
   const addExpenseMutation = useMutation({
     mutationFn: async (data: ExpenseFormData) => {
+      // Find a default expense category
+      const expenseCategory = categories.find((cat: any) => 
+        cat.transactionType === 'expense'
+      );
+      
       const response = await apiRequest('POST', '/api/transactions', {
         type: 'expense',
         amount: parseFloat(data.amount),
         description: data.description,
         creditCardId: selectedCard.id,
-        categoryId: 'default-expense', // Will need to be selected from categories
+        categoryId: expenseCategory?.id || categories[0]?.id,
+        date: new Date().toISOString(),
       });
       return response.json();
     },
@@ -146,12 +156,18 @@ export function Cards() {
 
   const paymentMutation = useMutation({
     mutationFn: async (data: PaymentFormData) => {
+      // Find an expense category for credit card payments
+      const paymentCategory = categories.find((cat: any) => 
+        cat.transactionType === 'expense' && cat.name.toLowerCase().includes('pagamento')
+      ) || categories.find((cat: any) => cat.transactionType === 'expense');
+      
       const response = await apiRequest('POST', '/api/transactions', {
         type: 'expense',
         amount: parseFloat(data.amount),
         description: `Pagamento fatura ${selectedCard.name}`,
         accountId: data.accountId,
-        categoryId: 'payment-credit-card',
+        categoryId: paymentCategory?.id || categories[0]?.id,
+        date: new Date().toISOString(),
       });
       return response.json();
     },
