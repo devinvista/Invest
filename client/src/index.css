@@ -151,12 +151,21 @@
   }
   
   .nav-item {
-    @apply flex items-center px-4 py-3 text-sm font-medium text-muted-foreground rounded-xl hover:bg-accent hover:text-accent-foreground transition-all duration-200 hover:translate-x-1;
+    @apply flex items-center px-4 py-3 text-sm font-medium text-muted-foreground rounded-xl hover:bg-accent hover:text-primary transition-all duration-200 hover:translate-x-1;
+    background-color: transparent;
+  }
+  
+  .nav-item:hover {
+    background-color: hsl(var(--primary) / 0.1);
   }
   
   .nav-item.active {
-    @apply bg-primary bg-opacity-10 text-primary hover:bg-primary hover:bg-opacity-15 shadow-sm border;
-    border-color: hsl(var(--primary) / 0.2);
+    @apply bg-primary text-primary-foreground shadow-md border-none;
+    font-weight: 600;
+  }
+  
+  .nav-item.active:hover {
+    background-color: hsl(var(--primary) / 0.9);
   }
   
   .sidebar-icon {
@@ -165,6 +174,14 @@
   
   .pharos-gradient {
     background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--chart-2)) 100%);
+    color: white;
+    border: none;
+  }
+  
+  .pharos-gradient:hover {
+    background: linear-gradient(135deg, hsl(var(--primary) / 0.9) 0%, hsl(var(--chart-2) / 0.9) 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px hsl(var(--primary) / 0.3);
   }
   
   .pharos-text-gradient {
