@@ -957,6 +957,40 @@ export function Budget() {
                       </div>
                     )}
 
+                    {/* Income Categories for Custom Budget */}
+                    {budgetType === 'custom' && (
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-2">
+                            <div className="w-4 h-4 rounded bg-primary"></div>
+                            <h3 className="text-lg font-semibold">Categorias de Receita</h3>
+                          </div>
+                          <div className="text-sm text-muted-foreground">
+                            Total: {formatCurrency(categories
+                              .filter((cat: any) => !cat.type)
+                              .reduce((sum: number, cat: any) => sum + (parseFloat(customCategories[cat.id] || '0')), 0))}
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                          {categories
+                            .filter((cat: any) => !cat.type) // Income categories don't have type
+                            .map((category: any) => (
+                              <div key={category.id} className="space-y-2">
+                                <Label className="text-sm">{category.name}</Label>
+                                <Input
+                                  type="number"
+                                  step="0.01"
+                                  placeholder="0.00"
+                                  value={customCategories[category.id] || ''}
+                                  onChange={(e) => handleCustomCategoryChange(category.id, e.target.value)}
+                                  className="text-sm"
+                                />
+                              </div>
+                            ))}
+                        </div>
+                      </div>
+                    )}
+
                     {/* 50/30/20 Budget Inputs */}
                     <div className="space-y-4">
                       <div className="flex items-center justify-between">
@@ -1036,40 +1070,8 @@ export function Budget() {
                         <div className="border-t pt-4">
                           <h3 className="text-lg font-semibold mb-4">Configuração por Categoria</h3>
                           <p className="text-sm text-muted-foreground mb-4">
-                            Configure o orçamento individual para cada categoria. A renda total é calculada automaticamente.
+                            Configure o orçamento individual para cada categoria dentro dos limites 50/30/20.
                           </p>
-
-                          {/* Income Categories */}
-                          <div className="space-y-4 mb-6">
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center space-x-2">
-                                <div className="w-4 h-4 rounded bg-primary"></div>
-                                <h4 className="font-medium">Receitas</h4>
-                              </div>
-                              <div className="text-sm text-muted-foreground">
-                                Total: {formatCurrency(categories
-                                  .filter((cat: any) => !cat.type)
-                                  .reduce((sum: number, cat: any) => sum + (parseFloat(customCategories[cat.id] || '0')), 0))}
-                              </div>
-                            </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                              {categories
-                                .filter((cat: any) => !cat.type) // Income categories don't have type
-                                .map((category: any) => (
-                                  <div key={category.id} className="space-y-2">
-                                    <Label className="text-sm">{category.name}</Label>
-                                    <Input
-                                      type="number"
-                                      step="0.01"
-                                      placeholder="0.00"
-                                      value={customCategories[category.id] || ''}
-                                      onChange={(e) => handleCustomCategoryChange(category.id, e.target.value)}
-                                      className="text-sm"
-                                    />
-                                  </div>
-                                ))}
-                            </div>
-                          </div>
 
                           {/* Necessidades */}
                           <div className="space-y-4 mb-6">
