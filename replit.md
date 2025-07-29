@@ -11,6 +11,12 @@ Visual Identity: Pharos Capital brand guidelines applied.
 
 ## Recent Changes
 
+- **January 29, 2025**: Updated revenue card to match category breakdown card visual style with purple color scheme
+  - Applied CardHeader/CardTitle structure consistent with other category cards
+  - Added "% realizado" badge matching expense categories' "% usado" format
+  - Implemented detailed breakdown showing Planejado, Realizado, and Meta Restante
+  - Included top 3 income categories display with transaction amounts
+  - Maintained purple color scheme to distinguish from 50/30/20 categories (orange/green/blue)
 - **January 29, 2025**: Modernized budget overview cards with professional design and orçado vs realizado comparison
   - Redesigned main overview cards with gradient backgrounds and shadow effects for modern professional appearance
   - Implemented comprehensive "Gastos vs Orçamento" card showing realizado vs orçado with progress bar and utilization percentage
