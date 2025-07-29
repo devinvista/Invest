@@ -23,6 +23,7 @@ import {
   ArrowDownCircle,
   AlertTriangle
 } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { PieChart as RechartsPieChart, Pie, Cell, ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, AreaChart, Area } from 'recharts';
 import { useState } from 'react';
 
@@ -52,6 +53,7 @@ interface DashboardData {
 
 export function Dashboard() {
   const [balanceVisible, setBalanceVisible] = useState(true);
+  const [selectedPeriod, setSelectedPeriod] = useState('12m');
   const { data: dashboardData, isLoading, error } = useQuery<DashboardData>({
     queryKey: ['/api/dashboard'],
   });
@@ -103,7 +105,18 @@ export function Dashboard() {
     { name: 'Poupança (20%)', value: parseFloat(budget.savingsSpent), total: parseFloat(budget.savingsBudget), color: COLORS.savings },
   ] : [];
 
-  // Mock wealth evolution data
+  // Portfolio evolution data - showing investment growth over time
+  const evolutionData = [
+    { month: 'Jul/24', applied: 95000, profit: 8500 },
+    { month: 'Ago/24', applied: 102000, profit: 9200 },
+    { month: 'Set/24', applied: 108500, profit: 11700 },
+    { month: 'Out/24', applied: 115000, profit: 10800 },
+    { month: 'Nov/24', applied: 120000, profit: 14300 },
+    { month: 'Dez/24', applied: 125000, profit: 16100 },
+    { month: 'Jan/25', applied: 130000, profit: totalBalance > 130000 ? totalBalance - 130000 : 18500 }
+  ];
+
+  // Legacy wealth data for simple line chart
   const wealthData = [
     { month: 'Ago', value: 118500 },
     { month: 'Set', value: 120200 },
@@ -209,66 +222,76 @@ export function Dashboard() {
 
         {/* Charts and Data */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-          {/* Wealth Evolution */}
+          {/* Portfolio Evolution Chart */}
           <Card className="vibrant-card-purple">
             <CardHeader>
-              <CardTitle className="flex items-center justify-between">
-                <span>Evolução Patrimonial</span>
-                <Button variant="outline" size="sm">
-                  <RefreshCw className="h-4 w-4" />
-                </Button>
-              </CardTitle>
+              <div className="flex items-center justify-between">
+                <CardTitle>Evolução do Patrimônio</CardTitle>
+                <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
+                  <SelectTrigger className="w-32">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="3m">3 Meses</SelectItem>
+                    <SelectItem value="6m">6 Meses</SelectItem>
+                    <SelectItem value="12m">12 Meses</SelectItem>
+                    <SelectItem value="all">Tudo</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="h-48 sm:h-64">
+              <div className="h-72">
                 <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={wealthData}>
+                  <AreaChart data={evolutionData}>
                     <defs>
-                      <linearGradient id="blueWealthGradient" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#195AB4" stopOpacity={0.8}/>
-                        <stop offset="30%" stopColor="#3399FF" stopOpacity={0.6}/>
-                        <stop offset="70%" stopColor="#6B9FFF" stopOpacity={0.4}/>
-                        <stop offset="100%" stopColor="#B1D2FF" stopOpacity={0.1}/>
+                      <linearGradient id="appliedGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="hsl(var(--success))" stopOpacity={0.3}/>
+                        <stop offset="95%" stopColor="hsl(var(--success))" stopOpacity={0}/>
+                      </linearGradient>
+                      <linearGradient id="profitGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3}/>
+                        <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
                       </linearGradient>
                     </defs>
-                    <CartesianGrid strokeDasharray="2 4" stroke="#3399FF" strokeWidth={1} strokeOpacity={0.3} />
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                     <XAxis 
                       dataKey="month" 
                       axisLine={false}
                       tickLine={false}
-                      tick={{ fontSize: 12, fill: '#195AB4', fontWeight: 600 }}
+                      tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }}
                     />
                     <YAxis 
                       axisLine={false}
                       tickLine={false}
-                      tick={{ fontSize: 12, fill: '#195AB4', fontWeight: 600 }}
+                      tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }}
                       tickFormatter={(value) => formatCurrency(value)}
                     />
                     <Tooltip 
-                      formatter={(value) => [formatCurrency(Number(value)), 'Patrimônio']}
-                      labelStyle={{ 
-                        color: '#195AB4', 
-                        fontWeight: 'bold',
-                        fontSize: '14px'
-                      }}
+                      formatter={(value, name) => [
+                        formatCurrency(Number(value)), 
+                        name === 'applied' ? 'Valor Aplicado' : 'Ganho de Capital'
+                      ]}
+                      labelStyle={{ color: 'hsl(var(--foreground))' }}
                       contentStyle={{ 
                         backgroundColor: 'hsl(var(--card))', 
-                        border: '2px solid #3399FF',
-                        borderRadius: '8px',
-                        boxShadow: '0 8px 24px rgba(51, 153, 255, 0.2)'
-                      }}
-                      itemStyle={{
-                        color: '#3399FF',
-                        fontWeight: 'bold',
-                        fontSize: '14px'
+                        border: '1px solid hsl(var(--border))',
+                        borderRadius: '8px'
                       }}
                     />
                     <Area 
                       type="monotone" 
-                      dataKey="value" 
-                      stroke="#195AB4" 
-                      strokeWidth={3}
-                      fill="url(#blueWealthGradient)" 
+                      dataKey="applied" 
+                      stackId="1"
+                      stroke="hsl(var(--success))" 
+                      fill="url(#appliedGradient)" 
+                    />
+                    <Area 
+                      type="monotone" 
+                      dataKey="profit" 
+                      stackId="2"
+                      stroke="hsl(var(--primary))" 
+                      fill="url(#profitGradient)" 
                     />
                   </AreaChart>
                 </ResponsiveContainer>

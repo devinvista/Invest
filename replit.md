@@ -11,7 +11,12 @@ Visual Identity: Pharos Capital brand guidelines applied.
 
 ## Recent Changes
 
-- **January 29, 2025**: Updated revenue card to match category breakdown card visual style with purple color scheme
+- **January 29, 2025**: Transferred portfolio evolution chart from investments page to dashboard
+  - Replaced simple wealth evolution chart with detailed investment tracking chart
+  - Added stacked area chart showing "Valor Aplicado" vs "Ganho de Capital" over time
+  - Integrated period selector (3m, 6m, 12m, all) for flexible time frame viewing
+  - Enhanced dashboard with professional investment visualization using theme-aware styling
+- **January 29, 2025**: Updated revenue card to match category breakdown card visual style with emerald color scheme
   - Applied CardHeader/CardTitle structure consistent with other category cards
   - Added "% realizado" badge matching expense categories' "% usado" format
   - Implemented detailed breakdown showing Planejado, Realizado, and Meta Restante
