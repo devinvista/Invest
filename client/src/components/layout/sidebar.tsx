@@ -60,7 +60,7 @@ export function Sidebar({ isOpen, onClose, currentPath, onNavigate }: SidebarPro
       {/* Sidebar */}
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-50 w-72 bg-card/80 backdrop-blur-md border-r border-border/40 shadow-lg transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0 pt-16 lg:shadow-none",
+          "fixed inset-y-0 left-0 z-50 w-64 sm:w-72 bg-card/80 backdrop-blur-md border-r border-border/40 shadow-lg transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0 pt-16 lg:shadow-none",
           isOpen ? "translate-x-0" : "-translate-x-full"
         )}
       >
@@ -77,17 +77,17 @@ export function Sidebar({ isOpen, onClose, currentPath, onNavigate }: SidebarPro
           </div>
 
           {/* User profile section */}
-          <div className="p-6 border-b border-border/40">
+          <div className="p-4 sm:p-6 border-b border-border/40">
             <div className="flex items-center space-x-3">
-              <Avatar className="h-12 w-12 ring-2 ring-primary/20">
+              <Avatar className="h-10 w-10 sm:h-12 sm:w-12 ring-2 ring-primary/20">
                 <AvatarImage src="" alt={user?.name} />
-                <AvatarFallback className="bg-primary text-primary-foreground font-bold">
+                <AvatarFallback className="bg-primary text-primary-foreground font-bold text-sm sm:text-base">
                   {user?.name?.charAt(0).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
               <div>
-                <p className="font-semibold text-foreground">{user?.name}</p>
-                <p className="text-sm text-muted-foreground">
+                <p className="font-semibold text-foreground text-sm sm:text-base">{user?.name}</p>
+                <p className="text-xs sm:text-sm text-muted-foreground">
                   Patrimônio: {formatCurrency(netWorth)}
                 </p>
               </div>

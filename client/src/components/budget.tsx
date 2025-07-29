@@ -322,12 +322,12 @@ export function Budget() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="p-6 space-y-8">
+      <div className="p-4 sm:p-6 space-y-6 sm:space-y-8">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col space-y-4 sm:space-y-0 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Orçamento Pessoal</h1>
-          <p className="mt-1 text-muted-foreground">Gerencie suas finanças com o método 50/30/20</p>
+          <h1 className="text-xl sm:text-2xl font-bold text-foreground">Orçamento Pessoal</h1>
+          <p className="mt-1 text-sm sm:text-base text-muted-foreground">Gerencie suas finanças com o método 50/30/20</p>
           {budget?.isDefault && (
             <Badge variant="secondary" className="mt-2">
               <Target className="w-3 h-3 mr-1" />
@@ -336,9 +336,9 @@ export function Budget() {
           )}
         </div>
         
-        <div className="mt-4 sm:mt-0 flex items-center space-x-4">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
           <Select value={selectedMonth.toString()} onValueChange={(value) => setSelectedMonth(parseInt(value))}>
-            <SelectTrigger className="w-40">
+            <SelectTrigger className="w-full sm:w-40">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -351,7 +351,7 @@ export function Budget() {
           </Select>
           
           <Select value={selectedYear.toString()} onValueChange={(value) => setSelectedYear(parseInt(value))}>
-            <SelectTrigger className="w-24">
+            <SelectTrigger className="w-full sm:w-24">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>

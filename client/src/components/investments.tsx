@@ -74,12 +74,12 @@ export function Investments() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background">
-        <div className="p-6 space-y-8">
+        <div className="p-4 sm:p-6 space-y-6 sm:space-y-8">
           <div className="animate-pulse">
-            <div className="h-32 bg-muted rounded-2xl mb-6"></div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="h-24 sm:h-32 bg-muted rounded-xl sm:rounded-2xl mb-6"></div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
               {[...Array(4)].map((_, i) => (
-                <div key={i} className="h-32 bg-muted rounded-xl animate-pulse"></div>
+                <div key={i} className="h-24 sm:h-32 bg-muted rounded-xl animate-pulse"></div>
               ))}
             </div>
           </div>
@@ -189,33 +189,33 @@ export function Investments() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="p-6 space-y-6">
+      <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
         {/* Hero Section */}
-        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary via-primary to-chart-2 p-8 text-white">
+        <div className="relative overflow-hidden rounded-xl sm:rounded-2xl bg-gradient-to-br from-primary via-primary to-chart-2 p-4 sm:p-6 lg:p-8 text-white">
           <div className="absolute inset-0 bg-gradient-to-br from-primary/90 via-primary/80 to-chart-2/70" />
           <div className="relative">
-            <div className="flex items-center justify-between mb-6">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0 mb-6">
               <div>
-                <h1 className="text-3xl font-bold mb-2">Meus Investimentos 📈</h1>
-                <p className="text-white/80">Acompanhe sua carteira de investimentos</p>
+                <h1 className="text-2xl sm:text-3xl font-bold mb-2">Meus Investimentos 📈</h1>
+                <p className="text-white/80 text-sm sm:text-base">Acompanhe sua carteira de investimentos</p>
               </div>
-              <div className="flex items-center space-x-3">
+              <div className="flex items-center space-x-2 sm:space-x-3">
                 <Button 
                   variant="ghost" 
                   size="sm"
-                  className="text-white hover:bg-white/10"
+                  className="text-white hover:bg-white/10 p-2"
                   onClick={() => setBalanceVisible(!balanceVisible)}
                 >
                   {balanceVisible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </Button>
-                <Button variant="secondary" size="sm">
-                  <Download className="h-4 w-4 mr-2" />
-                  Relatório
+                <Button variant="secondary" size="sm" className="text-xs sm:text-sm">
+                  <Download className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                  <span className="hidden sm:inline">Relatório</span>
                 </Button>
               </div>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
               <div className="bg-white/10 rounded-xl p-4 backdrop-blur-sm">
                 <p className="text-white/80 text-sm mb-1">Patrimônio Total</p>
                 <p className="text-2xl font-bold">

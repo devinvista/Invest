@@ -51,7 +51,7 @@ function AppContent() {
           currentPath={location}
           onNavigate={navigate}
         />
-        <main className="flex-1 lg:ml-0 min-h-screen">
+        <main className="flex-1 lg:ml-0 min-h-screen overflow-x-auto">
           <Switch>
             <Route path="/" component={Dashboard} />
             <Route path="/budget" component={Budget} />

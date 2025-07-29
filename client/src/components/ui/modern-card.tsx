@@ -50,20 +50,20 @@ export function ModernCard({
           </CardTitle>
           {Icon && (
             <div className={cn(
-              'p-2 rounded-lg transition-colors',
+              'p-1.5 sm:p-2 rounded-lg transition-colors',
               gradient ? 'bg-white/10' : 'bg-accent',
               iconColor
             )}>
-              <Icon className="h-4 w-4" />
+              <Icon className="h-3 w-3 sm:h-4 sm:w-4" />
             </div>
           )}
         </div>
       </CardHeader>
       
       <CardContent className="relative pt-0">
-        <div className="space-y-3">
+        <div className="space-y-2 sm:space-y-3">
           <div className={cn(
-            'text-2xl font-bold',
+            'text-lg sm:text-xl lg:text-2xl font-bold',
             gradient ? 'text-white' : 'text-foreground'
           )}>
             {typeof value === 'number' ? value.toLocaleString() : value}
@@ -71,7 +71,7 @@ export function ModernCard({
           
           {description && (
             <p className={cn(
-              'text-sm',
+              'text-xs sm:text-sm',
               gradient ? 'text-white/75' : 'text-muted-foreground'
             )}>
               {description}
