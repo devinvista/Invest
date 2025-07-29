@@ -11,6 +11,12 @@ Visual Identity: Pharos Capital brand guidelines applied.
 
 ## Recent Changes
 
+- **January 29, 2025**: Updated budget methodology color scheme per user request
+  - Changed Necessidades (necessities) from purple to orange color scheme
+  - Changed Desejos (wants) from orange to green color scheme  
+  - Changed Poupança (savings) from green to blue color scheme
+  - Updated CSS color variables, progress bar gradients, and dashboard chart colors
+  - Applied changes consistently across budget cards, progress bars, and data visualizations
 - **January 29, 2025**: Migration from Replit Agent to Replit environment successfully completed
   - Project fully operational in standard Replit environment with all features intact
   - Environment protection system maintaining user's original Neon PostgreSQL configuration

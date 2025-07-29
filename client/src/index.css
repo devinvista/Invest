@@ -39,9 +39,9 @@
   --chart-5: hsl(4, 65%, 54%); /* CE363F - Pharos Red */
   
   /* Pharos Financial Categories */
-  --necessities: hsl(218, 78%, 42%); /* Primary Blue */
-  --wants: hsl(37, 90%, 51%); /* Yellow */
-  --savings: hsl(157, 69%, 38%); /* Green */
+  --necessities: hsl(25, 90%, 60%); /* Orange */
+  --wants: hsl(157, 69%, 38%); /* Green */
+  --savings: hsl(218, 78%, 42%); /* Blue */
   --income: hsl(157, 69%, 38%); /* Green */
   --expense: hsl(4, 65%, 54%); /* Red */
 }
@@ -82,9 +82,9 @@
   --chart-5: hsl(330, 75%, 65%); /* Electric Pink */
   
   /* Modern category colors for dark mode */
-  --necessities: hsl(205, 100%, 60%); /* Modern Blue */
-  --wants: hsl(45, 85%, 55%); /* Modern Orange */
-  --savings: hsl(160, 60%, 50%); /* Modern Green */
+  --necessities: hsl(25, 90%, 60%); /* Modern Orange */
+  --wants: hsl(160, 60%, 50%); /* Modern Green */
+  --savings: hsl(205, 100%, 60%); /* Modern Blue */
   --income: hsl(160, 60%, 50%); /* Modern Green */
   --expense: hsl(0, 75%, 60%); /* Modern Red */
   
@@ -366,7 +366,7 @@
 
   /* Progress bar gradients */
   .progress-gradient-purple {
-    background: linear-gradient(90deg, hsl(var(--vibrant-purple)), hsl(var(--vibrant-pink)));
+    background: linear-gradient(90deg, hsl(var(--vibrant-purple)), hsl(var(--vibrant-blue)));
   }
   
   .progress-gradient-teal {

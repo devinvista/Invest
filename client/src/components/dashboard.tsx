@@ -27,9 +27,9 @@ import { PieChart as RechartsPieChart, Pie, Cell, ResponsiveContainer, LineChart
 import { useState } from 'react';
 
 const COLORS = {
-  necessities: '#9333ea', // Electric Purple
-  wants: '#f97316', // Vibrant Orange 
-  savings: '#84cc16', // Electric Lime
+  necessities: '#f97316', // Vibrant Orange
+  wants: '#149A5A', // Green 
+  savings: '#195AB4', // Blue
 };
 
 const VIBRANT_COLORS = {
