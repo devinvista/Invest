@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -55,6 +55,117 @@ export function Budget() {
   const { data: categories = [] } = useQuery<any[]>({
     queryKey: ['/api/categories'],
   });
+
+  const createBudgetMutation = useMutation({
+    mutationFn: async (budgetData: any) => {
+      return apiRequest(`/api/budget`, {
+        method: 'POST',
+        body: JSON.stringify(budgetData),
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/budget'] });
+      setIsEditing(false);
+      toast({
+        title: 'Sucesso',
+        description: 'Orçamento criado com sucesso!',
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: 'Erro',
+        description: error.message || 'Erro ao criar orçamento',
+        variant: 'destructive',
+      });
+    },
+  });
+
+  const updateBudgetMutation = useMutation({
+    mutationFn: async (budgetData: any) => {
+      return apiRequest(`/api/budget/${selectedMonth}/${selectedYear}`, {
+        method: 'PUT',
+        body: JSON.stringify(budgetData),
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/budget'] });
+      setIsEditing(false);
+      toast({
+        title: 'Sucesso',
+        description: 'Orçamento atualizado com sucesso!',
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: 'Erro',
+        description: error.message || 'Erro ao atualizar orçamento',
+        variant: 'destructive',
+      });
+    },
+  });
+
+  // Initialize form with budget data when budget loads
+  useEffect(() => {
+    if (budget && !isEditing) {
+      setBudgetForm({
+        totalIncome: budget.totalIncome?.toString() || '',
+        necessitiesBudget: budget.necessitiesBudget?.toString() || '',
+        wantsBudget: budget.wantsBudget?.toString() || '',
+        savingsBudget: budget.savingsBudget?.toString() || '',
+        isDefault: budget.isDefault || false,
+      });
+    }
+  }, [budget, isEditing]);
+
+  const handleBudgetSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    const totalIncome = parseFloat(budgetForm.totalIncome) || 0;
+    const necessitiesBudget = parseFloat(budgetForm.necessitiesBudget) || 0;
+    const wantsBudget = parseFloat(budgetForm.wantsBudget) || 0;
+    const savingsBudget = parseFloat(budgetForm.savingsBudget) || 0;
+
+    if (totalIncome <= 0) {
+      toast({
+        title: 'Erro',
+        description: 'A renda total deve ser maior que zero',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    const budgetData = {
+      month: selectedMonth,
+      year: selectedYear,
+      totalIncome,
+      necessitiesBudget,
+      wantsBudget,
+      savingsBudget,
+      isDefault: budgetForm.isDefault,
+    };
+
+    if (budget) {
+      updateBudgetMutation.mutate(budgetData);
+    } else {
+      createBudgetMutation.mutate(budgetData);
+    }
+  };
+
+  const handleCalculate502020 = () => {
+    const totalIncome = parseFloat(budgetForm.totalIncome) || 0;
+    if (totalIncome > 0) {
+      const necessities = totalIncome * 0.5;
+      const wants = totalIncome * 0.3;
+      const savings = totalIncome * 0.2;
+      
+      setBudgetForm(prev => ({
+        ...prev,
+        necessitiesBudget: necessities.toFixed(2),
+        wantsBudget: wants.toFixed(2),
+        savingsBudget: savings.toFixed(2),
+      }));
+    }
+  };
 
   // Calculate spending by category type
   const spendingByType = {
@@ -701,31 +812,260 @@ export function Budget() {
           </TabsContent>
 
           <TabsContent value="settings">
-            <Card className="financial-card">
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <Settings className="h-5 w-5 text-primary" />
-                  <span>Configurações do Orçamento</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <Button 
-                    onClick={() => setIsEditing(true)}
-                    className="w-full pharos-gradient"
-                  >
-                    <Edit3 className="w-4 h-4 mr-2" />
-                    {budget ? 'Editar Orçamento' : 'Criar Orçamento'}
-                  </Button>
-                  
-                  {budget && (
-                    <div className="text-center text-sm text-muted-foreground">
-                      Última atualização: {new Date().toLocaleDateString('pt-BR')}
+            {isEditing ? (
+              // Budget Edit Form
+              <Card className="financial-card">
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-2">
+                    <Edit3 className="h-5 w-5 text-primary" />
+                    <span>{budget ? 'Editar Orçamento' : 'Criar Novo Orçamento'}</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <form onSubmit={handleBudgetSubmit} className="space-y-6">
+                    {/* Budget Type Selection */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <Card 
+                        className={`cursor-pointer transition-all ${budgetType === 'default' ? 'ring-2 ring-primary' : 'hover:shadow-md'}`}
+                        onClick={() => setBudgetType('default')}
+                      >
+                        <CardContent className="p-4 text-center">
+                          <Target className="h-8 w-8 mx-auto mb-2 text-primary" />
+                          <h3 className="font-semibold">Padrão</h3>
+                          <p className="text-xs text-muted-foreground">Para todos os meses</p>
+                        </CardContent>
+                      </Card>
+                      
+                      <Card 
+                        className={`cursor-pointer transition-all ${budgetType === 'specific' ? 'ring-2 ring-primary' : 'hover:shadow-md'}`}
+                        onClick={() => setBudgetType('specific')}
+                      >
+                        <CardContent className="p-4 text-center">
+                          <Calendar className="h-8 w-8 mx-auto mb-2 text-blue-600" />
+                          <h3 className="font-semibold">Específico</h3>
+                          <p className="text-xs text-muted-foreground">Apenas este mês</p>
+                        </CardContent>
+                      </Card>
+                      
+                      <Card 
+                        className={`cursor-pointer transition-all ${budgetType === 'custom' ? 'ring-2 ring-primary' : 'hover:shadow-md'}`}
+                        onClick={() => setBudgetType('custom')}
+                      >
+                        <CardContent className="p-4 text-center">
+                          <Settings className="h-8 w-8 mx-auto mb-2 text-green-600" />
+                          <h3 className="font-semibold">Personalizado</h3>
+                          <p className="text-xs text-muted-foreground">Por categoria</p>
+                        </CardContent>
+                      </Card>
                     </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
+
+                    {/* Income Input */}
+                    <div className="space-y-2">
+                      <Label htmlFor="totalIncome">Renda Total Mensal</Label>
+                      <Input
+                        id="totalIncome"
+                        type="number"
+                        step="0.01"
+                        placeholder="Ex: 5000.00"
+                        value={budgetForm.totalIncome}
+                        onChange={(e) => setBudgetForm(prev => ({ ...prev, totalIncome: e.target.value }))}
+                        required
+                      />
+                    </div>
+
+                    {/* 50/30/20 Budget Inputs */}
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <h3 className="text-lg font-semibold">Distribuição do Orçamento</h3>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={handleCalculate502020}
+                          disabled={!budgetForm.totalIncome}
+                        >
+                          <Calculator className="w-4 h-4 mr-2" />
+                          Calcular 50/30/20
+                        </Button>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        {/* Necessidades */}
+                        <div className="space-y-2">
+                          <Label className="flex items-center space-x-2">
+                            <div className="w-3 h-3 rounded bg-orange-500"></div>
+                            <span>Necessidades (50%)</span>
+                          </Label>
+                          <Input
+                            type="number"
+                            step="0.01"
+                            placeholder="Ex: 2500.00"
+                            value={budgetForm.necessitiesBudget}
+                            onChange={(e) => setBudgetForm(prev => ({ ...prev, necessitiesBudget: e.target.value }))}
+                          />
+                          <p className="text-xs text-muted-foreground">
+                            Moradia, alimentação, transporte, saúde
+                          </p>
+                        </div>
+
+                        {/* Desejos */}
+                        <div className="space-y-2">
+                          <Label className="flex items-center space-x-2">
+                            <div className="w-3 h-3 rounded bg-green-500"></div>
+                            <span>Desejos (30%)</span>
+                          </Label>
+                          <Input
+                            type="number"
+                            step="0.01"
+                            placeholder="Ex: 1500.00"
+                            value={budgetForm.wantsBudget}
+                            onChange={(e) => setBudgetForm(prev => ({ ...prev, wantsBudget: e.target.value }))}
+                          />
+                          <p className="text-xs text-muted-foreground">
+                            Entretenimento, viagens, compras
+                          </p>
+                        </div>
+
+                        {/* Poupança */}
+                        <div className="space-y-2">
+                          <Label className="flex items-center space-x-2">
+                            <div className="w-3 h-3 rounded bg-blue-500"></div>
+                            <span>Poupança (20%)</span>
+                          </Label>
+                          <Input
+                            type="number"
+                            step="0.01"
+                            placeholder="Ex: 1000.00"
+                            value={budgetForm.savingsBudget}
+                            onChange={(e) => setBudgetForm(prev => ({ ...prev, savingsBudget: e.target.value }))}
+                          />
+                          <p className="text-xs text-muted-foreground">
+                            Reserva de emergência, investimentos
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Default Budget Toggle */}
+                    <div className="flex items-center space-x-2">
+                      <Switch
+                        id="isDefault"
+                        checked={budgetForm.isDefault}
+                        onCheckedChange={(checked) => setBudgetForm(prev => ({ ...prev, isDefault: checked }))}
+                      />
+                      <Label htmlFor="isDefault">
+                        Definir como orçamento padrão para todos os meses
+                      </Label>
+                    </div>
+
+                    {/* Budget Summary */}
+                    {budgetForm.totalIncome && (
+                      <div className="p-4 rounded-lg bg-muted">
+                        <h4 className="font-medium mb-2">Resumo do Orçamento</h4>
+                        <div className="grid grid-cols-2 gap-4 text-sm">
+                          <div>
+                            <span>Total Planejado:</span>
+                            <span className="float-right font-medium">
+                              {formatCurrency(
+                                (parseFloat(budgetForm.necessitiesBudget) || 0) +
+                                (parseFloat(budgetForm.wantsBudget) || 0) +
+                                (parseFloat(budgetForm.savingsBudget) || 0)
+                              )}
+                            </span>
+                          </div>
+                          <div>
+                            <span>Sobra:</span>
+                            <span className="float-right font-medium">
+                              {formatCurrency(
+                                (parseFloat(budgetForm.totalIncome) || 0) -
+                                ((parseFloat(budgetForm.necessitiesBudget) || 0) +
+                                (parseFloat(budgetForm.wantsBudget) || 0) +
+                                (parseFloat(budgetForm.savingsBudget) || 0))
+                              )}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Form Actions */}
+                    <div className="flex space-x-3">
+                      <Button
+                        type="submit"
+                        className="flex-1 pharos-gradient"
+                        disabled={createBudgetMutation.isPending || updateBudgetMutation.isPending}
+                      >
+                        {createBudgetMutation.isPending || updateBudgetMutation.isPending ? (
+                          <>
+                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                            Salvando...
+                          </>
+                        ) : (
+                          <>
+                            <Target className="w-4 h-4 mr-2" />
+                            {budget ? 'Atualizar Orçamento' : 'Criar Orçamento'}
+                          </>
+                        )}
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => setIsEditing(false)}
+                        disabled={createBudgetMutation.isPending || updateBudgetMutation.isPending}
+                      >
+                        Cancelar
+                      </Button>
+                    </div>
+                  </form>
+                </CardContent>
+              </Card>
+            ) : (
+              // Settings Overview
+              <Card className="financial-card">
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-2">
+                    <Settings className="h-5 w-5 text-primary" />
+                    <span>Configurações do Orçamento</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <Button 
+                      onClick={() => setIsEditing(true)}
+                      className="w-full pharos-gradient"
+                    >
+                      <Edit3 className="w-4 h-4 mr-2" />
+                      {budget ? 'Editar Orçamento' : 'Criar Orçamento'}
+                    </Button>
+                    
+                    {budget && (
+                      <div className="space-y-3 pt-4 border-t">
+                        <div className="text-sm">
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Mês/Ano:</span>
+                            <span className="font-medium">
+                              {months.find(m => m.value === selectedMonth)?.label} {selectedYear}
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Tipo:</span>
+                            <span className="font-medium">
+                              {budget.isDefault ? 'Padrão' : 'Específico'}
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Última atualização:</span>
+                            <span className="font-medium">
+                              {new Date().toLocaleDateString('pt-BR')}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
           </TabsContent>
         </Tabs>
       </div>
