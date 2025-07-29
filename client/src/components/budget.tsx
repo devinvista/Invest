@@ -248,6 +248,15 @@ export function Budget() {
     return Math.max(0, budget - used);
   };
 
+  // Calculate percentages based on current budget distribution
+  const getPercentageByType = (type: string) => {
+    const totalIncome = parseFloat(budgetForm.totalIncome) || 0;
+    if (totalIncome === 0) return 0;
+    
+    const budget = parseFloat(budgetForm[`${type}Budget` as keyof typeof budgetForm] as string) || 0;
+    return Math.round((budget / totalIncome) * 100);
+  };
+
   // Calculate spending by category type
   const spendingByType = {
     necessities: 0,
@@ -1012,7 +1021,7 @@ export function Budget() {
                         <div className="space-y-2">
                           <Label className="flex items-center space-x-2">
                             <div className="w-3 h-3 rounded bg-orange-500"></div>
-                            <span>Necessidades (50%)</span>
+                            <span>Necessidades ({budgetType === 'custom' ? getPercentageByType('necessities') : 50}%)</span>
                           </Label>
                           <Input
                             type="number"
@@ -1030,7 +1039,7 @@ export function Budget() {
                         <div className="space-y-2">
                           <Label className="flex items-center space-x-2">
                             <div className="w-3 h-3 rounded bg-green-500"></div>
-                            <span>Desejos (30%)</span>
+                            <span>Desejos ({budgetType === 'custom' ? getPercentageByType('wants') : 30}%)</span>
                           </Label>
                           <Input
                             type="number"
@@ -1048,7 +1057,7 @@ export function Budget() {
                         <div className="space-y-2">
                           <Label className="flex items-center space-x-2">
                             <div className="w-3 h-3 rounded bg-blue-500"></div>
-                            <span>Poupança (20%)</span>
+                            <span>Poupança ({budgetType === 'custom' ? getPercentageByType('savings') : 20}%)</span>
                           </Label>
                           <Input
                             type="number"
@@ -1078,7 +1087,7 @@ export function Budget() {
                             <div className="flex items-center justify-between">
                               <div className="flex items-center space-x-2">
                                 <div className="w-4 h-4 rounded bg-orange-500"></div>
-                                <h4 className="font-medium">Necessidades (50%)</h4>
+                                <h4 className="font-medium">Necessidades ({getPercentageByType('necessities')}%)</h4>
                               </div>
                               <div className="text-sm text-muted-foreground">
                                 {formatCurrency(getTotalByType('necessities'))} / {formatCurrency(parseFloat(budgetForm.necessitiesBudget) || 0)}
@@ -1111,7 +1120,7 @@ export function Budget() {
                             <div className="flex items-center justify-between">
                               <div className="flex items-center space-x-2">
                                 <div className="w-4 h-4 rounded bg-green-500"></div>
-                                <h4 className="font-medium">Desejos (30%)</h4>
+                                <h4 className="font-medium">Desejos ({getPercentageByType('wants')}%)</h4>
                               </div>
                               <div className="text-sm text-muted-foreground">
                                 {formatCurrency(getTotalByType('wants'))} / {formatCurrency(parseFloat(budgetForm.wantsBudget) || 0)}
@@ -1144,7 +1153,7 @@ export function Budget() {
                             <div className="flex items-center justify-between">
                               <div className="flex items-center space-x-2">
                                 <div className="w-4 h-4 rounded bg-blue-500"></div>
-                                <h4 className="font-medium">Poupança (20%)</h4>
+                                <h4 className="font-medium">Poupança ({getPercentageByType('savings')}%)</h4>
                               </div>
                               <div className="text-sm text-muted-foreground">
                                 {formatCurrency(getTotalByType('savings'))} / {formatCurrency(parseFloat(budgetForm.savingsBudget) || 0)}
