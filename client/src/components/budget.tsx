@@ -9,10 +9,16 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Textarea } from '@/components/ui/textarea';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { formatCurrency, calculate502020, getProgressColor } from '@/lib/financial-utils';
 import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
-import { Calculator, TrendingUp, Target, Plus, Edit3, Eye, EyeOff, BarChart3, PieChart as PieChartIcon, Calendar, Settings, DollarSign, Activity } from 'lucide-react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { Calculator, TrendingUp, Target, Plus, Edit3, Eye, EyeOff, BarChart3, PieChart as PieChartIcon, Calendar, Settings, DollarSign, Activity, ArrowUpCircle, ArrowDownCircle, Clock } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, BarChart, Bar } from 'recharts';
 
 export function Budget() {
@@ -36,6 +42,30 @@ export function Budget() {
   
   const [customCategories, setCustomCategories] = useState<{[key: string]: string}>({});
   const [budgetCategories, setBudgetCategories] = useState<any[]>([]);
+  const [isTransactionDialogOpen, setIsTransactionDialogOpen] = useState(false);
+  const [transactionType, setTransactionType] = useState<'income' | 'expense'>('expense');
+
+  // Transaction form schema
+  const transactionFormSchema = z.object({
+    type: z.enum(['income', 'expense']),
+    amount: z.string().min(1, 'Valor é obrigatório'),
+    description: z.string().min(1, 'Descrição é obrigatória'),
+    categoryId: z.string().min(1, 'Categoria é obrigatória'),
+    accountId: z.string().min(1, 'Conta é obrigatória'),
+    date: z.string(),
+    isPending: z.boolean().default(false),
+  });
+
+  type TransactionFormData = z.infer<typeof transactionFormSchema>;
+
+  const transactionForm = useForm<TransactionFormData>({
+    resolver: zodResolver(transactionFormSchema),
+    defaultValues: {
+      type: 'expense',
+      date: new Date().toISOString().split('T')[0],
+      isPending: false,
+    },
+  });
 
   const { data: budget, isLoading } = useQuery<any>({
     queryKey: ['/api/budget', selectedMonth, selectedYear],
@@ -57,6 +87,10 @@ export function Budget() {
 
   const { data: categories = [] } = useQuery<any[]>({
     queryKey: ['/api/categories'],
+  });
+
+  const { data: accounts = [] } = useQuery<any[]>({
+    queryKey: ['/api/accounts'],
   });
 
   // Query for budget categories when budget exists
@@ -117,6 +151,41 @@ export function Budget() {
     },
   });
 
+  // Transaction mutations
+  const createTransactionMutation = useMutation({
+    mutationFn: async (data: TransactionFormData) => {
+      const transactionDate = new Date(data.date);
+      const currentDate = new Date();
+      currentDate.setHours(0, 0, 0, 0);
+      
+      const payload = {
+        ...data,
+        amount: parseFloat(data.amount),
+        isPending: transactionDate > currentDate, // Auto-detect if it's future date
+      };
+      
+      return apiRequest('POST', '/api/transactions', payload);
+    },
+    onSuccess: () => {
+      toast({
+        title: 'Sucesso',
+        description: 'Transação criada com sucesso!',
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/transactions'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/budget'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/dashboard'] });
+      setIsTransactionDialogOpen(false);
+      transactionForm.reset();
+    },
+    onError: (error: any) => {
+      toast({
+        title: 'Erro',
+        description: error.message || 'Erro ao criar transação',
+        variant: 'destructive',
+      });
+    },
+  });
+
   // Initialize form with budget data when budget loads
   useEffect(() => {
     if (budget && !isEditing) {
@@ -165,6 +234,25 @@ export function Budget() {
       }));
     }
   }, [customCategories, budgetType, categories]);
+
+  // Transaction form handlers
+  const openTransactionDialog = (type: 'income' | 'expense') => {
+    setTransactionType(type);
+    transactionForm.setValue('type', type);
+    setIsTransactionDialogOpen(true);
+  };
+
+  const handleTransactionSubmit = (data: TransactionFormData) => {
+    createTransactionMutation.mutate(data);
+  };
+
+  // Check if date is in the future for pending status
+  const isDateInFuture = (dateString: string) => {
+    const selectedDate = new Date(dateString);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return selectedDate > today;
+  };
 
   const handleBudgetSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -802,6 +890,28 @@ export function Budget() {
                         <Edit3 className="w-4 h-4 mr-2" />
                         {budget ? 'Editar Orçamento' : 'Criar Orçamento'}
                       </Button>
+
+                      <div className="grid grid-cols-2 gap-2">
+                        <Button 
+                          onClick={() => openTransactionDialog('income')}
+                          variant="outline"
+                          className="justify-start text-green-600 hover:text-green-700 hover:bg-green-50"
+                          size="sm"
+                        >
+                          <ArrowUpCircle className="w-4 h-4 mr-2" />
+                          Receita
+                        </Button>
+                        
+                        <Button 
+                          onClick={() => openTransactionDialog('expense')}
+                          variant="outline"
+                          className="justify-start text-red-600 hover:text-red-700 hover:bg-red-50"
+                          size="sm"
+                        >
+                          <ArrowDownCircle className="w-4 h-4 mr-2" />
+                          Despesa
+                        </Button>
+                      </div>
                       
                       <Button 
                         variant="outline"
@@ -1310,6 +1420,172 @@ export function Budget() {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Transaction Dialog */}
+      <Dialog open={isTransactionDialogOpen} onOpenChange={setIsTransactionDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center space-x-2">
+              {transactionType === 'income' ? (
+                <ArrowUpCircle className="h-5 w-5 text-green-600" />
+              ) : (
+                <ArrowDownCircle className="h-5 w-5 text-red-600" />
+              )}
+              <span>
+                {transactionType === 'income' ? 'Adicionar Receita' : 'Adicionar Despesa'}
+              </span>
+            </DialogTitle>
+          </DialogHeader>
+          
+          <Form {...transactionForm}>
+            <form onSubmit={transactionForm.handleSubmit(handleTransactionSubmit)} className="space-y-4">
+              <FormField
+                control={transactionForm.control}
+                name="description"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Descrição</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Ex: Salário, Aluguel, Compras..." {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={transactionForm.control}
+                name="amount"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Valor</FormLabel>
+                    <FormControl>
+                      <Input 
+                        type="number" 
+                        step="0.01" 
+                        placeholder="0.00" 
+                        {...field} 
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={transactionForm.control}
+                name="categoryId"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Categoria</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecione uma categoria" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {categories
+                          .filter((cat: any) => 
+                            transactionType === 'income' 
+                              ? !cat.type  // Income categories don't have type
+                              : cat.type   // Expense categories have type
+                          )
+                          .map((category: any) => (
+                            <SelectItem key={category.id} value={category.id}>
+                              {category.name}
+                            </SelectItem>
+                          ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={transactionForm.control}
+                name="accountId"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Conta</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecione uma conta" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {accounts.map((account: any) => (
+                          <SelectItem key={account.id} value={account.id}>
+                            {account.name} - {account.bank}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={transactionForm.control}
+                name="date"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="flex items-center space-x-2">
+                      <span>Data</span>
+                      {isDateInFuture(field.value) && (
+                        <Badge variant="secondary" className="text-xs">
+                          <Clock className="w-3 h-3 mr-1" />
+                          Planejado
+                        </Badge>
+                      )}
+                    </FormLabel>
+                    <FormControl>
+                      <Input type="date" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                    {isDateInFuture(field.value) && (
+                      <p className="text-xs text-muted-foreground">
+                        Esta transação será marcada como planejada (data futura)
+                      </p>
+                    )}
+                  </FormItem>
+                )}
+              />
+
+              <div className="flex space-x-3 pt-4">
+                <Button
+                  type="submit"
+                  className="flex-1"
+                  disabled={createTransactionMutation.isPending}
+                >
+                  {createTransactionMutation.isPending ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                      Salvando...
+                    </>
+                  ) : (
+                    <>
+                      <Plus className="w-4 h-4 mr-2" />
+                      {transactionType === 'income' ? 'Adicionar Receita' : 'Adicionar Despesa'}
+                    </>
+                  )}
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setIsTransactionDialogOpen(false)}
+                  disabled={createTransactionMutation.isPending}
+                >
+                  Cancelar
+                </Button>
+              </div>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
