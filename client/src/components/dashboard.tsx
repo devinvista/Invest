@@ -54,6 +54,9 @@ interface DashboardData {
 export function Dashboard() {
   const [balanceVisible, setBalanceVisible] = useState(true);
   const [selectedPeriod, setSelectedPeriod] = useState('12m');
+  
+  // Check if dark mode is active
+  const isDarkMode = document.documentElement.classList.contains('dark');
   const { data: dashboardData, isLoading, error } = useQuery<DashboardData>({
     queryKey: ['/api/dashboard'],
   });
@@ -246,16 +249,16 @@ export function Dashboard() {
                   <AreaChart data={evolutionData}>
                     <defs>
                       <linearGradient id="appliedGradient" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="hsl(var(--success))" stopOpacity={0.3}/>
-                        <stop offset="95%" stopColor="hsl(var(--success))" stopOpacity={0}/>
+                        <stop offset="5%" stopColor={isDarkMode ? "#60a5fa" : "hsl(var(--success))"} stopOpacity={isDarkMode ? 0.4 : 0.3}/>
+                        <stop offset="95%" stopColor={isDarkMode ? "#60a5fa" : "hsl(var(--success))"} stopOpacity={0}/>
                       </linearGradient>
                       <linearGradient id="profitGradient" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3}/>
-                        <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
+                        <stop offset="5%" stopColor={isDarkMode ? "#93c5fd" : "hsl(var(--primary))"} stopOpacity={isDarkMode ? 0.4 : 0.3}/>
+                        <stop offset="95%" stopColor={isDarkMode ? "#93c5fd" : "hsl(var(--primary))"} stopOpacity={0}/>
                       </linearGradient>
                       <linearGradient id="totalGradient" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="hsl(var(--chart-3))" stopOpacity={0.4}/>
-                        <stop offset="95%" stopColor="hsl(var(--chart-3))" stopOpacity={0}/>
+                        <stop offset="5%" stopColor="#1e3a8a" stopOpacity={0.4}/>
+                        <stop offset="95%" stopColor="#1e3a8a" stopOpacity={0}/>
                       </linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
@@ -287,7 +290,7 @@ export function Dashboard() {
                     <Area 
                       type="monotone" 
                       dataKey="total" 
-                      stroke="hsl(var(--chart-3))" 
+                      stroke="#1e3a8a" 
                       strokeWidth={2}
                       fill="url(#totalGradient)" 
                     />
@@ -295,14 +298,14 @@ export function Dashboard() {
                       type="monotone" 
                       dataKey="applied" 
                       stackId="1"
-                      stroke="hsl(var(--success))" 
+                      stroke={isDarkMode ? "#60a5fa" : "hsl(var(--success))"} 
                       fill="url(#appliedGradient)" 
                     />
                     <Area 
                       type="monotone" 
                       dataKey="profit" 
                       stackId="2"
-                      stroke="hsl(var(--primary))" 
+                      stroke={isDarkMode ? "#93c5fd" : "hsl(var(--primary))"} 
                       fill="url(#profitGradient)" 
                     />
                   </AreaChart>
