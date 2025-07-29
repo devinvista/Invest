@@ -66,6 +66,7 @@ export function Investments() {
   const [balanceVisible, setBalanceVisible] = useState(true);
   const [selectedPeriod, setSelectedPeriod] = useState('12m');
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const [selectedEvolutionType, setSelectedEvolutionType] = useState('all');
   
   // Check if dark mode is active
   const isDarkMode = document.documentElement.classList.contains('dark');
@@ -150,16 +151,86 @@ export function Investments() {
 
   const filteredAssetDistribution = getFilteredAssetDistribution();
 
-  // Portfolio evolution data with total value
-  const evolutionData = [
-    { month: 'Jul/24', applied: 95000, profit: 8500, total: 103500 },
-    { month: 'Ago/24', applied: 102000, profit: 9200, total: 111200 },
-    { month: 'Set/24', applied: 108500, profit: 11700, total: 120200 },
-    { month: 'Out/24', applied: 115000, profit: 10800, total: 125800 },
-    { month: 'Nov/24', applied: 120000, profit: 14300, total: 134300 },
-    { month: 'Dez/24', applied: 125000, profit: 16100, total: 141100 },
-    { month: 'Jan/25', applied: 130000, profit: 18500, total: 148500 }
-  ].map(item => ({ ...item, total: item.applied + item.profit }));
+  // Portfolio evolution data with breakdown by investment type
+  const getEvolutionData = () => {
+    const baseData = [
+      { 
+        month: 'Jul/24', 
+        all: { applied: 95000, profit: 8500 },
+        stocks: { applied: 55000, profit: 5200 },
+        fixedIncome: { applied: 25000, profit: 2100 },
+        crypto: { applied: 8000, profit: 800 },
+        etfs: { applied: 5000, profit: 300 },
+        funds: { applied: 2000, profit: 100 }
+      },
+      { 
+        month: 'Ago/24', 
+        all: { applied: 102000, profit: 9200 },
+        stocks: { applied: 59000, profit: 5800 },
+        fixedIncome: { applied: 27000, profit: 2200 },
+        crypto: { applied: 9000, profit: 900 },
+        etfs: { applied: 5500, profit: 200 },
+        funds: { applied: 1500, profit: 100 }
+      },
+      { 
+        month: 'Set/24', 
+        all: { applied: 108500, profit: 11700 },
+        stocks: { applied: 63000, profit: 7100 },
+        fixedIncome: { applied: 29000, profit: 2900 },
+        crypto: { applied: 9500, profit: 1200 },
+        etfs: { applied: 5000, profit: 400 },
+        funds: { applied: 2000, profit: 100 }
+      },
+      { 
+        month: 'Out/24', 
+        all: { applied: 115000, profit: 10800 },
+        stocks: { applied: 67000, profit: 6500 },
+        fixedIncome: { applied: 31000, profit: 2800 },
+        crypto: { applied: 10000, profit: 1100 },
+        etfs: { applied: 5500, profit: 300 },
+        funds: { applied: 1500, profit: 100 }
+      },
+      { 
+        month: 'Nov/24', 
+        all: { applied: 120000, profit: 14300 },
+        stocks: { applied: 70000, profit: 8900 },
+        fixedIncome: { applied: 32000, profit: 3200 },
+        crypto: { applied: 11000, profit: 1700 },
+        etfs: { applied: 6000, profit: 400 },
+        funds: { applied: 1000, profit: 100 }
+      },
+      { 
+        month: 'Dez/24', 
+        all: { applied: 125000, profit: 16100 },
+        stocks: { applied: 73000, profit: 10200 },
+        fixedIncome: { applied: 33000, profit: 3600 },
+        crypto: { applied: 12000, profit: 1800 },
+        etfs: { applied: 6000, profit: 400 },
+        funds: { applied: 1000, profit: 100 }
+      },
+      { 
+        month: 'Jan/25', 
+        all: { applied: 130000, profit: 18500 },
+        stocks: { applied: 76000, profit: 11800 },
+        fixedIncome: { applied: 34000, profit: 4000 },
+        crypto: { applied: 13000, profit: 2200 },
+        etfs: { applied: 6000, profit: 400 },
+        funds: { applied: 1000, profit: 100 }
+      }
+    ];
+
+    return baseData.map(item => {
+      const typeData = item[selectedEvolutionType as keyof typeof item] as { applied: number; profit: number };
+      return {
+        month: item.month,
+        applied: typeData.applied,
+        profit: typeData.profit,
+        total: typeData.applied + typeData.profit
+      };
+    });
+  };
+
+  const evolutionData = getEvolutionData();
 
   // Mock assets data
   const mockAssets = [
@@ -310,17 +381,32 @@ export function Investments() {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle>Evolução do Patrimônio</CardTitle>
-                <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
-                  <SelectTrigger className="w-32">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="3m">3 Meses</SelectItem>
-                    <SelectItem value="6m">6 Meses</SelectItem>
-                    <SelectItem value="12m">12 Meses</SelectItem>
-                    <SelectItem value="all">Tudo</SelectItem>
-                  </SelectContent>
-                </Select>
+                <div className="flex items-center space-x-2">
+                  <Select value={selectedEvolutionType} onValueChange={setSelectedEvolutionType}>
+                    <SelectTrigger className="w-40">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Todos os tipos</SelectItem>
+                      <SelectItem value="stocks">Ações</SelectItem>
+                      <SelectItem value="fixedIncome">Renda Fixa</SelectItem>
+                      <SelectItem value="crypto">Criptos</SelectItem>
+                      <SelectItem value="etfs">ETFs</SelectItem>
+                      <SelectItem value="funds">Fundos</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
+                    <SelectTrigger className="w-32">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="3m">3 Meses</SelectItem>
+                      <SelectItem value="6m">6 Meses</SelectItem>
+                      <SelectItem value="12m">12 Meses</SelectItem>
+                      <SelectItem value="all">Tudo</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
             </CardHeader>
             <CardContent>
