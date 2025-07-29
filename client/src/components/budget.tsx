@@ -110,7 +110,7 @@ export function Budget() {
       }
       return Promise.resolve([]);
     },
-    enabled: !!budget?.id && budget.id !== 'undefined' && budget.id !== 'NaN' && typeof budget.id === 'string',
+    enabled: !!budget?.id && budget.id !== 'undefined' && budget.id !== 'NaN' && typeof budget.id === 'string' && budget.id.length > 0,
   });
 
   const createBudgetMutation = useMutation({
@@ -604,137 +604,7 @@ export function Budget() {
                   </Card>
                 </div>
 
-                {/* Breakdown Cards - 50/30/20 */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {/* Necessidades */}
-                  <Card className="financial-card border-0 shadow-md bg-gradient-to-br from-orange-50 to-amber-50 dark:from-orange-950/20 dark:to-amber-950/20">
-                    <CardContent className="p-4">
-                      <div className="space-y-3">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center space-x-2">
-                            <div className="w-3 h-3 rounded-full bg-orange-500"></div>
-                            <span className="text-sm font-medium">Necessidades</span>
-                          </div>
-                          <Badge variant="outline" className="text-xs text-orange-600 border-orange-200">
-                            50%
-                          </Badge>
-                        </div>
-                        
-                        <div className="space-y-2">
-                          <div className="flex justify-between text-xs">
-                            <span className="text-muted-foreground">Realizado</span>
-                            <span className="font-medium text-orange-600">{formatCurrency(spendingByType.necessities)}</span>
-                          </div>
-                          <div className="flex justify-between text-xs">
-                            <span className="text-muted-foreground">Orçado</span>
-                            <span className="font-medium">{formatCurrency(parseFloat(budget?.necessitiesBudget || '0'))}</span>
-                          </div>
-                          <Progress 
-                            value={Math.min(100, (spendingByType.necessities / (parseFloat(budget?.necessitiesBudget || '0') || 1)) * 100)}
-                            className="h-1.5"
-                            style={{ 
-                              '--progress-background': '#FF8C42',
-                              '--progress-foreground': '#FF8C42'
-                            } as any}
-                          />
-                        </div>
-                        
-                        <div className="text-right">
-                          <p className="text-xs text-muted-foreground">Restante</p>
-                          <p className="text-sm font-bold text-green-600">
-                            {formatCurrency(Math.max(0, parseFloat(budget?.necessitiesBudget || '0') - spendingByType.necessities))}
-                          </p>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
 
-                  {/* Desejos */}
-                  <Card className="financial-card border-0 shadow-md bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20">
-                    <CardContent className="p-4">
-                      <div className="space-y-3">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center space-x-2">
-                            <div className="w-3 h-3 rounded-full bg-green-500"></div>
-                            <span className="text-sm font-medium">Desejos</span>
-                          </div>
-                          <Badge variant="outline" className="text-xs text-green-600 border-green-200">
-                            30%
-                          </Badge>
-                        </div>
-                        
-                        <div className="space-y-2">
-                          <div className="flex justify-between text-xs">
-                            <span className="text-muted-foreground">Realizado</span>
-                            <span className="font-medium text-green-600">{formatCurrency(spendingByType.wants)}</span>
-                          </div>
-                          <div className="flex justify-between text-xs">
-                            <span className="text-muted-foreground">Orçado</span>
-                            <span className="font-medium">{formatCurrency(parseFloat(budget?.wantsBudget || '0'))}</span>
-                          </div>
-                          <Progress 
-                            value={Math.min(100, (spendingByType.wants / (parseFloat(budget?.wantsBudget || '0') || 1)) * 100)}
-                            className="h-1.5"
-                            style={{ 
-                              '--progress-background': '#4ADE80',
-                              '--progress-foreground': '#4ADE80'
-                            } as any}
-                          />
-                        </div>
-                        
-                        <div className="text-right">
-                          <p className="text-xs text-muted-foreground">Restante</p>
-                          <p className="text-sm font-bold text-green-600">
-                            {formatCurrency(Math.max(0, parseFloat(budget?.wantsBudget || '0') - spendingByType.wants))}
-                          </p>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  {/* Poupança */}
-                  <Card className="financial-card border-0 shadow-md bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-950/20 dark:to-cyan-950/20">
-                    <CardContent className="p-4">
-                      <div className="space-y-3">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center space-x-2">
-                            <div className="w-3 h-3 rounded-full bg-blue-500"></div>
-                            <span className="text-sm font-medium">Poupança</span>
-                          </div>
-                          <Badge variant="outline" className="text-xs text-blue-600 border-blue-200">
-                            20%
-                          </Badge>
-                        </div>
-                        
-                        <div className="space-y-2">
-                          <div className="flex justify-between text-xs">
-                            <span className="text-muted-foreground">Realizado</span>
-                            <span className="font-medium text-blue-600">{formatCurrency(spendingByType.savings)}</span>
-                          </div>
-                          <div className="flex justify-between text-xs">
-                            <span className="text-muted-foreground">Orçado</span>
-                            <span className="font-medium">{formatCurrency(parseFloat(budget?.savingsBudget || '0'))}</span>
-                          </div>
-                          <Progress 
-                            value={Math.min(100, (spendingByType.savings / (parseFloat(budget?.savingsBudget || '0') || 1)) * 100)}
-                            className="h-1.5"
-                            style={{ 
-                              '--progress-background': '#3B82F6',
-                              '--progress-foreground': '#3B82F6'
-                            } as any}
-                          />
-                        </div>
-                        
-                        <div className="text-right">
-                          <p className="text-xs text-muted-foreground">Restante</p>
-                          <p className="text-sm font-bold text-green-600">
-                            {formatCurrency(Math.max(0, parseFloat(budget?.savingsBudget || '0') - spendingByType.savings))}
-                          </p>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
 
                 {/* Category Breakdown Grid */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
