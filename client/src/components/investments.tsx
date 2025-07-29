@@ -28,6 +28,7 @@ import { PieChart as RechartsPieChart, Pie, Cell, ResponsiveContainer, BarChart,
 import { useState } from 'react';
 import { InvestmentTransactionForm } from './investment-transaction-form';
 import { AssetForm } from './asset-form';
+import { QuoteUpdater } from './quote-updater';
 
 const ASSET_COLORS = {
   stocks: '#3B82F6',
@@ -356,6 +357,7 @@ export function Investments() {
               </div>
               <div className="flex items-center space-x-2 sm:space-x-3">
                 <InvestmentTransactionForm />
+                <QuoteUpdater assets={assets || []} />
                 <Button 
                   variant="ghost" 
                   size="sm"
