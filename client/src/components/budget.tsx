@@ -125,7 +125,16 @@ export function Budget() {
         necessitiesBudget: budget.necessitiesBudget?.toString() || '',
         wantsBudget: budget.wantsBudget?.toString() || '',
         savingsBudget: budget.savingsBudget?.toString() || '',
-        isDefault: budget.isDefault || false,
+        isDefault: budget.isDefault !== undefined ? budget.isDefault : true,
+      });
+    } else if (!budget && isEditing) {
+      // Reset form to default values when creating new budget
+      setBudgetForm({
+        totalIncome: '',
+        necessitiesBudget: '',
+        wantsBudget: '',
+        savingsBudget: '',
+        isDefault: true,
       });
     }
   }, [budget, isEditing]);
