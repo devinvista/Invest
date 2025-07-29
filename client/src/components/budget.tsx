@@ -232,69 +232,397 @@ export function Budget() {
                 </CardContent>
               </Card>
             ) : (
-              // Overview cards and content
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Budget Summary Cards */}
-                <Card className="lg:col-span-2 financial-card">
-                  <CardHeader>
-                    <CardTitle className="flex items-center space-x-2">
-                      <DollarSign className="h-5 w-5 text-primary" />
-                      <span>Resumo do Orçamento</span>
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                      <div className="text-center p-4 rounded-xl bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950/30 dark:to-green-900/30">
-                        <div className="text-2xl font-bold text-green-700 dark:text-green-400">
-                          {balanceVisible ? formatCurrency(budget?.totalIncome || 0) : '••••••'}
+              <div className="space-y-6">
+                {/* Financial Overview Summary */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <Card className="financial-card">
+                    <CardContent className="p-4">
+                      <div className="flex items-center space-x-3">
+                        <div className="p-2 rounded-full bg-green-100 dark:bg-green-900/30">
+                          <DollarSign className="h-5 w-5 text-green-600" />
                         </div>
-                        <div className="text-sm text-green-600 dark:text-green-300">Renda Total</div>
-                      </div>
-                      <div className="text-center p-4 rounded-xl bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/30 dark:to-blue-900/30">
-                        <div className="text-2xl font-bold text-blue-700 dark:text-blue-400">
-                          {balanceVisible ? formatCurrency((budget?.necessitiesBudget || 0) + (budget?.wantsBudget || 0) + (budget?.savingsBudget || 0)) : '••••••'}
+                        <div>
+                          <p className="text-sm text-muted-foreground">Renda Total</p>
+                          <p className="text-xl font-bold text-green-600">
+                            {balanceVisible ? formatCurrency(budget?.totalIncome || 0) : '••••••'}
+                          </p>
                         </div>
-                        <div className="text-sm text-blue-600 dark:text-blue-300">Orçamento Total</div>
                       </div>
-                      <div className="text-center p-4 rounded-xl bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950/30 dark:to-purple-900/30">
-                        <div className="text-2xl font-bold text-purple-700 dark:text-purple-400">
-                          {balanceVisible ? formatCurrency((budget?.totalIncome || 0) - ((budget?.necessitiesBudget || 0) + (budget?.wantsBudget || 0) + (budget?.savingsBudget || 0))) : '••••••'}
-                        </div>
-                        <div className="text-sm text-purple-600 dark:text-purple-300">Disponível</div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                    </CardContent>
+                  </Card>
 
-                {/* Budget Distribution Chart */}
-                <Card className="financial-card">
-                  <CardHeader>
-                    <CardTitle className="flex items-center space-x-2">
-                      <PieChartIcon className="h-5 w-5 text-primary" />
-                      <span>Distribuição 50/30/20</span>
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <ResponsiveContainer width="100%" height={200}>
-                      <PieChart>
-                        <Pie
-                          data={budgetDistributionData}
-                          cx="50%"
-                          cy="50%"
-                          innerRadius={40}
-                          outerRadius={80}
-                          paddingAngle={5}
-                          dataKey="value"
-                        >
-                          {budgetDistributionData.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={entry.color} />
-                          ))}
-                        </Pie>
-                        <Tooltip formatter={(value) => formatCurrency(value)} />
-                      </PieChart>
-                    </ResponsiveContainer>
-                  </CardContent>
-                </Card>
+                  <Card className="financial-card">
+                    <CardContent className="p-4">
+                      <div className="flex items-center space-x-3">
+                        <div className="p-2 rounded-full bg-orange-100 dark:bg-orange-900/30">
+                          <Target className="h-5 w-5 text-orange-600" />
+                        </div>
+                        <div>
+                          <p className="text-sm text-muted-foreground">Gastos Realizados</p>
+                          <p className="text-xl font-bold text-orange-600">
+                            {balanceVisible ? formatCurrency(spendingByType.necessities + spendingByType.wants + spendingByType.savings) : '••••••'}
+                          </p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="financial-card">
+                    <CardContent className="p-4">
+                      <div className="flex items-center space-x-3">
+                        <div className="p-2 rounded-full bg-blue-100 dark:bg-blue-900/30">
+                          <Calculator className="h-5 w-5 text-blue-600" />
+                        </div>
+                        <div>
+                          <p className="text-sm text-muted-foreground">Orçamento Total</p>
+                          <p className="text-xl font-bold text-blue-600">
+                            {balanceVisible ? formatCurrency((budget?.necessitiesBudget || 0) + (budget?.wantsBudget || 0) + (budget?.savingsBudget || 0)) : '••••••'}
+                          </p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="financial-card">
+                    <CardContent className="p-4">
+                      <div className="flex items-center space-x-3">
+                        <div className="p-2 rounded-full bg-purple-100 dark:bg-purple-900/30">
+                          <TrendingUp className="h-5 w-5 text-purple-600" />
+                        </div>
+                        <div>
+                          <p className="text-sm text-muted-foreground">Disponível</p>
+                          <p className="text-xl font-bold text-purple-600">
+                            {balanceVisible ? formatCurrency((budget?.totalIncome || 0) - ((budget?.necessitiesBudget || 0) + (budget?.wantsBudget || 0) + (budget?.savingsBudget || 0))) : '••••••'}
+                          </p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* Main Overview Grid */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                  {/* Budget Distribution Chart */}
+                  <Card className="financial-card">
+                    <CardHeader>
+                      <CardTitle className="flex items-center space-x-2">
+                        <PieChartIcon className="h-5 w-5 text-primary" />
+                        <span>Distribuição 50/30/20</span>
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <ResponsiveContainer width="100%" height={200}>
+                        <PieChart>
+                          <Pie
+                            data={budgetDistributionData}
+                            cx="50%"
+                            cy="50%"
+                            innerRadius={40}
+                            outerRadius={80}
+                            paddingAngle={5}
+                            dataKey="value"
+                          >
+                            {budgetDistributionData.map((entry, index) => (
+                              <Cell key={`cell-${index}`} fill={entry.color} />
+                            ))}
+                          </Pie>
+                          <Tooltip formatter={(value: number) => formatCurrency(value)} />
+                        </PieChart>
+                      </ResponsiveContainer>
+                      <div className="mt-4 space-y-2">
+                        <div className="flex items-center justify-between text-sm">
+                          <div className="flex items-center space-x-2">
+                            <div className="w-3 h-3 rounded bg-orange-500"></div>
+                            <span>Necessidades (50%)</span>
+                          </div>
+                          <span className="font-medium">{formatCurrency(budget?.necessitiesBudget || 0)}</span>
+                        </div>
+                        <div className="flex items-center justify-between text-sm">
+                          <div className="flex items-center space-x-2">
+                            <div className="w-3 h-3 rounded bg-green-500"></div>
+                            <span>Desejos (30%)</span>
+                          </div>
+                          <span className="font-medium">{formatCurrency(budget?.wantsBudget || 0)}</span>
+                        </div>
+                        <div className="flex items-center justify-between text-sm">
+                          <div className="flex items-center space-x-2">
+                            <div className="w-3 h-3 rounded bg-blue-500"></div>
+                            <span>Poupança (20%)</span>
+                          </div>
+                          <span className="font-medium">{formatCurrency(budget?.savingsBudget || 0)}</span>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Category Breakdown - Necessidades */}
+                  <Card className="financial-card">
+                    <CardHeader>
+                      <CardTitle className="flex items-center justify-between">
+                        <div className="flex items-center space-x-2">
+                          <div className="w-4 h-4 rounded bg-orange-500"></div>
+                          <span>Necessidades (50%)</span>
+                        </div>
+                        <Badge variant="outline" className="text-orange-600 border-orange-200">
+                          {budget?.necessitiesBudget ? Math.round((spendingByType.necessities / parseFloat(budget.necessitiesBudget)) * 100) : 0}% usado
+                        </Badge>
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <div className="flex justify-between items-center text-sm">
+                        <span>Orçado:</span>
+                        <span className="font-medium">{formatCurrency(budget?.necessitiesBudget || 0)}</span>
+                      </div>
+                      <div className="flex justify-between items-center text-sm">
+                        <span>Gasto:</span>
+                        <span className="font-medium text-orange-600">{formatCurrency(spendingByType.necessities)}</span>
+                      </div>
+                      <div className="flex justify-between items-center text-sm">
+                        <span>Restante:</span>
+                        <span className="font-medium text-green-600">
+                          {formatCurrency(Math.max(0, (parseFloat(budget?.necessitiesBudget || '0') - spendingByType.necessities)))}
+                        </span>
+                      </div>
+                      <Progress 
+                        value={budget?.necessitiesBudget ? Math.min(100, (spendingByType.necessities / parseFloat(budget.necessitiesBudget)) * 100) : 0}
+                        className="h-2"
+                        style={{ 
+                          '--progress-background': '#FF8C42',
+                          '--progress-foreground': '#FF8C42'
+                        } as any}
+                      />
+                      <div className="pt-2 space-y-1">
+                        {categories
+                          .filter((cat: any) => cat.type === 'necessities')
+                          .slice(0, 3)
+                          .map((category: any) => {
+                            const categorySpent = transactions
+                              .filter((t: any) => t.categoryId === category.id && t.type === 'expense')
+                              .reduce((sum: number, t: any) => sum + parseFloat(t.amount), 0);
+                            
+                            return (
+                              <div key={category.id} className="flex justify-between text-xs text-muted-foreground">
+                                <span>{category.name}</span>
+                                <span>{formatCurrency(categorySpent)}</span>
+                              </div>
+                            );
+                          })}
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Category Breakdown - Desejos */}
+                  <Card className="financial-card">
+                    <CardHeader>
+                      <CardTitle className="flex items-center justify-between">
+                        <div className="flex items-center space-x-2">
+                          <div className="w-4 h-4 rounded bg-green-500"></div>
+                          <span>Desejos (30%)</span>
+                        </div>
+                        <Badge variant="outline" className="text-green-600 border-green-200">
+                          {budget?.wantsBudget ? Math.round((spendingByType.wants / parseFloat(budget.wantsBudget)) * 100) : 0}% usado
+                        </Badge>
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <div className="flex justify-between items-center text-sm">
+                        <span>Orçado:</span>
+                        <span className="font-medium">{formatCurrency(budget?.wantsBudget || 0)}</span>
+                      </div>
+                      <div className="flex justify-between items-center text-sm">
+                        <span>Gasto:</span>
+                        <span className="font-medium text-green-600">{formatCurrency(spendingByType.wants)}</span>
+                      </div>
+                      <div className="flex justify-between items-center text-sm">
+                        <span>Restante:</span>
+                        <span className="font-medium text-green-600">
+                          {formatCurrency(Math.max(0, (parseFloat(budget?.wantsBudget || '0') - spendingByType.wants)))}
+                        </span>
+                      </div>
+                      <Progress 
+                        value={budget?.wantsBudget ? Math.min(100, (spendingByType.wants / parseFloat(budget.wantsBudget)) * 100) : 0}
+                        className="h-2"
+                        style={{ 
+                          '--progress-background': '#4ADE80',
+                          '--progress-foreground': '#4ADE80'
+                        } as any}
+                      />
+                      <div className="pt-2 space-y-1">
+                        {categories
+                          .filter((cat: any) => cat.type === 'wants')
+                          .slice(0, 3)
+                          .map((category: any) => {
+                            const categorySpent = transactions
+                              .filter((t: any) => t.categoryId === category.id && t.type === 'expense')
+                              .reduce((sum: number, t: any) => sum + parseFloat(t.amount), 0);
+                            
+                            return (
+                              <div key={category.id} className="flex justify-between text-xs text-muted-foreground">
+                                <span>{category.name}</span>
+                                <span>{formatCurrency(categorySpent)}</span>
+                              </div>
+                            );
+                          })}
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* Second Row - Poupança and Quick Actions */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                  {/* Category Breakdown - Poupança */}
+                  <Card className="financial-card">
+                    <CardHeader>
+                      <CardTitle className="flex items-center justify-between">
+                        <div className="flex items-center space-x-2">
+                          <div className="w-4 h-4 rounded bg-blue-500"></div>
+                          <span>Poupança (20%)</span>
+                        </div>
+                        <Badge variant="outline" className="text-blue-600 border-blue-200">
+                          {budget?.savingsBudget ? Math.round((spendingByType.savings / parseFloat(budget.savingsBudget)) * 100) : 0}% usado
+                        </Badge>
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <div className="flex justify-between items-center text-sm">
+                        <span>Orçado:</span>
+                        <span className="font-medium">{formatCurrency(budget?.savingsBudget || 0)}</span>
+                      </div>
+                      <div className="flex justify-between items-center text-sm">
+                        <span>Investido:</span>
+                        <span className="font-medium text-blue-600">{formatCurrency(spendingByType.savings)}</span>
+                      </div>
+                      <div className="flex justify-between items-center text-sm">
+                        <span>Meta Restante:</span>
+                        <span className="font-medium text-green-600">
+                          {formatCurrency(Math.max(0, (parseFloat(budget?.savingsBudget || '0') - spendingByType.savings)))}
+                        </span>
+                      </div>
+                      <Progress 
+                        value={budget?.savingsBudget ? Math.min(100, (spendingByType.savings / parseFloat(budget.savingsBudget)) * 100) : 0}
+                        className="h-2"
+                        style={{ 
+                          '--progress-background': '#60A5FA',
+                          '--progress-foreground': '#60A5FA'
+                        } as any}
+                      />
+                      <div className="pt-2 space-y-1">
+                        {categories
+                          .filter((cat: any) => cat.type === 'savings')
+                          .slice(0, 3)
+                          .map((category: any) => {
+                            const categorySpent = transactions
+                              .filter((t: any) => t.categoryId === category.id && t.type === 'expense')
+                              .reduce((sum: number, t: any) => sum + parseFloat(t.amount), 0);
+                            
+                            return (
+                              <div key={category.id} className="flex justify-between text-xs text-muted-foreground">
+                                <span>{category.name}</span>
+                                <span>{formatCurrency(categorySpent)}</span>
+                              </div>
+                            );
+                          })}
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Quick Insights */}
+                  <Card className="financial-card">
+                    <CardHeader>
+                      <CardTitle className="flex items-center space-x-2">
+                        <Activity className="h-5 w-5 text-primary" />
+                        <span>Insights do Mês</span>
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="space-y-3">
+                        <div className="flex items-center space-x-3 p-3 rounded-lg bg-green-50 dark:bg-green-950/30">
+                          <TrendingUp className="h-5 w-5 text-green-600" />
+                          <div>
+                            <p className="text-sm font-medium text-green-800 dark:text-green-200">
+                              Taxa de Poupança
+                            </p>
+                            <p className="text-xs text-green-600 dark:text-green-300">
+                              {budget ? Math.round(((budget.savingsBudget || 0) / (budget.totalIncome || 1)) * 100) : 0}% da renda
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center space-x-3 p-3 rounded-lg bg-blue-50 dark:bg-blue-950/30">
+                          <Target className="h-5 w-5 text-blue-600" />
+                          <div>
+                            <p className="text-sm font-medium text-blue-800 dark:text-blue-200">
+                              Aderência Total
+                            </p>
+                            <p className="text-xs text-blue-600 dark:text-blue-300">
+                              {budget ? Math.round((1 - Math.abs(((spendingByType.necessities + spendingByType.wants + spendingByType.savings) - (parseFloat(budget.necessitiesBudget || '0') + parseFloat(budget.wantsBudget || '0') + parseFloat(budget.savingsBudget || '0'))) / (budget.totalIncome || 1))) * 100) : 0}% do planejado
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center space-x-3 p-3 rounded-lg bg-orange-50 dark:bg-orange-950/30">
+                          <DollarSign className="h-5 w-5 text-orange-600" />
+                          <div>
+                            <p className="text-sm font-medium text-orange-800 dark:text-orange-200">
+                              Dias Restantes
+                            </p>
+                            <p className="text-xs text-orange-600 dark:text-orange-300">
+                              {new Date(selectedYear, selectedMonth, 0).getDate() - new Date().getDate()} dias no mês
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Quick Actions */}
+                  <Card className="financial-card">
+                    <CardHeader>
+                      <CardTitle className="flex items-center space-x-2">
+                        <Settings className="h-5 w-5 text-primary" />
+                        <span>Ações Rápidas</span>
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <Button 
+                        onClick={() => setIsEditing(true)}
+                        className="w-full justify-start pharos-gradient"
+                        size="sm"
+                      >
+                        <Edit3 className="w-4 h-4 mr-2" />
+                        {budget ? 'Editar Orçamento' : 'Criar Orçamento'}
+                      </Button>
+                      
+                      <Button 
+                        variant="outline"
+                        className="w-full justify-start"
+                        size="sm"
+                        onClick={() => setActiveTab('analytics')}
+                      >
+                        <BarChart3 className="w-4 h-4 mr-2" />
+                        Ver Análises Detalhadas
+                      </Button>
+
+                      <Button 
+                        variant="outline"
+                        className="w-full justify-start"
+                        size="sm"
+                        onClick={() => setActiveTab('projection')}
+                      >
+                        <TrendingUp className="w-4 h-4 mr-2" />
+                        Ver Projeções
+                      </Button>
+
+                      {budget && (
+                        <div className="pt-2 border-t text-center">
+                          <p className="text-xs text-muted-foreground">
+                            Última atualização: {new Date().toLocaleDateString('pt-BR')}
+                          </p>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                </div>
               </div>
             )}
           </TabsContent>
@@ -313,7 +641,7 @@ export function Budget() {
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="month" />
                     <YAxis />
-                    <Tooltip formatter={(value) => formatCurrency(value)} />
+                    <Tooltip formatter={(value: number) => formatCurrency(value)} />
                     <Legend />
                     <Area type="monotone" dataKey="income" stackId="1" stroke="#195AB4" fill="#195AB4" name="Receita" />
                     <Area type="monotone" dataKey="expenses" stackId="2" stroke="#dc2626" fill="#dc2626" name="Gastos" />
@@ -339,7 +667,7 @@ export function Budget() {
                       <CartesianGrid strokeDasharray="3 3" />
                       <XAxis dataKey="category" />
                       <YAxis />
-                      <Tooltip formatter={(value) => formatCurrency(value)} />
+                      <Tooltip formatter={(value: number) => formatCurrency(value)} />
                       <Legend />
                       <Bar dataKey="planned" fill="#195AB4" name="Planejado" />
                       <Bar dataKey="spent" fill="#3399FF" name="Gasto" />

@@ -11,6 +11,16 @@ Visual Identity: Pharos Capital brand guidelines applied.
 
 ## Recent Changes
 
+- **January 29, 2025**: Enhanced budget overview with comprehensive category breakdown and insights
+  - Redesigned overview tab with detailed financial summary cards (Renda Total, Gastos Realizados, Orçamento Total, Disponível)
+  - Added category-specific breakdown cards for Necessidades (50%), Desejos (30%), and Poupança (20%)
+  - Implemented progress bars with custom colors matching 50/30/20 methodology (orange, green, blue)
+  - Added intelligent insights panel with taxa de poupança, aderência ao orçamento, and dias restantes
+  - Created quick actions panel with navigation to analytics and projections
+  - Enhanced pie chart with detailed legend showing budget distribution
+  - Added top 3 categories display for each budget type with spending amounts
+  - Improved responsive design for better mobile and desktop viewing
+  - Added percentage usage badges for each category showing budget utilization
 - **January 29, 2025**: Updated budget methodology color scheme per user request
   - Changed Necessidades (necessities) from purple to orange color scheme
   - Changed Desejos (wants) from orange to green color scheme  
