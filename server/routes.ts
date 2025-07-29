@@ -4,7 +4,7 @@ import { storage } from "./storage";
 import { 
   insertUserSchema, insertAccountSchema, insertCreditCardSchema, 
   insertCategorySchema, insertTransactionSchema, insertAssetSchema,
-  insertGoalSchema, insertBudgetSchema
+  insertGoalSchema, insertBudgetSchema, insertInvestmentTransactionSchema
 } from "@shared/schema";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
@@ -515,6 +515,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(asset);
     } catch (error) {
       res.status(400).json({ message: "Erro ao criar ativo", error: error instanceof Error ? error.message : "Erro desconhecido" });
+    }
+  });
+
+  // Investment Transactions routes
+  app.get("/api/investment-transactions", async (req: any, res) => {
+    try {
+      const transactions = await storage.getUserInvestmentTransactions(req.userId);
+      res.json(transactions);
+    } catch (error) {
+      res.status(500).json({ message: "Erro ao carregar transações de investimento", error: error instanceof Error ? error.message : "Erro desconhecido" });
+    }
+  });
+
+  app.post("/api/investment-transactions", async (req: any, res) => {
+    try {
+      const transactionData = insertInvestmentTransactionSchema.parse({ 
+        ...req.body, 
+        userId: req.userId,
+        date: new Date(req.body.date || Date.now())
+      });
+      
+      const transaction = await storage.createInvestmentTransaction(transactionData);
+      res.json(transaction);
+    } catch (error) {
+      res.status(400).json({ message: "Erro ao criar transação de investimento", error: error instanceof Error ? error.message : "Erro desconhecido" });
+    }
+  });
+
+  app.get("/api/investments", async (req: any, res) => {
+    try {
+      const portfolioData = await storage.calculatePortfolioValue(req.userId);
+      const assets = await storage.getUserAssets(req.userId);
+      
+      res.json({
+        ...portfolioData,
+        assets: assets,
+        portfolioEvolution: [] // Mock data for now, can be calculated from historical data
+      });
+    } catch (error) {
+      res.status(500).json({ message: "Erro ao carregar dados de investimentos", error: error instanceof Error ? error.message : "Erro desconhecido" });
     }
   });
 

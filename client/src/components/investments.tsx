@@ -26,6 +26,7 @@ import {
 } from 'lucide-react';
 import { PieChart as RechartsPieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, AreaChart, Area } from 'recharts';
 import { useState } from 'react';
+import { InvestmentTransactionForm } from './investment-transaction-form';
 
 const ASSET_COLORS = {
   stocks: '#3B82F6',
@@ -314,6 +315,7 @@ export function Investments() {
                 <p className="text-white/80 text-sm sm:text-base">Acompanhe sua carteira de investimentos</p>
               </div>
               <div className="flex items-center space-x-2 sm:space-x-3">
+                <InvestmentTransactionForm />
                 <Button 
                   variant="ghost" 
                   size="sm"

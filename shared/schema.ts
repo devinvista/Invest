@@ -7,7 +7,8 @@ import { z } from "zod";
 export const transactionTypeEnum = pgEnum('transaction_type', ['income', 'expense', 'transfer']);
 export const categoryTypeEnum = pgEnum('category_type', ['necessities', 'wants', 'savings']);
 export const accountTypeEnum = pgEnum('account_type', ['checking', 'savings', 'investment']);
-export const assetTypeEnum = pgEnum('asset_type', ['stock', 'fii', 'crypto', 'fixed_income', 'etf']);
+export const assetTypeEnum = pgEnum('asset_type', ['stock', 'fii', 'crypto', 'fixed_income', 'etf', 'fund']);
+export const investmentOperationEnum = pgEnum('investment_operation', ['buy', 'sell']);
 export const goalStatusEnum = pgEnum('goal_status', ['active', 'completed', 'paused']);
 
 // Users table
@@ -132,6 +133,22 @@ export const budgetCategories = pgTable("budget_categories", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+// Investment Transactions - for tracking investment operations
+export const investmentTransactions = pgTable("investment_transactions", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: uuid("user_id").references(() => users.id).notNull(),
+  assetId: uuid("asset_id").references(() => assets.id).notNull(),
+  accountId: uuid("account_id").references(() => accounts.id).notNull(), // Account from which the investment was made
+  operation: investmentOperationEnum("operation").notNull(), // buy or sell
+  quantity: decimal("quantity", { precision: 12, scale: 8 }).notNull(),
+  price: decimal("price", { precision: 12, scale: 2 }).notNull(),
+  totalAmount: decimal("total_amount", { precision: 12, scale: 2 }).notNull(), // quantity * price
+  fees: decimal("fees", { precision: 12, scale: 2 }).default("0.00"),
+  date: timestamp("date").notNull(),
+  description: text("description"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 // Relations
 export const usersRelations = relations(users, ({ many }) => ({
   accounts: many(accounts),
@@ -142,6 +159,7 @@ export const usersRelations = relations(users, ({ many }) => ({
   goals: many(goals),
   budgets: many(budgets),
   budgetCategories: many(budgetCategories),
+  investmentTransactions: many(investmentTransactions),
 }));
 
 export const accountsRelations = relations(accounts, ({ one, many }) => ({
@@ -166,8 +184,15 @@ export const transactionsRelations = relations(transactions, ({ one }) => ({
   category: one(categories, { fields: [transactions.categoryId], references: [categories.id] }),
 }));
 
-export const assetsRelations = relations(assets, ({ one }) => ({
+export const assetsRelations = relations(assets, ({ one, many }) => ({
   user: one(users, { fields: [assets.userId], references: [users.id] }),
+  investmentTransactions: many(investmentTransactions),
+}));
+
+export const investmentTransactionsRelations = relations(investmentTransactions, ({ one }) => ({
+  user: one(users, { fields: [investmentTransactions.userId], references: [users.id] }),
+  asset: one(assets, { fields: [investmentTransactions.assetId], references: [assets.id] }),
+  account: one(accounts, { fields: [investmentTransactions.accountId], references: [accounts.id] }),
 }));
 
 export const goalsRelations = relations(goals, ({ one }) => ({
@@ -238,22 +263,34 @@ export const insertBudgetCategorySchema = createInsertSchema(budgetCategories)
     allocatedAmount: z.union([z.string(), z.number()]).transform(val => val.toString()),
   });
 
-// Types
+export const insertInvestmentTransactionSchema = createInsertSchema(investmentTransactions)
+  .omit({ id: true, createdAt: true })
+  .extend({
+    quantity: z.union([z.string(), z.number()]).transform(val => val.toString()),
+    price: z.union([z.string(), z.number()]).transform(val => val.toString()),
+    totalAmount: z.union([z.string(), z.number()]).transform(val => val.toString()),
+    fees: z.union([z.string(), z.number()]).transform(val => val.toString()).optional(),
+  });
+
+// Type definitions
 export type User = typeof users.$inferSelect;
-export type InsertUser = z.infer<typeof insertUserSchema>;
 export type Account = typeof accounts.$inferSelect;
-export type InsertAccount = z.infer<typeof insertAccountSchema>;
 export type CreditCard = typeof creditCards.$inferSelect;
-export type InsertCreditCard = z.infer<typeof insertCreditCardSchema>;
 export type Category = typeof categories.$inferSelect;
-export type InsertCategory = z.infer<typeof insertCategorySchema>;
 export type Transaction = typeof transactions.$inferSelect;
-export type InsertTransaction = z.infer<typeof insertTransactionSchema>;
 export type Asset = typeof assets.$inferSelect;
-export type InsertAsset = z.infer<typeof insertAssetSchema>;
 export type Goal = typeof goals.$inferSelect;
-export type InsertGoal = z.infer<typeof insertGoalSchema>;
 export type Budget = typeof budgets.$inferSelect;
-export type InsertBudget = z.infer<typeof insertBudgetSchema>;
 export type BudgetCategory = typeof budgetCategories.$inferSelect;
+export type InvestmentTransaction = typeof investmentTransactions.$inferSelect;
+
+export type InsertUser = z.infer<typeof insertUserSchema>;
+export type InsertAccount = z.infer<typeof insertAccountSchema>;
+export type InsertCreditCard = z.infer<typeof insertCreditCardSchema>;
+export type InsertCategory = z.infer<typeof insertCategorySchema>;
+export type InsertTransaction = z.infer<typeof insertTransactionSchema>;
+export type InsertAsset = z.infer<typeof insertAssetSchema>;
+export type InsertGoal = z.infer<typeof insertGoalSchema>;
+export type InsertBudget = z.infer<typeof insertBudgetSchema>;
 export type InsertBudgetCategory = z.infer<typeof insertBudgetCategorySchema>;
+export type InsertInvestmentTransaction = z.infer<typeof insertInvestmentTransactionSchema>;

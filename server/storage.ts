@@ -1,13 +1,13 @@
 import { 
-  users, accounts, creditCards, categories, transactions, assets, goals, budgets, budgetCategories,
+  users, accounts, creditCards, categories, transactions, assets, goals, budgets, budgetCategories, investmentTransactions,
   type User, type InsertUser, type Account, type InsertAccount, 
   type CreditCard, type InsertCreditCard, type Category, type InsertCategory,
   type Transaction, type InsertTransaction, type Asset, type InsertAsset,
   type Goal, type InsertGoal, type Budget, type InsertBudget,
-  type BudgetCategory, type InsertBudgetCategory
+  type BudgetCategory, type InsertBudgetCategory, type InvestmentTransaction, type InsertInvestmentTransaction
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, and, desc, gte, lte, sum } from "drizzle-orm";
+import { eq, and, desc, gte, lte, sum, sql } from "drizzle-orm";
 
 export interface IStorage {
   // Users
@@ -61,6 +61,27 @@ export interface IStorage {
   getBudgetCategories(budgetId: string): Promise<(BudgetCategory & { category: Category })[]>;
   createBudgetCategories(budgetId: string, categories: { categoryId: string; allocatedAmount: string }[]): Promise<void>;
   deleteBudgetCategories(budgetId: string): Promise<void>;
+
+  // Investment Transactions
+  getUserInvestmentTransactions(userId: string): Promise<(InvestmentTransaction & { asset: Asset; account: Account })[]>;
+  createInvestmentTransaction(investmentTransaction: InsertInvestmentTransaction): Promise<InvestmentTransaction>;
+  getAssetTransactions(assetId: string): Promise<InvestmentTransaction[]>;
+  
+  // Investment Portfolio Calculations
+  calculatePortfolioValue(userId: string): Promise<{
+    totalValue: number;
+    appliedValue: number;
+    totalProfit: number;
+    profitabilityPercent: number;
+    variation: number;
+    variationPercent: number;
+    assetDistribution: Array<{
+      name: string;
+      value: number;
+      percentage: number;
+      color: string;
+    }>;
+  }>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -370,6 +391,211 @@ export class DatabaseStorage implements IStorage {
 
   async deleteBudgetCategories(budgetId: string): Promise<void> {
     await db.delete(budgetCategories).where(eq(budgetCategories.budgetId, budgetId));
+  }
+
+  // Investment Transactions
+  async getUserInvestmentTransactions(userId: string): Promise<(InvestmentTransaction & { asset: Asset; account: Account })[]> {
+    return await db
+      .select()
+      .from(investmentTransactions)
+      .leftJoin(assets, eq(investmentTransactions.assetId, assets.id))
+      .leftJoin(accounts, eq(investmentTransactions.accountId, accounts.id))
+      .where(eq(investmentTransactions.userId, userId))
+      .orderBy(desc(investmentTransactions.date))
+      .then(rows => 
+        rows.map(row => ({
+          ...row.investment_transactions,
+          asset: row.assets!,
+          account: row.accounts!,
+        }))
+      );
+  }
+
+  async createInvestmentTransaction(investmentTransaction: InsertInvestmentTransaction): Promise<InvestmentTransaction> {
+    // Calculate total amount if not provided
+    const totalAmount = investmentTransaction.totalAmount || 
+      (Number(investmentTransaction.quantity) * Number(investmentTransaction.price) + Number(investmentTransaction.fees || 0)).toString();
+
+    const [created] = await db
+      .insert(investmentTransactions)
+      .values({
+        ...investmentTransaction,
+        totalAmount,
+      })
+      .returning();
+
+    // Update account balance
+    if (investmentTransaction.operation === 'buy') {
+      // Subtract from account balance
+      await db
+        .update(accounts)
+        .set({
+          balance: sql`balance - ${totalAmount}::decimal`
+        })
+        .where(eq(accounts.id, investmentTransaction.accountId));
+    } else if (investmentTransaction.operation === 'sell') {
+      // Add to account balance
+      await db
+        .update(accounts)
+        .set({
+          balance: sql`balance + ${totalAmount}::decimal`
+        })
+        .where(eq(accounts.id, investmentTransaction.accountId));
+    }
+
+    // Update asset quantity and average price
+    await this.updateAssetAfterTransaction(investmentTransaction.assetId, investmentTransaction.operation, 
+      Number(investmentTransaction.quantity), Number(investmentTransaction.price));
+
+    return created;
+  }
+
+  async getAssetTransactions(assetId: string): Promise<InvestmentTransaction[]> {
+    return await db
+      .select()
+      .from(investmentTransactions)
+      .where(eq(investmentTransactions.assetId, assetId))
+      .orderBy(desc(investmentTransactions.date));
+  }
+
+  private async updateAssetAfterTransaction(assetId: string, operation: 'buy' | 'sell', quantity: number, price: number): Promise<void> {
+    const [asset] = await db.select().from(assets).where(eq(assets.id, assetId));
+    if (!asset) return;
+
+    const currentQuantity = Number(asset.quantity);
+    const currentAveragePrice = Number(asset.averagePrice);
+
+    if (operation === 'buy') {
+      // Calculate new quantity and average price
+      const newQuantity = currentQuantity + quantity;
+      const totalValue = (currentQuantity * currentAveragePrice) + (quantity * price);
+      const newAveragePrice = totalValue / newQuantity;
+
+      await db
+        .update(assets)
+        .set({
+          quantity: newQuantity.toString(),
+          averagePrice: newAveragePrice.toFixed(2),
+        })
+        .where(eq(assets.id, assetId));
+    } else if (operation === 'sell') {
+      // Just update quantity (keep same average price)
+      const newQuantity = Math.max(0, currentQuantity - quantity);
+      
+      await db
+        .update(assets)
+        .set({
+          quantity: newQuantity.toString(),
+        })
+        .where(eq(assets.id, assetId));
+    }
+  }
+
+  // Investment Portfolio Calculations
+  async calculatePortfolioValue(userId: string): Promise<{
+    totalValue: number;
+    appliedValue: number;
+    totalProfit: number;
+    profitabilityPercent: number;
+    variation: number;
+    variationPercent: number;
+    assetDistribution: Array<{
+      name: string;
+      value: number;
+      percentage: number;
+      color: string;
+    }>;
+  }> {
+    // Get all user assets with their current values
+    const userAssets = await db
+      .select()
+      .from(assets)
+      .where(eq(assets.userId, userId));
+
+    // Get investment account balances
+    const investmentAccounts = await db
+      .select()
+      .from(accounts)
+      .where(and(eq(accounts.userId, userId), eq(accounts.type, 'investment')));
+
+    // Get all investment transactions for applied value calculation
+    const investmentTxns = await db
+      .select()
+      .from(investmentTransactions)
+      .where(eq(investmentTransactions.userId, userId));
+
+    // Calculate applied value (total invested amount)
+    let appliedValue = 0;
+    for (const txn of investmentTxns) {
+      if (txn.operation === 'buy') {
+        appliedValue += Number(txn.totalAmount);
+      } else if (txn.operation === 'sell') {
+        appliedValue -= Number(txn.totalAmount);
+      }
+    }
+
+    // Add investment account balances to total value
+    const accountBalance = investmentAccounts.reduce((sum, acc) => sum + Number(acc.balance), 0);
+
+    // Calculate current portfolio value
+    let totalAssetsValue = 0;
+    const assetValues: { [key: string]: number } = {};
+    
+    for (const asset of userAssets) {
+      const currentValue = Number(asset.quantity) * Number(asset.currentPrice || asset.averagePrice);
+      totalAssetsValue += currentValue;
+      
+      // Group by asset type for distribution
+      const typeKey = this.getAssetTypeDisplayName(asset.type);
+      assetValues[typeKey] = (assetValues[typeKey] || 0) + currentValue;
+    }
+
+    const totalValue = totalAssetsValue + accountBalance;
+    const totalProfit = totalValue - appliedValue;
+    const profitabilityPercent = appliedValue > 0 ? (totalProfit / appliedValue) * 100 : 0;
+
+    // For variation calculation (mock daily variation for now)
+    const variation = totalValue * (Math.random() * 0.06 - 0.03); // Random between -3% and +3%
+    const variationPercent = totalValue > 0 ? (variation / totalValue) * 100 : 0;
+
+    // Create asset distribution
+    const assetTypeColors = {
+      'Ações': '#8B5CF6',
+      'Renda Fixa': '#06B6D4',
+      'Criptos': '#F59E0B',
+      'ETFs': '#10B981',
+      'FIIs': '#EF4444',
+      'Fundos': '#EC4899'
+    };
+
+    const assetDistribution = Object.entries(assetValues).map(([type, value]) => ({
+      name: type,
+      value,
+      percentage: totalValue > 0 ? (value / totalValue) * 100 : 0,
+      color: assetTypeColors[type as keyof typeof assetTypeColors] || '#6B7280'
+    }));
+
+    return {
+      totalValue,
+      appliedValue,
+      totalProfit,
+      profitabilityPercent,
+      variation,
+      variationPercent,
+      assetDistribution
+    };
+  }
+
+  private getAssetTypeDisplayName(type: string): string {
+    const typeMap = {
+      'stock': 'Ações',
+      'fii': 'FIIs',
+      'crypto': 'Criptos',
+      'fixed_income': 'Renda Fixa',
+      'etf': 'ETFs',
+      'fund': 'Fundos'
+    };
+    return typeMap[type as keyof typeof typeMap] || 'Outros';
   }
 }
 
