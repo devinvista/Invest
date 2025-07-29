@@ -325,15 +325,24 @@ export class DatabaseStorage implements IStorage {
 
   // Budget Categories
   async getBudgetCategories(budgetId: string): Promise<(BudgetCategory & { category: Category })[]> {
-    const result = await db.select()
-      .from(budgetCategories)
-      .leftJoin(categories, eq(budgetCategories.categoryId, categories.id))
-      .where(eq(budgetCategories.budgetId, budgetId));
+    console.log(`🔍 Buscando categorias do orçamento para budgetId: ${budgetId}`);
     
-    return result.map(row => ({
-      ...row.budget_categories,
-      category: row.categories!
-    }));
+    try {
+      const result = await db.select()
+        .from(budgetCategories)
+        .leftJoin(categories, eq(budgetCategories.categoryId, categories.id))
+        .where(eq(budgetCategories.budgetId, budgetId));
+      
+      console.log(`✅ Encontradas ${result.length} categorias para o orçamento ${budgetId}`);
+      
+      return result.map(row => ({
+        ...row.budget_categories,
+        category: row.categories!
+      }));
+    } catch (error) {
+      console.error(`❌ Erro ao buscar categorias do orçamento ${budgetId}:`, error);
+      return [];
+    }
   }
 
   async createBudgetCategories(budgetId: string, categoryData: { categoryId: string; allocatedAmount: string }[]): Promise<void> {

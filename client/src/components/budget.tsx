@@ -33,6 +33,9 @@ export function Budget() {
     savingsBudget: '',
     isDefault: true,
   });
+  
+  const [customCategories, setCustomCategories] = useState<{[key: string]: string}>({});
+  const [budgetCategories, setBudgetCategories] = useState<any[]>([]);
 
   const { data: budget, isLoading } = useQuery<any>({
     queryKey: ['/api/budget', selectedMonth, selectedYear],
@@ -56,12 +59,20 @@ export function Budget() {
     queryKey: ['/api/categories'],
   });
 
+  // Query for budget categories when budget exists
+  const { data: existingBudgetCategories = [] } = useQuery<any[]>({
+    queryKey: ['/api/budget', budget?.id, 'categories'],
+    queryFn: () => budget?.id && budget.id !== 'undefined' ? fetch(`/api/budget/${budget.id}/categories`, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
+      }
+    }).then(res => res.json()) : Promise.resolve([]),
+    enabled: !!budget?.id && budget.id !== 'undefined',
+  });
+
   const createBudgetMutation = useMutation({
     mutationFn: async (budgetData: any) => {
-      return apiRequest(`/api/budget`, {
-        method: 'POST',
-        body: JSON.stringify(budgetData),
-      });
+      return apiRequest('POST', '/api/budget', budgetData);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/budget'] });
@@ -82,10 +93,7 @@ export function Budget() {
 
   const updateBudgetMutation = useMutation({
     mutationFn: async (budgetData: any) => {
-      return apiRequest(`/api/budget/${selectedMonth}/${selectedYear}`, {
-        method: 'PUT',
-        body: JSON.stringify(budgetData),
-      });
+      return apiRequest('PUT', `/api/budget/${selectedMonth}/${selectedYear}`, budgetData);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/budget'] });
@@ -117,6 +125,17 @@ export function Budget() {
     }
   }, [budget, isEditing]);
 
+  // Initialize custom categories from existing budget categories
+  useEffect(() => {
+    if (existingBudgetCategories.length > 0) {
+      const categoryMap: {[key: string]: string} = {};
+      existingBudgetCategories.forEach((bc: any) => {
+        categoryMap[bc.categoryId] = bc.allocatedAmount.toString();
+      });
+      setCustomCategories(categoryMap);
+    }
+  }, [existingBudgetCategories]);
+
   const handleBudgetSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -142,6 +161,9 @@ export function Budget() {
       wantsBudget,
       savingsBudget,
       isDefault: budgetForm.isDefault,
+      budgetCategories: budgetType === 'custom' ? Object.entries(customCategories)
+        .filter(([_, amount]) => parseFloat(amount) > 0)
+        .map(([categoryId, amount]) => ({ categoryId, allocatedAmount: amount })) : undefined
     };
 
     if (budget) {
@@ -165,6 +187,29 @@ export function Budget() {
         savingsBudget: savings.toFixed(2),
       }));
     }
+  };
+
+  // Helper functions for custom budget
+  const handleCustomCategoryChange = (categoryId: string, amount: string) => {
+    setCustomCategories(prev => ({
+      ...prev,
+      [categoryId]: amount
+    }));
+  };
+
+  const getTotalByType = (type: string) => {
+    return categories
+      .filter((cat: any) => cat.type === type)
+      .reduce((sum: number, cat: any) => {
+        const amount = parseFloat(customCategories[cat.id] || '0');
+        return sum + amount;
+      }, 0);
+  };
+
+  const getRemainingByType = (type: string) => {
+    const budget = parseFloat(budgetForm[`${type}Budget` as keyof typeof budgetForm] as string) || 0;
+    const used = getTotalByType(type);
+    return Math.max(0, budget - used);
   };
 
   // Calculate spending by category type
@@ -945,6 +990,117 @@ export function Budget() {
                         </div>
                       </div>
                     </div>
+
+                    {/* Custom Budget Categories */}
+                    {budgetType === 'custom' && (
+                      <div className="space-y-6">
+                        <div className="border-t pt-4">
+                          <h3 className="text-lg font-semibold mb-4">Configuração por Categoria</h3>
+                          <p className="text-sm text-muted-foreground mb-4">
+                            Configure o orçamento individual para cada categoria dentro dos limites 50/30/20
+                          </p>
+
+                          {/* Necessidades */}
+                          <div className="space-y-4 mb-6">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center space-x-2">
+                                <div className="w-4 h-4 rounded bg-orange-500"></div>
+                                <h4 className="font-medium">Necessidades (50%)</h4>
+                              </div>
+                              <div className="text-sm text-muted-foreground">
+                                {formatCurrency(getTotalByType('necessities'))} / {formatCurrency(parseFloat(budgetForm.necessitiesBudget) || 0)}
+                                <span className="ml-2">
+                                  (Restante: {formatCurrency(getRemainingByType('necessities'))})
+                                </span>
+                              </div>
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                              {categories
+                                .filter((cat: any) => cat.type === 'necessities')
+                                .map((category: any) => (
+                                  <div key={category.id} className="space-y-2">
+                                    <Label className="text-sm">{category.name}</Label>
+                                    <Input
+                                      type="number"
+                                      step="0.01"
+                                      placeholder="0.00"
+                                      value={customCategories[category.id] || ''}
+                                      onChange={(e) => handleCustomCategoryChange(category.id, e.target.value)}
+                                      className="text-sm"
+                                    />
+                                  </div>
+                                ))}
+                            </div>
+                          </div>
+
+                          {/* Desejos */}
+                          <div className="space-y-4 mb-6">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center space-x-2">
+                                <div className="w-4 h-4 rounded bg-green-500"></div>
+                                <h4 className="font-medium">Desejos (30%)</h4>
+                              </div>
+                              <div className="text-sm text-muted-foreground">
+                                {formatCurrency(getTotalByType('wants'))} / {formatCurrency(parseFloat(budgetForm.wantsBudget) || 0)}
+                                <span className="ml-2">
+                                  (Restante: {formatCurrency(getRemainingByType('wants'))})
+                                </span>
+                              </div>
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                              {categories
+                                .filter((cat: any) => cat.type === 'wants')
+                                .map((category: any) => (
+                                  <div key={category.id} className="space-y-2">
+                                    <Label className="text-sm">{category.name}</Label>
+                                    <Input
+                                      type="number"
+                                      step="0.01"
+                                      placeholder="0.00"
+                                      value={customCategories[category.id] || ''}
+                                      onChange={(e) => handleCustomCategoryChange(category.id, e.target.value)}
+                                      className="text-sm"
+                                    />
+                                  </div>
+                                ))}
+                            </div>
+                          </div>
+
+                          {/* Poupança */}
+                          <div className="space-y-4 mb-6">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center space-x-2">
+                                <div className="w-4 h-4 rounded bg-blue-500"></div>
+                                <h4 className="font-medium">Poupança (20%)</h4>
+                              </div>
+                              <div className="text-sm text-muted-foreground">
+                                {formatCurrency(getTotalByType('savings'))} / {formatCurrency(parseFloat(budgetForm.savingsBudget) || 0)}
+                                <span className="ml-2">
+                                  (Restante: {formatCurrency(getRemainingByType('savings'))})
+                                </span>
+                              </div>
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                              {categories
+                                .filter((cat: any) => cat.type === 'savings')
+                                .map((category: any) => (
+                                  <div key={category.id} className="space-y-2">
+                                    <Label className="text-sm">{category.name}</Label>
+                                    <Input
+                                      type="number"
+                                      step="0.01"
+                                      placeholder="0.00"
+                                      value={customCategories[category.id] || ''}
+                                      onChange={(e) => handleCustomCategoryChange(category.id, e.target.value)}
+                                      className="text-sm"
+                                    />
+                                  </div>
+                                ))}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
 
                     {/* Default Budget Toggle */}
                     <div className="flex items-center space-x-2">
