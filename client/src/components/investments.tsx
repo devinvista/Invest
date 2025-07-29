@@ -27,6 +27,7 @@ import {
 import { PieChart as RechartsPieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, AreaChart, Area } from 'recharts';
 import { useState } from 'react';
 import { InvestmentTransactionForm } from './investment-transaction-form';
+import { AssetForm } from './asset-form';
 
 const ASSET_COLORS = {
   stocks: '#3B82F6',
@@ -42,8 +43,9 @@ interface Asset {
   symbol: string;
   name: string;
   type: string;
-  quantity: number;
-  currentPrice: number;
+  quantity: string;
+  averagePrice: string;
+  currentPrice: string;
   totalValue: number;
   variation: number;
   variationPercent: number;
@@ -233,7 +235,45 @@ export function Investments() {
 
   const evolutionData = getEvolutionData();
 
-  // Mock assets data
+  // Get unique asset types from user's assets
+  const getAvailableAssetTypes = () => {
+    const typeMap = {
+      'stock': { key: 'stocks', label: 'Ações', icon: BarChart3, color: 'primary' },
+      'fii': { key: 'fiis', label: 'FIIs', icon: Target, color: 'chart-1' },
+      'crypto': { key: 'crypto', label: 'Crypto', icon: DollarSign, color: 'warning' },
+      'fixed_income': { key: 'fixedIncome', label: 'Renda Fixa', icon: PieChart, color: 'chart-2' },
+      'etf': { key: 'etfs', label: 'ETFs', icon: PieChart, color: 'chart-3' },
+      'fund': { key: 'funds', label: 'Fundos', icon: Target, color: 'chart-4' }
+    };
+
+    if (!assets || assets.length === 0) {
+      return []; // No assets, no tabs
+    }
+
+    const uniqueTypes = Array.from(new Set(assets.map(asset => asset.type)));
+    return uniqueTypes
+      .filter((type): type is keyof typeof typeMap => type in typeMap)
+      .map(type => typeMap[type]);
+  };
+
+  const availableAssetTypes = getAvailableAssetTypes();
+
+  // Group assets by type
+  const getAssetsByType = (targetType: string) => {
+    const typeMapping: Record<string, string> = {
+      'stocks': 'stock',
+      'fiis': 'fii', 
+      'crypto': 'crypto',
+      'fixedIncome': 'fixed_income',
+      'etfs': 'etf',
+      'funds': 'fund'
+    };
+    
+    const dbType = typeMapping[targetType];
+    return assets.filter(asset => asset.type === dbType);
+  };
+
+  // Mock assets data (keeping for reference)
   const mockAssets = [
     {
       id: '1',
@@ -570,204 +610,153 @@ export function Investments() {
           </Card>
         </div>
 
-        {/* Asset Categories */}
-        <Tabs defaultValue="stocks" className="space-y-6">
-          <div className="flex items-center justify-between">
-            <TabsList className="grid w-full max-w-md grid-cols-4">
-              <TabsTrigger value="stocks">Ações</TabsTrigger>
-              <TabsTrigger value="crypto">Crypto</TabsTrigger>
-              <TabsTrigger value="etfs">ETFs</TabsTrigger>
-              <TabsTrigger value="funds">Fundos</TabsTrigger>
-            </TabsList>
+        {/* Asset Categories - Only show types that user has */}
+        {availableAssetTypes.length > 0 ? (
+          <Tabs defaultValue={availableAssetTypes[0]?.key} className="space-y-6">
+            <div className="flex items-center justify-between">
+              <TabsList className="grid w-full max-w-md" style={{ gridTemplateColumns: `repeat(${Math.min(availableAssetTypes.length, 6)}, 1fr)` }}>
+                {availableAssetTypes.map(type => (
+                  <TabsTrigger key={type.key} value={type.key}>
+                    {type.label}
+                  </TabsTrigger>
+                ))}
+              </TabsList>
             <div className="flex items-center space-x-2">
               <Button variant="outline" size="sm">
                 <Filter className="h-4 w-4 mr-2" />
                 Filtros
               </Button>
-              <Button size="sm">
-                <Plus className="h-4 w-4 mr-2" />
-                Adicionar Ativo
-              </Button>
+              <AssetForm />
             </div>
           </div>
 
-          <TabsContent value="stocks">
-            <Card className="pharos-card">
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-4">
-                    <div className="p-2 bg-primary/10 rounded-lg">
-                      <BarChart3 className="h-5 w-5 text-primary" />
-                    </div>
-                    <div>
-                      <CardTitle className="text-lg">Ações</CardTitle>
-                      <p className="text-sm text-muted-foreground">13 ativos • {formatCurrency(125859.50)} • -9.28%</p>
-                    </div>
-                  </div>
-                  <Badge className="bg-expense/10 text-expense border-expense/20">
-                    33.04% rentabilidade
-                  </Badge>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead>
-                      <tr className="border-b border-border text-xs text-muted-foreground">
-                        <th className="text-left p-3">Ativo</th>
-                        <th className="text-right p-3">Quant.</th>
-                        <th className="text-right p-3">Preço Médio</th>
-                        <th className="text-right p-3">Preço Atual</th>
-                        <th className="text-right p-3">Variação</th>
-                        <th className="text-right p-3">Saldo</th>
-                        <th className="text-right p-3">Rentabilidade</th>
-                        <th className="text-right p-3">% Carteira</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {mockAssets.map((asset) => (
-                        <tr key={asset.id} className="border-b border-border/50 hover:bg-accent/30 transition-colors">
-                          <td className="p-3">
-                            <div className="flex items-center space-x-3">
-                              <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
-                                <span className="text-xs font-semibold text-primary">
-                                  {asset.symbol.slice(0, 2)}
-                                </span>
-                              </div>
-                              <div>
-                                <p className="font-medium text-sm">{asset.symbol}</p>
-                                <p className="text-xs text-muted-foreground">{asset.name}</p>
-                              </div>
-                            </div>
-                          </td>
-                          <td className="text-right p-3 text-sm">{asset.quantity}</td>
-                          <td className="text-right p-3 text-sm">{formatCurrency(21.59)}</td>
-                          <td className="text-right p-3 text-sm">{formatCurrency(asset.currentPrice)}</td>
-                          <td className="text-right p-3">
-                            <div className={`flex items-center justify-end space-x-1 ${
-                              asset.variationPercent >= 0 ? 'text-success' : 'text-expense'
-                            }`}>
-                              {asset.variationPercent >= 0 ? (
-                                <ArrowUpRight className="h-3 w-3" />
-                              ) : (
-                                <ArrowDownRight className="h-3 w-3" />
-                              )}
-                              <span className="text-sm font-medium">
-                                {formatPercentage(asset.variationPercent)}
-                              </span>
-                            </div>
-                          </td>
-                          <td className="text-right p-3 text-sm font-medium">
-                            {balanceVisible ? formatCurrency(asset.totalValue) : '••••••'}
-                          </td>
-                          <td className="text-right p-3">
-                            <Badge variant="outline" className="text-xs">
-                              {formatPercentage(asset.profitability)}
-                            </Badge>
-                          </td>
-                          <td className="text-right p-3 text-sm">{formatPercentage(asset.percentage)}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
+            {availableAssetTypes.map(assetType => {
+              const assetsOfType = getAssetsByType(assetType.key);
+              const totalValue = assetsOfType.reduce((sum, asset) => sum + (Number(asset.quantity) * Number(asset.currentPrice || asset.averagePrice)), 0);
+              const totalVariation = assetsOfType.reduce((sum, asset) => {
+                const currentValue = Number(asset.quantity) * Number(asset.currentPrice || asset.averagePrice);
+                const avgValue = Number(asset.quantity) * Number(asset.averagePrice);
+                return sum + (currentValue - avgValue);
+              }, 0);
+              const variationPercent = totalValue > 0 ? (totalVariation / (totalValue - totalVariation)) * 100 : 0;
+              const Icon = assetType.icon;
 
-          <TabsContent value="crypto">
-            <Card className="pharos-card">
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-4">
-                    <div className="p-2 bg-warning/10 rounded-lg">
-                      <DollarSign className="h-5 w-5 text-warning" />
-                    </div>
-                    <div>
-                      <CardTitle className="text-lg">Criptomoedas</CardTitle>
-                      <p className="text-sm text-muted-foreground">10 ativos • {formatCurrency(19951.28)} • +10.02%</p>
-                    </div>
-                  </div>
-                  <Badge className="bg-success/10 text-success border-success/20">
-                    132.61% rentabilidade
-                  </Badge>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center py-12 text-muted-foreground">
-                  <DollarSign className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p className="mb-4">Nenhuma criptomoeda na carteira</p>
-                  <Button>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Adicionar Crypto
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
+              return (
+                <TabsContent key={assetType.key} value={assetType.key}>
+                  <Card className="pharos-card">
+                    <CardHeader>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-4">
+                          <div className="p-2 bg-primary/10 rounded-lg">
+                            <Icon className="h-5 w-5 text-primary" />
+                          </div>
+                          <div>
+                            <CardTitle className="text-lg">{assetType.label}</CardTitle>
+                            <p className="text-sm text-muted-foreground">
+                              {assetsOfType.length} ativo{assetsOfType.length !== 1 ? 's' : ''} • {formatCurrency(totalValue)} • {formatPercentage(variationPercent)}
+                            </p>
+                          </div>
+                        </div>
+                        <Badge className={`${variationPercent >= 0 ? 'bg-success/10 text-success border-success/20' : 'bg-expense/10 text-expense border-expense/20'}`}>
+                          {formatPercentage(variationPercent)} rentabilidade
+                        </Badge>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      {assetsOfType.length > 0 ? (
+                        <div className="overflow-x-auto">
+                          <table className="w-full">
+                            <thead>
+                              <tr className="border-b border-border text-xs text-muted-foreground">
+                                <th className="text-left p-3">Ativo</th>
+                                <th className="text-right p-3">Quant.</th>
+                                <th className="text-right p-3">Preço Médio</th>
+                                <th className="text-right p-3">Preço Atual</th>
+                                <th className="text-right p-3">Variação</th>
+                                <th className="text-right p-3">Saldo</th>
+                                <th className="text-right p-3">% Carteira</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {assetsOfType.map((asset) => {
+                                const currentValue = Number(asset.quantity) * Number(asset.currentPrice || asset.averagePrice);
+                                const avgValue = Number(asset.quantity) * Number(asset.averagePrice);
+                                const assetVariation = currentValue - avgValue;
+                                const assetVariationPercent = avgValue > 0 ? (assetVariation / avgValue) * 100 : 0;
+                                const portfolioPercent = totalValue > 0 ? (currentValue / totalValue) * 100 : 0;
 
-          <TabsContent value="etfs">
-            <Card className="pharos-card">
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-4">
-                    <div className="p-2 bg-chart-3/10 rounded-lg">
-                      <PieChart className="h-5 w-5 text-chart-3" />
-                    </div>
-                    <div>
-                      <CardTitle className="text-lg">ETFs</CardTitle>
-                      <p className="text-sm text-muted-foreground">1 ativo • {formatCurrency(9801.00)} • +1.07%</p>
-                    </div>
-                  </div>
-                  <Badge className="bg-success/10 text-success border-success/20">
-                    0.41% rentabilidade
-                  </Badge>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center py-12 text-muted-foreground">
-                  <PieChart className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p className="mb-4">ETF LFTB11 em carteira</p>
-                  <Button>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Adicionar ETF
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="funds">
-            <Card className="pharos-card">
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-4">
-                    <div className="p-2 bg-chart-4/10 rounded-lg">
-                      <Target className="h-5 w-5 text-chart-4" />
-                    </div>
-                    <div>
-                      <CardTitle className="text-lg">Fundos de Investimento</CardTitle>
-                      <p className="text-sm text-muted-foreground">1 ativo • {formatCurrency(1212.73)} • 0%</p>
-                    </div>
-                  </div>
-                  <Badge className="bg-expense/10 text-expense border-expense/20">
-                    -0.17% rentabilidade
-                  </Badge>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center py-12 text-muted-foreground">
-                  <Target className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p className="mb-4">1 fundo em carteira</p>
-                  <Button>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Adicionar Fundo
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
+                                return (
+                                  <tr key={asset.id} className="border-b border-border/50 hover:bg-accent/30 transition-colors">
+                                    <td className="p-3">
+                                      <div className="flex items-center space-x-3">
+                                        <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
+                                          <span className="text-xs font-semibold text-primary">
+                                            {asset.symbol.slice(0, 2)}
+                                          </span>
+                                        </div>
+                                        <div>
+                                          <p className="font-medium text-sm">{asset.symbol}</p>
+                                          <p className="text-xs text-muted-foreground">{asset.name}</p>
+                                        </div>
+                                      </div>
+                                    </td>
+                                    <td className="text-right p-3 text-sm">{Number(asset.quantity).toLocaleString('pt-BR')}</td>
+                                    <td className="text-right p-3 text-sm">{formatCurrency(Number(asset.averagePrice))}</td>
+                                    <td className="text-right p-3 text-sm">{formatCurrency(Number(asset.currentPrice || asset.averagePrice))}</td>
+                                    <td className="text-right p-3">
+                                      <div className={`flex items-center justify-end space-x-1 ${
+                                        assetVariationPercent >= 0 ? 'text-success' : 'text-expense'
+                                      }`}>
+                                        {assetVariationPercent >= 0 ? (
+                                          <ArrowUpRight className="h-3 w-3" />
+                                        ) : (
+                                          <ArrowDownRight className="h-3 w-3" />
+                                        )}
+                                        <span className="text-sm font-medium">
+                                          {formatPercentage(assetVariationPercent)}
+                                        </span>
+                                      </div>
+                                    </td>
+                                    <td className="text-right p-3 text-sm font-medium">
+                                      {balanceVisible ? formatCurrency(currentValue) : '••••••'}
+                                    </td>
+                                    <td className="text-right p-3 text-sm">{formatPercentage(portfolioPercent)}</td>
+                                  </tr>
+                                );
+                              })}
+                            </tbody>
+                          </table>
+                        </div>
+                      ) : (
+                        <div className="text-center py-12 text-muted-foreground">
+                          <Icon className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                          <p className="mb-4">Nenhum ativo {assetType.label.toLowerCase()} na carteira</p>
+                          <Button>
+                            <Plus className="h-4 w-4 mr-2" />
+                            Adicionar {assetType.label}
+                          </Button>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+              );
+            })}
+          </Tabs>
+        ) : (
+          // Show message when no assets
+          <Card className="pharos-card">
+            <CardContent className="text-center py-12">
+              <PieChart className="h-16 w-16 mx-auto mb-4 text-muted-foreground/50" />
+              <h3 className="text-lg font-semibold mb-2">Nenhum ativo na carteira</h3>
+              <p className="text-muted-foreground mb-6">Comece adicionando seus primeiros investimentos</p>
+              <div className="flex gap-2 justify-center">
+                <AssetForm />
+                <InvestmentTransactionForm />
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Quick Actions */}
         <Card className="pharos-card">
