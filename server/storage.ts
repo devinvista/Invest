@@ -246,7 +246,7 @@ export class DatabaseStorage implements IStorage {
       return undefined;
     }
     
-    // Find the most recent default budget that was created before or during the requested month
+    // Find the most recent default budget that applies to the requested month
     const requestedDate = new Date(year, month - 1, 1); // month - 1 because JS months are 0-based
     
     for (const defaultBudget of allDefaultBudgets) {
@@ -263,7 +263,8 @@ export class DatabaseStorage implements IStorage {
         applies: budgetCreationMonth <= requestedDate
       });
       
-      // Default budget applies if it was created in or before the requested month
+      // Default budget applies to months equal or later than its creation month
+      // For months before creation: use older default budget (if exists) or no budget
       if (budgetCreationMonth <= requestedDate) {
         return defaultBudget;
       }
