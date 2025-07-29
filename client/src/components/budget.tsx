@@ -540,64 +540,46 @@ export function Budget() {
               </Card>
             ) : (
               <div className="space-y-6">
-                {/* Single Revenue Card */}
+                {/* Revenue Card - Same style as 50/30/20 cards */}
                 <div className="grid grid-cols-1 gap-6">
-                  {/* Receitas - Similar design to expenses card */}
-                  <Card className="financial-card border-0 shadow-lg bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20">
-                    <CardContent className="p-6">
-                      <div className="space-y-4">
-                        <div className="flex items-center space-x-2">
-                          <div className="p-2 rounded-lg bg-green-500/10">
-                            <ArrowUpCircle className="h-5 w-5 text-green-600" />
+                  {/* Receitas */}
+                  <Card className="financial-card border-0 shadow-md bg-gradient-to-br from-purple-50 to-violet-50 dark:from-purple-950/20 dark:to-violet-950/20">
+                    <CardContent className="p-4">
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-2">
+                            <div className="w-3 h-3 rounded-full bg-purple-500"></div>
+                            <span className="text-sm font-medium">Receitas</span>
                           </div>
-                          <h3 className="text-sm font-medium text-green-800 dark:text-green-200">Receitas vs Planejado</h3>
+                          <Badge variant="outline" className="text-xs text-purple-600 border-purple-200">
+                            Entrada
+                          </Badge>
                         </div>
                         
-                        <div className="grid grid-cols-2 gap-4">
-                          <div className="space-y-1">
-                            <p className="text-xs text-muted-foreground">Receitas Realizadas</p>
-                            <p className="text-xl font-bold text-green-600">
-                              {balanceVisible ? formatCurrency(totalIncome) : '••••••'}
-                            </p>
-                          </div>
-                          <div className="space-y-1">
-                            <p className="text-xs text-muted-foreground">Receita Planejada</p>
-                            <p className="text-xl font-bold text-green-800 dark:text-green-300">
-                              {balanceVisible ? formatCurrency(budget?.totalIncome || 0) : '••••••'}
-                            </p>
-                          </div>
-                        </div>
-
                         <div className="space-y-2">
                           <div className="flex justify-between text-xs">
-                            <span className="text-muted-foreground">Realização da meta</span>
-                            <span className="font-medium">
-                              {Math.round((totalIncome / (budget?.totalIncome || 1)) * 100)}%
-                            </span>
+                            <span className="text-muted-foreground">Realizado</span>
+                            <span className="font-medium text-purple-600">{formatCurrency(totalIncome)}</span>
+                          </div>
+                          <div className="flex justify-between text-xs">
+                            <span className="text-muted-foreground">Planejado</span>
+                            <span className="font-medium">{formatCurrency(budget?.totalIncome || 0)}</span>
                           </div>
                           <Progress 
                             value={Math.min(100, (totalIncome / (budget?.totalIncome || 1)) * 100)}
-                            className="h-2"
+                            className="h-1.5"
                             style={{ 
-                              '--progress-background': '#4ADE80',
-                              '--progress-foreground': '#4ADE80'
+                              '--progress-background': '#A855F7',
+                              '--progress-foreground': '#A855F7'
                             } as any}
                           />
                         </div>
-
-                        <div className="flex justify-between items-center pt-2">
-                          <div className="text-right">
-                            <p className="text-xs text-muted-foreground">Meta Restante</p>
-                            <p className="text-sm font-bold text-blue-600">
-                              {balanceVisible ? formatCurrency(Math.max(0, (budget?.totalIncome || 0) - totalIncome)) : '••••••'}
-                            </p>
-                          </div>
-                          <Badge 
-                            variant={(totalIncome / (budget?.totalIncome || 1)) >= 0.8 ? "default" : "destructive"}
-                            className="text-xs"
-                          >
-                            {(totalIncome / (budget?.totalIncome || 1)) >= 0.8 ? "No cronograma" : "Atenção"}
-                          </Badge>
+                        
+                        <div className="text-right">
+                          <p className="text-xs text-muted-foreground">Meta Restante</p>
+                          <p className="text-sm font-bold text-green-600">
+                            {formatCurrency(Math.max(0, (budget?.totalIncome || 0) - totalIncome))}
+                          </p>
                         </div>
                       </div>
                     </CardContent>
