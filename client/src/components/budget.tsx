@@ -141,6 +141,22 @@ export function Budget() {
     }
   }, [existingBudgetCategories]);
 
+  // Recalculate income when custom categories change and we're in custom mode
+  useEffect(() => {
+    if (budgetType === 'custom' && categories.length > 0) {
+      const incomeCategories = categories.filter((cat: any) => !cat.type);
+      const totalIncome = incomeCategories.reduce((sum: number, cat: any) => {
+        const amount = parseFloat(customCategories[cat.id] || '0');
+        return sum + amount;
+      }, 0);
+      
+      setBudgetForm(prev => ({
+        ...prev,
+        totalIncome: totalIncome.toFixed(2)
+      }));
+    }
+  }, [customCategories, budgetType, categories]);
+
   const handleBudgetSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -200,6 +216,21 @@ export function Budget() {
       ...prev,
       [categoryId]: amount
     }));
+  };
+
+  const calculateIncomeFromCategories = () => {
+    if (budgetType === 'custom' && categories.length > 0) {
+      const incomeCategories = categories.filter((cat: any) => !cat.type); // Income categories don't have type
+      const totalIncome = incomeCategories.reduce((sum: number, cat: any) => {
+        const amount = parseFloat(customCategories[cat.id] || '0');
+        return sum + amount;
+      }, 0);
+      
+      setBudgetForm(prev => ({
+        ...prev,
+        totalIncome: totalIncome.toFixed(2)
+      }));
+    }
   };
 
   const getTotalByType = (type: string) => {
@@ -899,18 +930,32 @@ export function Budget() {
                     </div>
 
                     {/* Income Input */}
-                    <div className="space-y-2">
-                      <Label htmlFor="totalIncome">Renda Total Mensal</Label>
-                      <Input
-                        id="totalIncome"
-                        type="number"
-                        step="0.01"
-                        placeholder="Ex: 5000.00"
-                        value={budgetForm.totalIncome}
-                        onChange={(e) => setBudgetForm(prev => ({ ...prev, totalIncome: e.target.value }))}
-                        required
-                      />
-                    </div>
+                    {budgetType === 'default' ? (
+                      <div className="space-y-2">
+                        <Label htmlFor="totalIncome">Renda Total Mensal</Label>
+                        <Input
+                          id="totalIncome"
+                          type="number"
+                          step="0.01"
+                          placeholder="Ex: 5000.00"
+                          value={budgetForm.totalIncome}
+                          onChange={(e) => setBudgetForm(prev => ({ ...prev, totalIncome: e.target.value }))}
+                          required
+                        />
+                      </div>
+                    ) : (
+                      <div className="space-y-2">
+                        <Label>Renda Total Mensal</Label>
+                        <div className="p-3 bg-muted rounded-md">
+                          <div className="text-lg font-semibold">
+                            {formatCurrency(parseFloat(budgetForm.totalIncome) || 0)}
+                          </div>
+                          <div className="text-sm text-muted-foreground">
+                            Calculado automaticamente das categorias de receita
+                          </div>
+                        </div>
+                      </div>
+                    )}
 
                     {/* 50/30/20 Budget Inputs */}
                     <div className="space-y-4">
@@ -991,8 +1036,40 @@ export function Budget() {
                         <div className="border-t pt-4">
                           <h3 className="text-lg font-semibold mb-4">Configuração por Categoria</h3>
                           <p className="text-sm text-muted-foreground mb-4">
-                            Configure o orçamento individual para cada categoria dentro dos limites 50/30/20
+                            Configure o orçamento individual para cada categoria. A renda total é calculada automaticamente.
                           </p>
+
+                          {/* Income Categories */}
+                          <div className="space-y-4 mb-6">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center space-x-2">
+                                <div className="w-4 h-4 rounded bg-primary"></div>
+                                <h4 className="font-medium">Receitas</h4>
+                              </div>
+                              <div className="text-sm text-muted-foreground">
+                                Total: {formatCurrency(categories
+                                  .filter((cat: any) => !cat.type)
+                                  .reduce((sum: number, cat: any) => sum + (parseFloat(customCategories[cat.id] || '0')), 0))}
+                              </div>
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                              {categories
+                                .filter((cat: any) => !cat.type) // Income categories don't have type
+                                .map((category: any) => (
+                                  <div key={category.id} className="space-y-2">
+                                    <Label className="text-sm">{category.name}</Label>
+                                    <Input
+                                      type="number"
+                                      step="0.01"
+                                      placeholder="0.00"
+                                      value={customCategories[category.id] || ''}
+                                      onChange={(e) => handleCustomCategoryChange(category.id, e.target.value)}
+                                      className="text-sm"
+                                    />
+                                  </div>
+                                ))}
+                            </div>
+                          </div>
 
                           {/* Necessidades */}
                           <div className="space-y-4 mb-6">
