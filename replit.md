@@ -11,6 +11,14 @@ Visual Identity: Pharos Capital brand guidelines applied.
 
 ## Recent Changes
 
+- **January 29, 2025**: Modernized budget overview cards with professional design and orçado vs realizado comparison
+  - Redesigned main overview cards with gradient backgrounds and shadow effects for modern professional appearance
+  - Implemented comprehensive "Gastos vs Orçamento" card showing realizado vs orçado with progress bar and utilization percentage
+  - Enhanced 50/30/20 breakdown cards with compact design showing realizado, orçado, and restante for each category
+  - Added intelligent status badges ("No controle" vs "Atenção") based on budget utilization thresholds
+  - Integrated transaction functionality with income/expense buttons directly in budget page quick actions
+  - Fixed PostgreSQL errors and React form warnings for improved stability
+  - Maintained Pharos Capital visual identity with consistent color schemes and professional styling
 - **January 29, 2025**: Implemented complete custom budget functionality with category-level configuration
   - Fixed PostgreSQL query error by adding comprehensive ID validation in backend and frontend
   - Updated budget type options from 3 to 2: "Simplificado" (simplified 50/30/20) and "Completo" (custom by category)

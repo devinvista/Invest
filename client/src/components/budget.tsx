@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { formatCurrency, calculate502020, getProgressColor } from '@/lib/financial-utils';
@@ -62,6 +62,10 @@ export function Budget() {
     resolver: zodResolver(transactionFormSchema),
     defaultValues: {
       type: 'expense',
+      amount: '',
+      description: '',
+      categoryId: '',
+      accountId: '',
       date: new Date().toISOString().split('T')[0],
       isPending: false,
     },
@@ -531,66 +535,220 @@ export function Budget() {
               </Card>
             ) : (
               <div className="space-y-6">
-                {/* Financial Overview Summary */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                  <Card className="financial-card">
-                    <CardContent className="p-4">
-                      <div className="flex items-center space-x-3">
-                        <div className="p-2 rounded-full bg-green-100 dark:bg-green-900/30">
-                          <DollarSign className="h-5 w-5 text-green-600" />
+                {/* Modern Financial Overview Cards */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Renda Total */}
+                  <Card className="financial-card border-0 shadow-lg bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20">
+                    <CardContent className="p-6">
+                      <div className="flex items-start justify-between">
+                        <div className="space-y-2">
+                          <div className="flex items-center space-x-2">
+                            <div className="p-2 rounded-lg bg-green-500/10">
+                              <DollarSign className="h-5 w-5 text-green-600" />
+                            </div>
+                            <h3 className="text-sm font-medium text-green-800 dark:text-green-200">Renda Total</h3>
+                          </div>
+                          <div className="space-y-1">
+                            <p className="text-2xl font-bold text-green-700 dark:text-green-300">
+                              {balanceVisible ? formatCurrency(budget?.totalIncome || 0) : '••••••'}
+                            </p>
+                            <p className="text-xs text-green-600/70 dark:text-green-400/70">
+                              Receitas planejadas para o mês
+                            </p>
+                          </div>
                         </div>
-                        <div>
-                          <p className="text-sm text-muted-foreground">Renda Total</p>
-                          <p className="text-xl font-bold text-green-600">
-                            {balanceVisible ? formatCurrency(budget?.totalIncome || 0) : '••••••'}
+                        <div className="text-right">
+                          <Badge variant="secondary" className="text-xs bg-green-100 text-green-700">
+                            Meta mensal
+                          </Badge>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Gastos Realizados vs Orçado */}
+                  <Card className="financial-card border-0 shadow-lg bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-950/20 dark:to-red-950/20">
+                    <CardContent className="p-6">
+                      <div className="space-y-4">
+                        <div className="flex items-center space-x-2">
+                          <div className="p-2 rounded-lg bg-orange-500/10">
+                            <Target className="h-5 w-5 text-orange-600" />
+                          </div>
+                          <h3 className="text-sm font-medium text-orange-800 dark:text-orange-200">Gastos vs Orçamento</h3>
+                        </div>
+                        
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-1">
+                            <p className="text-xs text-muted-foreground">Gastos Realizados</p>
+                            <p className="text-xl font-bold text-orange-600">
+                              {balanceVisible ? formatCurrency(spendingByType.necessities + spendingByType.wants + spendingByType.savings) : '••••••'}
+                            </p>
+                          </div>
+                          <div className="space-y-1">
+                            <p className="text-xs text-muted-foreground">Orçamento Total</p>
+                            <p className="text-xl font-bold text-orange-800 dark:text-orange-300">
+                              {balanceVisible ? formatCurrency((parseFloat(budget?.necessitiesBudget || '0') + parseFloat(budget?.wantsBudget || '0') + parseFloat(budget?.savingsBudget || '0'))) : '••••••'}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="space-y-2">
+                          <div className="flex justify-between text-xs">
+                            <span className="text-muted-foreground">Utilização do orçamento</span>
+                            <span className="font-medium">
+                              {Math.round(((spendingByType.necessities + spendingByType.wants + spendingByType.savings) / (parseFloat(budget?.necessitiesBudget || '0') + parseFloat(budget?.wantsBudget || '0') + parseFloat(budget?.savingsBudget || '0') || 1)) * 100)}%
+                            </span>
+                          </div>
+                          <Progress 
+                            value={Math.min(100, ((spendingByType.necessities + spendingByType.wants + spendingByType.savings) / (parseFloat(budget?.necessitiesBudget || '0') + parseFloat(budget?.wantsBudget || '0') + parseFloat(budget?.savingsBudget || '0') || 1)) * 100)}
+                            className="h-2"
+                          />
+                        </div>
+
+                        <div className="flex justify-between items-center pt-2">
+                          <div className="text-right">
+                            <p className="text-xs text-muted-foreground">Disponível</p>
+                            <p className="text-sm font-bold text-green-600">
+                              {balanceVisible ? formatCurrency(Math.max(0, (parseFloat(budget?.necessitiesBudget || '0') + parseFloat(budget?.wantsBudget || '0') + parseFloat(budget?.savingsBudget || '0')) - (spendingByType.necessities + spendingByType.wants + spendingByType.savings))) : '••••••'}
+                            </p>
+                          </div>
+                          <Badge 
+                            variant={((spendingByType.necessities + spendingByType.wants + spendingByType.savings) / (parseFloat(budget?.necessitiesBudget || '0') + parseFloat(budget?.wantsBudget || '0') + parseFloat(budget?.savingsBudget || '0') || 1)) <= 0.8 ? "default" : "destructive"}
+                            className="text-xs"
+                          >
+                            {((spendingByType.necessities + spendingByType.wants + spendingByType.savings) / (parseFloat(budget?.necessitiesBudget || '0') + parseFloat(budget?.wantsBudget || '0') + parseFloat(budget?.savingsBudget || '0') || 1)) <= 0.8 ? "No controle" : "Atenção"}
+                          </Badge>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* Breakdown Cards - 50/30/20 */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {/* Necessidades */}
+                  <Card className="financial-card border-0 shadow-md bg-gradient-to-br from-orange-50 to-amber-50 dark:from-orange-950/20 dark:to-amber-950/20">
+                    <CardContent className="p-4">
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-2">
+                            <div className="w-3 h-3 rounded-full bg-orange-500"></div>
+                            <span className="text-sm font-medium">Necessidades</span>
+                          </div>
+                          <Badge variant="outline" className="text-xs text-orange-600 border-orange-200">
+                            50%
+                          </Badge>
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <div className="flex justify-between text-xs">
+                            <span className="text-muted-foreground">Realizado</span>
+                            <span className="font-medium text-orange-600">{formatCurrency(spendingByType.necessities)}</span>
+                          </div>
+                          <div className="flex justify-between text-xs">
+                            <span className="text-muted-foreground">Orçado</span>
+                            <span className="font-medium">{formatCurrency(parseFloat(budget?.necessitiesBudget || '0'))}</span>
+                          </div>
+                          <Progress 
+                            value={Math.min(100, (spendingByType.necessities / (parseFloat(budget?.necessitiesBudget || '0') || 1)) * 100)}
+                            className="h-1.5"
+                            style={{ 
+                              '--progress-background': '#FF8C42',
+                              '--progress-foreground': '#FF8C42'
+                            } as any}
+                          />
+                        </div>
+                        
+                        <div className="text-right">
+                          <p className="text-xs text-muted-foreground">Restante</p>
+                          <p className="text-sm font-bold text-green-600">
+                            {formatCurrency(Math.max(0, parseFloat(budget?.necessitiesBudget || '0') - spendingByType.necessities))}
                           </p>
                         </div>
                       </div>
                     </CardContent>
                   </Card>
 
-                  <Card className="financial-card">
+                  {/* Desejos */}
+                  <Card className="financial-card border-0 shadow-md bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20">
                     <CardContent className="p-4">
-                      <div className="flex items-center space-x-3">
-                        <div className="p-2 rounded-full bg-orange-100 dark:bg-orange-900/30">
-                          <Target className="h-5 w-5 text-orange-600" />
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-2">
+                            <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                            <span className="text-sm font-medium">Desejos</span>
+                          </div>
+                          <Badge variant="outline" className="text-xs text-green-600 border-green-200">
+                            30%
+                          </Badge>
                         </div>
-                        <div>
-                          <p className="text-sm text-muted-foreground">Gastos Realizados</p>
-                          <p className="text-xl font-bold text-orange-600">
-                            {balanceVisible ? formatCurrency(spendingByType.necessities + spendingByType.wants + spendingByType.savings) : '••••••'}
+                        
+                        <div className="space-y-2">
+                          <div className="flex justify-between text-xs">
+                            <span className="text-muted-foreground">Realizado</span>
+                            <span className="font-medium text-green-600">{formatCurrency(spendingByType.wants)}</span>
+                          </div>
+                          <div className="flex justify-between text-xs">
+                            <span className="text-muted-foreground">Orçado</span>
+                            <span className="font-medium">{formatCurrency(parseFloat(budget?.wantsBudget || '0'))}</span>
+                          </div>
+                          <Progress 
+                            value={Math.min(100, (spendingByType.wants / (parseFloat(budget?.wantsBudget || '0') || 1)) * 100)}
+                            className="h-1.5"
+                            style={{ 
+                              '--progress-background': '#4ADE80',
+                              '--progress-foreground': '#4ADE80'
+                            } as any}
+                          />
+                        </div>
+                        
+                        <div className="text-right">
+                          <p className="text-xs text-muted-foreground">Restante</p>
+                          <p className="text-sm font-bold text-green-600">
+                            {formatCurrency(Math.max(0, parseFloat(budget?.wantsBudget || '0') - spendingByType.wants))}
                           </p>
                         </div>
                       </div>
                     </CardContent>
                   </Card>
 
-                  <Card className="financial-card">
+                  {/* Poupança */}
+                  <Card className="financial-card border-0 shadow-md bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-950/20 dark:to-cyan-950/20">
                     <CardContent className="p-4">
-                      <div className="flex items-center space-x-3">
-                        <div className="p-2 rounded-full bg-blue-100 dark:bg-blue-900/30">
-                          <Calculator className="h-5 w-5 text-blue-600" />
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-2">
+                            <div className="w-3 h-3 rounded-full bg-blue-500"></div>
+                            <span className="text-sm font-medium">Poupança</span>
+                          </div>
+                          <Badge variant="outline" className="text-xs text-blue-600 border-blue-200">
+                            20%
+                          </Badge>
                         </div>
-                        <div>
-                          <p className="text-sm text-muted-foreground">Orçamento Total</p>
-                          <p className="text-xl font-bold text-blue-600">
-                            {balanceVisible ? formatCurrency((budget?.necessitiesBudget || 0) + (budget?.wantsBudget || 0) + (budget?.savingsBudget || 0)) : '••••••'}
-                          </p>
+                        
+                        <div className="space-y-2">
+                          <div className="flex justify-between text-xs">
+                            <span className="text-muted-foreground">Realizado</span>
+                            <span className="font-medium text-blue-600">{formatCurrency(spendingByType.savings)}</span>
+                          </div>
+                          <div className="flex justify-between text-xs">
+                            <span className="text-muted-foreground">Orçado</span>
+                            <span className="font-medium">{formatCurrency(parseFloat(budget?.savingsBudget || '0'))}</span>
+                          </div>
+                          <Progress 
+                            value={Math.min(100, (spendingByType.savings / (parseFloat(budget?.savingsBudget || '0') || 1)) * 100)}
+                            className="h-1.5"
+                            style={{ 
+                              '--progress-background': '#3B82F6',
+                              '--progress-foreground': '#3B82F6'
+                            } as any}
+                          />
                         </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  <Card className="financial-card">
-                    <CardContent className="p-4">
-                      <div className="flex items-center space-x-3">
-                        <div className="p-2 rounded-full bg-purple-100 dark:bg-purple-900/30">
-                          <TrendingUp className="h-5 w-5 text-purple-600" />
-                        </div>
-                        <div>
-                          <p className="text-sm text-muted-foreground">Disponível</p>
-                          <p className="text-xl font-bold text-purple-600">
-                            {balanceVisible ? formatCurrency((budget?.totalIncome || 0) - ((budget?.necessitiesBudget || 0) + (budget?.wantsBudget || 0) + (budget?.savingsBudget || 0))) : '••••••'}
+                        
+                        <div className="text-right">
+                          <p className="text-xs text-muted-foreground">Restante</p>
+                          <p className="text-sm font-bold text-green-600">
+                            {formatCurrency(Math.max(0, parseFloat(budget?.savingsBudget || '0') - spendingByType.savings))}
                           </p>
                         </div>
                       </div>
@@ -1435,6 +1593,12 @@ export function Budget() {
                 {transactionType === 'income' ? 'Adicionar Receita' : 'Adicionar Despesa'}
               </span>
             </DialogTitle>
+            <DialogDescription>
+              {transactionType === 'income' 
+                ? 'Registre uma nova receita em sua conta. Se a data for futura, será marcada como planejada.'
+                : 'Registre uma nova despesa em sua conta. Se a data for futura, será marcada como planejada.'
+              }
+            </DialogDescription>
           </DialogHeader>
           
           <Form {...transactionForm}>
