@@ -211,51 +211,51 @@ export function Dashboard() {
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={wealthData}>
                     <defs>
-                      <linearGradient id="colorWealthGradient" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor={VIBRANT_COLORS.purple} stopOpacity={0.9}/>
-                        <stop offset="40%" stopColor={VIBRANT_COLORS.pink} stopOpacity={0.7}/>
-                        <stop offset="70%" stopColor={VIBRANT_COLORS.teal} stopOpacity={0.4}/>
-                        <stop offset="100%" stopColor={VIBRANT_COLORS.lime} stopOpacity={0.1}/>
+                      <linearGradient id="blueWealthGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#195AB4" stopOpacity={0.8}/>
+                        <stop offset="30%" stopColor="#3399FF" stopOpacity={0.6}/>
+                        <stop offset="70%" stopColor="#6B9FFF" stopOpacity={0.4}/>
+                        <stop offset="100%" stopColor="#B1D2FF" stopOpacity={0.1}/>
                       </linearGradient>
                     </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke={VIBRANT_COLORS.purple} strokeWidth={2} strokeOpacity={0.4} />
+                    <CartesianGrid strokeDasharray="2 4" stroke="#3399FF" strokeWidth={1} strokeOpacity={0.3} />
                     <XAxis 
                       dataKey="month" 
                       axisLine={false}
                       tickLine={false}
-                      tick={{ fontSize: 14, fill: VIBRANT_COLORS.purple, fontWeight: 700 }}
+                      tick={{ fontSize: 12, fill: '#195AB4', fontWeight: 600 }}
                     />
                     <YAxis 
                       axisLine={false}
                       tickLine={false}
-                      tick={{ fontSize: 14, fill: VIBRANT_COLORS.purple, fontWeight: 700 }}
+                      tick={{ fontSize: 12, fill: '#195AB4', fontWeight: 600 }}
                       tickFormatter={(value) => formatCurrency(value)}
                     />
                     <Tooltip 
                       formatter={(value) => [formatCurrency(Number(value)), 'Patrimônio']}
                       labelStyle={{ 
-                        color: VIBRANT_COLORS.purple, 
+                        color: '#195AB4', 
                         fontWeight: 'bold',
-                        fontSize: '16px'
+                        fontSize: '14px'
                       }}
                       contentStyle={{ 
-                        backgroundColor: 'rgba(0, 0, 0, 0.9)', 
-                        border: `3px solid ${VIBRANT_COLORS.purple}`,
-                        borderRadius: '12px',
-                        boxShadow: `0 15px 35px ${VIBRANT_COLORS.purple}40`
+                        backgroundColor: 'hsl(var(--card))', 
+                        border: '2px solid #3399FF',
+                        borderRadius: '8px',
+                        boxShadow: '0 8px 24px rgba(51, 153, 255, 0.2)'
                       }}
                       itemStyle={{
-                        color: VIBRANT_COLORS.pink,
+                        color: '#3399FF',
                         fontWeight: 'bold',
-                        fontSize: '16px'
+                        fontSize: '14px'
                       }}
                     />
                     <Area 
                       type="monotone" 
                       dataKey="value" 
-                      stroke={VIBRANT_COLORS.purple} 
-                      strokeWidth={5}
-                      fill="url(#colorWealthGradient)" 
+                      stroke="#195AB4" 
+                      strokeWidth={3}
+                      fill="url(#blueWealthGradient)" 
                     />
                   </AreaChart>
                 </ResponsiveContainer>
