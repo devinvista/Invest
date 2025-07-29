@@ -52,9 +52,22 @@ interface DashboardData {
 
 export function Dashboard() {
   const [balanceVisible, setBalanceVisible] = useState(true);
-  const { data: dashboardData, isLoading } = useQuery<DashboardData>({
+  const { data: dashboardData, isLoading, error } = useQuery<DashboardData>({
     queryKey: ['/api/dashboard'],
   });
+
+  if (error) {
+    console.error('Dashboard error:', error);
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center p-6">
+          <AlertTriangle className="h-12 w-12 text-destructive mx-auto mb-4" />
+          <h2 className="text-lg font-semibold mb-2">Erro ao carregar dados</h2>
+          <p className="text-muted-foreground">Tente recarregar a página</p>
+        </div>
+      </div>
+    );
+  }
 
   if (isLoading) {
     return (
