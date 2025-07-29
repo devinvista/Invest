@@ -286,22 +286,18 @@ export function Investments() {
             <CardContent>
               <div className="h-72">
                 <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={evolutionData}>
+                  <BarChart data={evolutionData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
                     <defs>
-                      <linearGradient id="appliedGradientInv" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor={isDarkMode ? "#60a5fa" : "hsl(var(--success))"} stopOpacity={isDarkMode ? 0.4 : 0.3}/>
-                        <stop offset="95%" stopColor={isDarkMode ? "#60a5fa" : "hsl(var(--success))"} stopOpacity={0}/>
+                      <linearGradient id="appliedGradientBar" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#10b981" stopOpacity={1}/>
+                        <stop offset="100%" stopColor="#059669" stopOpacity={1}/>
                       </linearGradient>
-                      <linearGradient id="profitGradientInv" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor={isDarkMode ? "#93c5fd" : "hsl(var(--primary))"} stopOpacity={isDarkMode ? 0.4 : 0.3}/>
-                        <stop offset="95%" stopColor={isDarkMode ? "#93c5fd" : "hsl(var(--primary))"} stopOpacity={0}/>
-                      </linearGradient>
-                      <linearGradient id="totalGradientInv" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#1e3a8a" stopOpacity={0.4}/>
-                        <stop offset="95%" stopColor="#1e3a8a" stopOpacity={0}/>
+                      <linearGradient id="profitGradientBar" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#34d399" stopOpacity={1}/>
+                        <stop offset="100%" stopColor="#10b981" stopOpacity={1}/>
                       </linearGradient>
                     </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
                     <XAxis 
                       dataKey="month" 
                       axisLine={false}
@@ -317,39 +313,42 @@ export function Investments() {
                     <Tooltip 
                       formatter={(value, name) => [
                         formatCurrency(Number(value)), 
-                        name === 'applied' ? 'Valor Aplicado' : 
-                        name === 'profit' ? 'Ganho de Capital' : 'Valor Total'
+                        name === 'applied' ? 'Valor aplicado' : 'Ganho capital'
                       ]}
                       labelStyle={{ color: 'hsl(var(--foreground))' }}
                       contentStyle={{ 
                         backgroundColor: 'hsl(var(--card))', 
                         border: '1px solid hsl(var(--border))',
-                        borderRadius: '8px'
+                        borderRadius: '8px',
+                        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
                       }}
                     />
-                    <Area 
-                      type="monotone" 
-                      dataKey="total" 
-                      stroke="#1e3a8a" 
-                      strokeWidth={2}
-                      fill="url(#totalGradientInv)" 
-                    />
-                    <Area 
-                      type="monotone" 
+                    <Bar 
                       dataKey="applied" 
-                      stackId="1"
-                      stroke={isDarkMode ? "#60a5fa" : "hsl(var(--success))"} 
-                      fill="url(#appliedGradientInv)" 
+                      stackId="a"
+                      fill="url(#appliedGradientBar)"
+                      radius={[0, 0, 4, 4]}
+                      name="applied"
                     />
-                    <Area 
-                      type="monotone" 
+                    <Bar 
                       dataKey="profit" 
-                      stackId="2"
-                      stroke={isDarkMode ? "#93c5fd" : "hsl(var(--primary))"} 
-                      fill="url(#profitGradientInv)" 
+                      stackId="a"
+                      fill="url(#profitGradientBar)"
+                      radius={[4, 4, 0, 0]}
+                      name="profit"
                     />
-                  </AreaChart>
+                  </BarChart>
                 </ResponsiveContainer>
+              </div>
+              <div className="mt-4 flex items-center justify-center space-x-6">
+                <div className="flex items-center space-x-2">
+                  <div className="w-3 h-3 rounded-sm bg-gradient-to-b from-emerald-500 to-emerald-600"></div>
+                  <span className="text-sm font-medium">Valor aplicado</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <div className="w-3 h-3 rounded-sm bg-gradient-to-b from-emerald-400 to-emerald-500"></div>
+                  <span className="text-sm font-medium">Ganho capital</span>
+                </div>
               </div>
             </CardContent>
           </Card>

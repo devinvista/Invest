@@ -11,6 +11,12 @@ Visual Identity: Pharos Capital brand guidelines applied.
 
 ## Recent Changes
 
+- **January 29, 2025**: Updated portfolio evolution chart to professional bar chart design
+  - Replaced area chart with modern stacked bar chart featuring gradient colors
+  - Applied professional visual styling with emerald gradient theme matching user's reference
+  - Added legend below chart showing "Valor aplicado" and "Ganho capital" indicators
+  - Enhanced chart margins and tooltip styling for improved user experience
+  - Maintained period selector functionality (3m, 6m, 12m, all) for flexible viewing
 - **January 29, 2025**: Transferred portfolio evolution chart from investments page to dashboard
   - Replaced simple wealth evolution chart with detailed investment tracking chart
   - Added stacked area chart showing "Valor Aplicado" vs "Ganho de Capital" over time
