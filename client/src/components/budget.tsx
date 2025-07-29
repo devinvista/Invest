@@ -604,311 +604,8 @@ export function Budget() {
                   </Card>
                 </div>
 
-                {/* Breakdown Cards - 50/30/20 */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {/* Necessidades */}
-                  <Card className="financial-card border-0 shadow-md bg-gradient-to-br from-orange-50 to-amber-50 dark:from-orange-950/20 dark:to-amber-950/20">
-                    <CardContent className="p-4">
-                      <div className="space-y-3">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center space-x-2">
-                            <div className="w-3 h-3 rounded-full bg-orange-500"></div>
-                            <span className="text-sm font-medium">Necessidades</span>
-                          </div>
-                          <Badge variant="outline" className="text-xs text-orange-600 border-orange-200">
-                            50%
-                          </Badge>
-                        </div>
-                        
-                        <div className="space-y-2">
-                          <div className="flex justify-between text-xs">
-                            <span className="text-muted-foreground">Realizado</span>
-                            <span className="font-medium text-orange-600">{formatCurrency(spendingByType.necessities)}</span>
-                          </div>
-                          <div className="flex justify-between text-xs">
-                            <span className="text-muted-foreground">Orçado</span>
-                            <span className="font-medium">{formatCurrency(parseFloat(budget?.necessitiesBudget || '0'))}</span>
-                          </div>
-                          <Progress 
-                            value={Math.min(100, (spendingByType.necessities / (parseFloat(budget?.necessitiesBudget || '0') || 1)) * 100)}
-                            className="h-1.5"
-                            style={{ 
-                              '--progress-background': '#FF8C42',
-                              '--progress-foreground': '#FF8C42'
-                            } as any}
-                          />
-                        </div>
-                        
-                        <div className="text-right">
-                          <p className="text-xs text-muted-foreground">Restante</p>
-                          <p className="text-sm font-bold text-green-600">
-                            {formatCurrency(Math.max(0, parseFloat(budget?.necessitiesBudget || '0') - spendingByType.necessities))}
-                          </p>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  {/* Desejos */}
-                  <Card className="financial-card border-0 shadow-md bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20">
-                    <CardContent className="p-4">
-                      <div className="space-y-3">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center space-x-2">
-                            <div className="w-3 h-3 rounded-full bg-green-500"></div>
-                            <span className="text-sm font-medium">Desejos</span>
-                          </div>
-                          <Badge variant="outline" className="text-xs text-green-600 border-green-200">
-                            30%
-                          </Badge>
-                        </div>
-                        
-                        <div className="space-y-2">
-                          <div className="flex justify-between text-xs">
-                            <span className="text-muted-foreground">Realizado</span>
-                            <span className="font-medium text-green-600">{formatCurrency(spendingByType.wants)}</span>
-                          </div>
-                          <div className="flex justify-between text-xs">
-                            <span className="text-muted-foreground">Orçado</span>
-                            <span className="font-medium">{formatCurrency(parseFloat(budget?.wantsBudget || '0'))}</span>
-                          </div>
-                          <Progress 
-                            value={Math.min(100, (spendingByType.wants / (parseFloat(budget?.wantsBudget || '0') || 1)) * 100)}
-                            className="h-1.5"
-                            style={{ 
-                              '--progress-background': '#4ADE80',
-                              '--progress-foreground': '#4ADE80'
-                            } as any}
-                          />
-                        </div>
-                        
-                        <div className="text-right">
-                          <p className="text-xs text-muted-foreground">Restante</p>
-                          <p className="text-sm font-bold text-green-600">
-                            {formatCurrency(Math.max(0, parseFloat(budget?.wantsBudget || '0') - spendingByType.wants))}
-                          </p>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  {/* Poupança */}
-                  <Card className="financial-card border-0 shadow-md bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-950/20 dark:to-cyan-950/20">
-                    <CardContent className="p-4">
-                      <div className="space-y-3">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center space-x-2">
-                            <div className="w-3 h-3 rounded-full bg-blue-500"></div>
-                            <span className="text-sm font-medium">Poupança</span>
-                          </div>
-                          <Badge variant="outline" className="text-xs text-blue-600 border-blue-200">
-                            20%
-                          </Badge>
-                        </div>
-                        
-                        <div className="space-y-2">
-                          <div className="flex justify-between text-xs">
-                            <span className="text-muted-foreground">Realizado</span>
-                            <span className="font-medium text-blue-600">{formatCurrency(spendingByType.savings)}</span>
-                          </div>
-                          <div className="flex justify-between text-xs">
-                            <span className="text-muted-foreground">Orçado</span>
-                            <span className="font-medium">{formatCurrency(parseFloat(budget?.savingsBudget || '0'))}</span>
-                          </div>
-                          <Progress 
-                            value={Math.min(100, (spendingByType.savings / (parseFloat(budget?.savingsBudget || '0') || 1)) * 100)}
-                            className="h-1.5"
-                            style={{ 
-                              '--progress-background': '#3B82F6',
-                              '--progress-foreground': '#3B82F6'
-                            } as any}
-                          />
-                        </div>
-                        
-                        <div className="text-right">
-                          <p className="text-xs text-muted-foreground">Restante</p>
-                          <p className="text-sm font-bold text-green-600">
-                            {formatCurrency(Math.max(0, parseFloat(budget?.savingsBudget || '0') - spendingByType.savings))}
-                          </p>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
-
-                {/* Category Breakdown Grid */}
+                {/* Quick Actions */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                  {/* Category Breakdown - Necessidades */}
-                  <Card className="financial-card">
-                    <CardHeader>
-                      <CardTitle className="flex items-center justify-between">
-                        <div className="flex items-center space-x-2">
-                          <div className="w-4 h-4 rounded bg-orange-500"></div>
-                          <span>Necessidades (50%)</span>
-                        </div>
-                        <Badge variant="outline" className="text-orange-600 border-orange-200">
-                          {budget?.necessitiesBudget ? Math.round((spendingByType.necessities / parseFloat(budget.necessitiesBudget)) * 100) : 0}% usado
-                        </Badge>
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-3">
-                      <div className="flex justify-between items-center text-sm">
-                        <span>Orçado:</span>
-                        <span className="font-medium">{formatCurrency(budget?.necessitiesBudget || 0)}</span>
-                      </div>
-                      <div className="flex justify-between items-center text-sm">
-                        <span>Gasto:</span>
-                        <span className="font-medium text-orange-600">{formatCurrency(spendingByType.necessities)}</span>
-                      </div>
-                      <div className="flex justify-between items-center text-sm">
-                        <span>Restante:</span>
-                        <span className="font-medium text-green-600">
-                          {formatCurrency(Math.max(0, (parseFloat(budget?.necessitiesBudget || '0') - spendingByType.necessities)))}
-                        </span>
-                      </div>
-                      <Progress 
-                        value={budget?.necessitiesBudget ? Math.min(100, (spendingByType.necessities / parseFloat(budget.necessitiesBudget)) * 100) : 0}
-                        className="h-2"
-                        style={{ 
-                          '--progress-background': '#FF8C42',
-                          '--progress-foreground': '#FF8C42'
-                        } as any}
-                      />
-                      <div className="pt-2 space-y-1">
-                        {categories
-                          .filter((cat: any) => cat.type === 'necessities')
-                          .slice(0, 3)
-                          .map((category: any) => {
-                            const categorySpent = transactions
-                              .filter((t: any) => t.categoryId === category.id && t.type === 'expense')
-                              .reduce((sum: number, t: any) => sum + parseFloat(t.amount), 0);
-                            
-                            return (
-                              <div key={category.id} className="flex justify-between text-xs text-muted-foreground">
-                                <span>{category.name}</span>
-                                <span>{formatCurrency(categorySpent)}</span>
-                              </div>
-                            );
-                          })}
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  {/* Category Breakdown - Desejos */}
-                  <Card className="financial-card">
-                    <CardHeader>
-                      <CardTitle className="flex items-center justify-between">
-                        <div className="flex items-center space-x-2">
-                          <div className="w-4 h-4 rounded bg-green-500"></div>
-                          <span>Desejos (30%)</span>
-                        </div>
-                        <Badge variant="outline" className="text-green-600 border-green-200">
-                          {budget?.wantsBudget ? Math.round((spendingByType.wants / parseFloat(budget.wantsBudget)) * 100) : 0}% usado
-                        </Badge>
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-3">
-                      <div className="flex justify-between items-center text-sm">
-                        <span>Orçado:</span>
-                        <span className="font-medium">{formatCurrency(budget?.wantsBudget || 0)}</span>
-                      </div>
-                      <div className="flex justify-between items-center text-sm">
-                        <span>Gasto:</span>
-                        <span className="font-medium text-green-600">{formatCurrency(spendingByType.wants)}</span>
-                      </div>
-                      <div className="flex justify-between items-center text-sm">
-                        <span>Restante:</span>
-                        <span className="font-medium text-green-600">
-                          {formatCurrency(Math.max(0, (parseFloat(budget?.wantsBudget || '0') - spendingByType.wants)))}
-                        </span>
-                      </div>
-                      <Progress 
-                        value={budget?.wantsBudget ? Math.min(100, (spendingByType.wants / parseFloat(budget.wantsBudget)) * 100) : 0}
-                        className="h-2"
-                        style={{ 
-                          '--progress-background': '#4ADE80',
-                          '--progress-foreground': '#4ADE80'
-                        } as any}
-                      />
-                      <div className="pt-2 space-y-1">
-                        {categories
-                          .filter((cat: any) => cat.type === 'wants')
-                          .slice(0, 3)
-                          .map((category: any) => {
-                            const categorySpent = transactions
-                              .filter((t: any) => t.categoryId === category.id && t.type === 'expense')
-                              .reduce((sum: number, t: any) => sum + parseFloat(t.amount), 0);
-                            
-                            return (
-                              <div key={category.id} className="flex justify-between text-xs text-muted-foreground">
-                                <span>{category.name}</span>
-                                <span>{formatCurrency(categorySpent)}</span>
-                              </div>
-                            );
-                          })}
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
-
-                {/* Second Row - Poupança and Quick Actions */}
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                  {/* Category Breakdown - Poupança */}
-                  <Card className="financial-card">
-                    <CardHeader>
-                      <CardTitle className="flex items-center justify-between">
-                        <div className="flex items-center space-x-2">
-                          <div className="w-4 h-4 rounded bg-blue-500"></div>
-                          <span>Poupança (20%)</span>
-                        </div>
-                        <Badge variant="outline" className="text-blue-600 border-blue-200">
-                          {budget?.savingsBudget ? Math.round((spendingByType.savings / parseFloat(budget.savingsBudget)) * 100) : 0}% usado
-                        </Badge>
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-3">
-                      <div className="flex justify-between items-center text-sm">
-                        <span>Orçado:</span>
-                        <span className="font-medium">{formatCurrency(budget?.savingsBudget || 0)}</span>
-                      </div>
-                      <div className="flex justify-between items-center text-sm">
-                        <span>Investido:</span>
-                        <span className="font-medium text-blue-600">{formatCurrency(spendingByType.savings)}</span>
-                      </div>
-                      <div className="flex justify-between items-center text-sm">
-                        <span>Meta Restante:</span>
-                        <span className="font-medium text-green-600">
-                          {formatCurrency(Math.max(0, (parseFloat(budget?.savingsBudget || '0') - spendingByType.savings)))}
-                        </span>
-                      </div>
-                      <Progress 
-                        value={budget?.savingsBudget ? Math.min(100, (spendingByType.savings / parseFloat(budget.savingsBudget)) * 100) : 0}
-                        className="h-2"
-                        style={{ 
-                          '--progress-background': '#60A5FA',
-                          '--progress-foreground': '#60A5FA'
-                        } as any}
-                      />
-                      <div className="pt-2 space-y-1">
-                        {categories
-                          .filter((cat: any) => cat.type === 'savings')
-                          .slice(0, 3)
-                          .map((category: any) => {
-                            const categorySpent = transactions
-                              .filter((t: any) => t.categoryId === category.id && t.type === 'expense')
-                              .reduce((sum: number, t: any) => sum + parseFloat(t.amount), 0);
-                            
-                            return (
-                              <div key={category.id} className="flex justify-between text-xs text-muted-foreground">
-                                <span>{category.name}</span>
-                                <span>{formatCurrency(categorySpent)}</span>
-                              </div>
-                            );
-                          })}
-                      </div>
-                    </CardContent>
-                  </Card>
-
                   {/* Quick Insights */}
                   <Card className="financial-card">
                     <CardHeader>
@@ -1025,6 +722,38 @@ export function Budget() {
                           </p>
                         </div>
                       )}
+                    </CardContent>
+                  </Card>
+
+                  {/* Summary Card */}
+                  <Card className="financial-card">
+                    <CardHeader>
+                      <CardTitle className="flex items-center space-x-2">
+                        <Calculator className="h-5 w-5 text-primary" />
+                        <span>Resumo Financeiro</span>
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="space-y-3">
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm text-muted-foreground">Receita Total</span>
+                          <span className="font-medium text-green-600">{formatCurrency(totalIncome)}</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm text-muted-foreground">Gastos Totais</span>
+                          <span className="font-medium text-red-600">
+                            {formatCurrency(spendingByType.necessities + spendingByType.wants + spendingByType.savings)}
+                          </span>
+                        </div>
+                        <div className="border-t pt-2">
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm font-medium">Saldo do Mês</span>
+                            <span className={`font-bold ${(totalIncome - (spendingByType.necessities + spendingByType.wants + spendingByType.savings)) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                              {formatCurrency(totalIncome - (spendingByType.necessities + spendingByType.wants + spendingByType.savings))}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
                     </CardContent>
                   </Card>
                 </div>

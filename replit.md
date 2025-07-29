@@ -47,6 +47,10 @@ Visual Identity: Pharos Capital brand guidelines applied.
   - Project fully operational in standard Replit environment with all features intact
   - Environment protection system maintaining user's original Neon PostgreSQL configuration
   - Application running cleanly on port 5000 with proper Node.js 20 setup
+  - Fixed PostgreSQL error with budget categories (invalid authorization token issue)
+  - Updated budget overview per user request: removed all 50/30/20 breakdown cards and pie chart
+  - Replaced with single revenue tracking card showing actual vs planned income
+  - Simplified overview with insights, quick actions, and financial summary
   - All migration checklist items completed and verified
   - Financial management system ready for continued development
 - **January 28, 2025**: Implemented automatic income calculation and default budget selection
