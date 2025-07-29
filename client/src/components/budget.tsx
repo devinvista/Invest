@@ -1016,59 +1016,53 @@ export function Budget() {
                         </Button>
                       </div>
 
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                         {/* Necessidades */}
                         <div className="space-y-2">
-                          <Label className="flex items-center space-x-2">
+                          <Label className="flex items-center space-x-2 text-sm">
                             <div className="w-3 h-3 rounded bg-orange-500"></div>
                             <span>Necessidades ({budgetType === 'custom' ? getPercentageByType('necessities') : 50}%)</span>
                           </Label>
                           <Input
                             type="number"
                             step="0.01"
-                            placeholder="Ex: 2500.00"
+                            placeholder="0.00"
                             value={budgetForm.necessitiesBudget}
                             onChange={(e) => setBudgetForm(prev => ({ ...prev, necessitiesBudget: e.target.value }))}
+                            className="text-sm"
                           />
-                          <p className="text-xs text-muted-foreground">
-                            Moradia, alimentação, transporte, saúde
-                          </p>
                         </div>
 
                         {/* Desejos */}
                         <div className="space-y-2">
-                          <Label className="flex items-center space-x-2">
+                          <Label className="flex items-center space-x-2 text-sm">
                             <div className="w-3 h-3 rounded bg-green-500"></div>
                             <span>Desejos ({budgetType === 'custom' ? getPercentageByType('wants') : 30}%)</span>
                           </Label>
                           <Input
                             type="number"
                             step="0.01"
-                            placeholder="Ex: 1500.00"
+                            placeholder="0.00"
                             value={budgetForm.wantsBudget}
                             onChange={(e) => setBudgetForm(prev => ({ ...prev, wantsBudget: e.target.value }))}
+                            className="text-sm"
                           />
-                          <p className="text-xs text-muted-foreground">
-                            Entretenimento, viagens, compras
-                          </p>
                         </div>
 
                         {/* Poupança */}
                         <div className="space-y-2">
-                          <Label className="flex items-center space-x-2">
+                          <Label className="flex items-center space-x-2 text-sm">
                             <div className="w-3 h-3 rounded bg-blue-500"></div>
                             <span>Poupança ({budgetType === 'custom' ? getPercentageByType('savings') : 20}%)</span>
                           </Label>
                           <Input
                             type="number"
                             step="0.01"
-                            placeholder="Ex: 1000.00"
+                            placeholder="0.00"
                             value={budgetForm.savingsBudget}
                             onChange={(e) => setBudgetForm(prev => ({ ...prev, savingsBudget: e.target.value }))}
+                            className="text-sm"
                           />
-                          <p className="text-xs text-muted-foreground">
-                            Reserva de emergência, investimentos
-                          </p>
                         </div>
                       </div>
                     </div>
