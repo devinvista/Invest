@@ -547,10 +547,10 @@ export function Budget() {
                     <CardHeader>
                       <CardTitle className="flex items-center justify-between">
                         <div className="flex items-center space-x-2">
-                          <div className="w-4 h-4 rounded bg-purple-500"></div>
+                          <div className="w-4 h-4 rounded bg-emerald-500"></div>
                           <span>Receitas</span>
                         </div>
-                        <Badge variant="outline" className="text-purple-600 border-purple-200">
+                        <Badge variant="outline" className="text-emerald-600 border-emerald-200">
                           {budget?.totalIncome ? Math.round((totalIncome / parseFloat(budget.totalIncome.toString())) * 100) : 0}% realizado
                         </Badge>
                       </CardTitle>
@@ -562,7 +562,7 @@ export function Budget() {
                       </div>
                       <div className="flex justify-between items-center text-sm">
                         <span>Realizado:</span>
-                        <span className="font-medium text-purple-600">{formatCurrency(totalIncome)}</span>
+                        <span className="font-medium text-emerald-600">{formatCurrency(totalIncome)}</span>
                       </div>
                       <div className="flex justify-between items-center text-sm">
                         <span>Meta Restante:</span>
@@ -574,8 +574,8 @@ export function Budget() {
                         value={budget?.totalIncome ? Math.min(100, (totalIncome / parseFloat(budget.totalIncome.toString())) * 100) : 0}
                         className="h-2"
                         style={{ 
-                          '--progress-background': '#A855F7',
-                          '--progress-foreground': '#A855F7'
+                          '--progress-background': '#10B981',
+                          '--progress-foreground': '#10B981'
                         } as any}
                       />
                       <div className="pt-2 space-y-1">
