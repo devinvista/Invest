@@ -581,19 +581,22 @@ export function Budget() {
                       <div className="pt-2 space-y-1">
                         {categories
                           .filter((cat: any) => !cat.type) // Income categories
-                          .slice(0, 3)
                           .map((category: any) => {
                             const categoryIncome = transactions
                               .filter((t: any) => t.categoryId === category.id && t.type === 'income')
                               .reduce((sum: number, t: any) => sum + parseFloat(t.amount), 0);
+                            const budgetAmount = budgetCategories.find((bc: any) => bc.categoryId === category.id)?.amount || 0;
                             
-                            return (
-                              <div key={category.id} className="flex justify-between text-xs text-muted-foreground">
-                                <span>{category.name}</span>
-                                <span>{formatCurrency(categoryIncome)}</span>
-                              </div>
-                            );
-                          })}
+                            return { ...category, categoryIncome, budgetAmount };
+                          })
+                          .filter((category: any) => category.categoryIncome > 0 || category.budgetAmount > 0)
+                          .slice(0, 3)
+                          .map((category: any) => (
+                            <div key={category.id} className="flex justify-between text-xs text-muted-foreground">
+                              <span>{category.name}</span>
+                              <span>{formatCurrency(category.categoryIncome)}</span>
+                            </div>
+                          ))}
                       </div>
                     </CardContent>
                   </Card>
@@ -642,19 +645,22 @@ export function Budget() {
                       <div className="pt-2 space-y-1">
                         {categories
                           .filter((cat: any) => cat.type === 'necessities')
-                          .slice(0, 3)
                           .map((category: any) => {
                             const categorySpent = transactions
                               .filter((t: any) => t.categoryId === category.id && t.type === 'expense')
                               .reduce((sum: number, t: any) => sum + parseFloat(t.amount), 0);
+                            const budgetAmount = budgetCategories.find((bc: any) => bc.categoryId === category.id)?.amount || 0;
                             
-                            return (
-                              <div key={category.id} className="flex justify-between text-xs text-muted-foreground">
-                                <span>{category.name}</span>
-                                <span>{formatCurrency(categorySpent)}</span>
-                              </div>
-                            );
-                          })}
+                            return { ...category, categorySpent, budgetAmount };
+                          })
+                          .filter((category: any) => category.categorySpent > 0 || category.budgetAmount > 0)
+                          .slice(0, 3)
+                          .map((category: any) => (
+                            <div key={category.id} className="flex justify-between text-xs text-muted-foreground">
+                              <span>{category.name}</span>
+                              <span>{formatCurrency(category.categorySpent)}</span>
+                            </div>
+                          ))}
                       </div>
                     </CardContent>
                   </Card>
@@ -698,19 +704,22 @@ export function Budget() {
                       <div className="pt-2 space-y-1">
                         {categories
                           .filter((cat: any) => cat.type === 'wants')
-                          .slice(0, 3)
                           .map((category: any) => {
                             const categorySpent = transactions
                               .filter((t: any) => t.categoryId === category.id && t.type === 'expense')
                               .reduce((sum: number, t: any) => sum + parseFloat(t.amount), 0);
+                            const budgetAmount = budgetCategories.find((bc: any) => bc.categoryId === category.id)?.amount || 0;
                             
-                            return (
-                              <div key={category.id} className="flex justify-between text-xs text-muted-foreground">
-                                <span>{category.name}</span>
-                                <span>{formatCurrency(categorySpent)}</span>
-                              </div>
-                            );
-                          })}
+                            return { ...category, categorySpent, budgetAmount };
+                          })
+                          .filter((category: any) => category.categorySpent > 0 || category.budgetAmount > 0)
+                          .slice(0, 3)
+                          .map((category: any) => (
+                            <div key={category.id} className="flex justify-between text-xs text-muted-foreground">
+                              <span>{category.name}</span>
+                              <span>{formatCurrency(category.categorySpent)}</span>
+                            </div>
+                          ))}
                       </div>
                     </CardContent>
                   </Card>
@@ -757,19 +766,22 @@ export function Budget() {
                       <div className="pt-2 space-y-1">
                         {categories
                           .filter((cat: any) => cat.type === 'savings')
-                          .slice(0, 3)
                           .map((category: any) => {
                             const categorySpent = transactions
                               .filter((t: any) => t.categoryId === category.id && t.type === 'expense')
                               .reduce((sum: number, t: any) => sum + parseFloat(t.amount), 0);
+                            const budgetAmount = budgetCategories.find((bc: any) => bc.categoryId === category.id)?.amount || 0;
                             
-                            return (
-                              <div key={category.id} className="flex justify-between text-xs text-muted-foreground">
-                                <span>{category.name}</span>
-                                <span>{formatCurrency(categorySpent)}</span>
-                              </div>
-                            );
-                          })}
+                            return { ...category, categorySpent, budgetAmount };
+                          })
+                          .filter((category: any) => category.categorySpent > 0 || category.budgetAmount > 0)
+                          .slice(0, 3)
+                          .map((category: any) => (
+                            <div key={category.id} className="flex justify-between text-xs text-muted-foreground">
+                              <span>{category.name}</span>
+                              <span>{formatCurrency(category.categorySpent)}</span>
+                            </div>
+                          ))}
                       </div>
                     </CardContent>
                   </Card>
@@ -1052,6 +1064,15 @@ export function Budget() {
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                           {categories
                             .filter((cat: any) => !cat.type) // Income categories don't have type
+                            .map((category: any) => {
+                              const categoryIncome = transactions
+                                .filter((t: any) => t.categoryId === category.id && t.type === 'income')
+                                .reduce((sum: number, t: any) => sum + parseFloat(t.amount), 0);
+                              const budgetAmount = parseFloat(customCategories[category.id] || '0');
+                              
+                              return { ...category, categoryIncome, budgetAmount };
+                            })
+                            .filter((category: any) => category.categoryIncome > 0 || category.budgetAmount > 0 || customCategories[category.id])
                             .map((category: any) => (
                               <div key={category.id} className="space-y-2">
                                 <Label className="text-sm">{category.name}</Label>
@@ -1162,6 +1183,15 @@ export function Budget() {
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                               {categories
                                 .filter((cat: any) => cat.type === 'necessities')
+                                .map((category: any) => {
+                                  const categorySpent = transactions
+                                    .filter((t: any) => t.categoryId === category.id && t.type === 'expense')
+                                    .reduce((sum: number, t: any) => sum + parseFloat(t.amount), 0);
+                                  const budgetAmount = parseFloat(customCategories[category.id] || '0');
+                                  
+                                  return { ...category, categorySpent, budgetAmount };
+                                })
+                                .filter((category: any) => category.categorySpent > 0 || category.budgetAmount > 0 || customCategories[category.id])
                                 .map((category: any) => (
                                   <div key={category.id} className="space-y-2">
                                     <Label className="text-sm">{category.name}</Label>
@@ -1195,6 +1225,15 @@ export function Budget() {
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                               {categories
                                 .filter((cat: any) => cat.type === 'wants')
+                                .map((category: any) => {
+                                  const categorySpent = transactions
+                                    .filter((t: any) => t.categoryId === category.id && t.type === 'expense')
+                                    .reduce((sum: number, t: any) => sum + parseFloat(t.amount), 0);
+                                  const budgetAmount = parseFloat(customCategories[category.id] || '0');
+                                  
+                                  return { ...category, categorySpent, budgetAmount };
+                                })
+                                .filter((category: any) => category.categorySpent > 0 || category.budgetAmount > 0 || customCategories[category.id])
                                 .map((category: any) => (
                                   <div key={category.id} className="space-y-2">
                                     <Label className="text-sm">{category.name}</Label>
@@ -1228,6 +1267,15 @@ export function Budget() {
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                               {categories
                                 .filter((cat: any) => cat.type === 'savings')
+                                .map((category: any) => {
+                                  const categorySpent = transactions
+                                    .filter((t: any) => t.categoryId === category.id && t.type === 'expense')
+                                    .reduce((sum: number, t: any) => sum + parseFloat(t.amount), 0);
+                                  const budgetAmount = parseFloat(customCategories[category.id] || '0');
+                                  
+                                  return { ...category, categorySpent, budgetAmount };
+                                })
+                                .filter((category: any) => category.categorySpent > 0 || category.budgetAmount > 0 || customCategories[category.id])
                                 .map((category: any) => (
                                   <div key={category.id} className="space-y-2">
                                     <Label className="text-sm">{category.name}</Label>
