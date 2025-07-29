@@ -601,6 +601,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/budget/:budgetId/categories", async (req: any, res) => {
     try {
       const { budgetId } = req.params;
+      
+      // Validate budgetId
+      if (!budgetId || budgetId === 'undefined' || budgetId === 'NaN' || typeof budgetId !== 'string') {
+        console.error(`❌ Invalid budgetId received: ${budgetId}`);
+        return res.status(400).json({ message: "ID do orçamento inválido" });
+      }
+      
       const budgetCategories = await storage.getBudgetCategories(budgetId);
       res.json(budgetCategories);
     } catch (error) {

@@ -22,7 +22,7 @@ export function Budget() {
   const [selectedMonth, setSelectedMonth] = useState(currentDate.getMonth() + 1);
   const [selectedYear, setSelectedYear] = useState(currentDate.getFullYear());
   const [isEditing, setIsEditing] = useState(false);
-  const [budgetType, setBudgetType] = useState<'default' | 'specific' | 'custom'>('default');
+  const [budgetType, setBudgetType] = useState<'default' | 'custom'>('default');
   const [balanceVisible, setBalanceVisible] = useState(true);
   const [activeTab, setActiveTab] = useState('overview');
   
@@ -62,12 +62,17 @@ export function Budget() {
   // Query for budget categories when budget exists
   const { data: existingBudgetCategories = [] } = useQuery<any[]>({
     queryKey: ['/api/budget', budget?.id, 'categories'],
-    queryFn: () => budget?.id && budget.id !== 'undefined' ? fetch(`/api/budget/${budget.id}/categories`, {
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
+    queryFn: () => {
+      if (budget?.id && budget.id !== 'undefined' && budget.id !== 'NaN' && typeof budget.id === 'string') {
+        return fetch(`/api/budget/${budget.id}/categories`, {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
+          }
+        }).then(res => res.json());
       }
-    }).then(res => res.json()) : Promise.resolve([]),
-    enabled: !!budget?.id && budget.id !== 'undefined',
+      return Promise.resolve([]);
+    },
+    enabled: !!budget?.id && budget.id !== 'undefined' && budget.id !== 'NaN' && typeof budget.id === 'string',
   });
 
   const createBudgetMutation = useMutation({
@@ -869,26 +874,15 @@ export function Budget() {
                 <CardContent>
                   <form onSubmit={handleBudgetSubmit} className="space-y-6">
                     {/* Budget Type Selection */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <Card 
                         className={`cursor-pointer transition-all ${budgetType === 'default' ? 'ring-2 ring-primary' : 'hover:shadow-md'}`}
                         onClick={() => setBudgetType('default')}
                       >
                         <CardContent className="p-4 text-center">
                           <Target className="h-8 w-8 mx-auto mb-2 text-primary" />
-                          <h3 className="font-semibold">Padrão</h3>
-                          <p className="text-xs text-muted-foreground">Para todos os meses</p>
-                        </CardContent>
-                      </Card>
-                      
-                      <Card 
-                        className={`cursor-pointer transition-all ${budgetType === 'specific' ? 'ring-2 ring-primary' : 'hover:shadow-md'}`}
-                        onClick={() => setBudgetType('specific')}
-                      >
-                        <CardContent className="p-4 text-center">
-                          <Calendar className="h-8 w-8 mx-auto mb-2 text-blue-600" />
-                          <h3 className="font-semibold">Específico</h3>
-                          <p className="text-xs text-muted-foreground">Apenas este mês</p>
+                          <h3 className="font-semibold">Simplificado</h3>
+                          <p className="text-xs text-muted-foreground">Regra 50/30/20</p>
                         </CardContent>
                       </Card>
                       
@@ -898,7 +892,7 @@ export function Budget() {
                       >
                         <CardContent className="p-4 text-center">
                           <Settings className="h-8 w-8 mx-auto mb-2 text-green-600" />
-                          <h3 className="font-semibold">Personalizado</h3>
+                          <h3 className="font-semibold">Completo</h3>
                           <p className="text-xs text-muted-foreground">Por categoria</p>
                         </CardContent>
                       </Card>
@@ -1206,7 +1200,7 @@ export function Budget() {
                           <div className="flex justify-between">
                             <span className="text-muted-foreground">Tipo:</span>
                             <span className="font-medium">
-                              {budget.isDefault ? 'Padrão' : 'Específico'}
+                              {budget.isDefault ? 'Padrão para todos os meses' : 'Específico deste mês'}
                             </span>
                           </div>
                           <div className="flex justify-between">

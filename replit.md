@@ -11,6 +11,14 @@ Visual Identity: Pharos Capital brand guidelines applied.
 
 ## Recent Changes
 
+- **January 29, 2025**: Implemented complete custom budget functionality with category-level configuration
+  - Fixed PostgreSQL query error by adding comprehensive ID validation in backend and frontend
+  - Updated budget type options from 3 to 2: "Simplificado" (simplified 50/30/20) and "Completo" (custom by category)
+  - Removed "Específico" option as requested - isDefault switch now controls month-specific vs default behavior
+  - Added comprehensive category-level budget interface showing real-time used/remaining amounts
+  - Implemented automatic category grouping by type (necessities/wants/savings) with color coding
+  - Enhanced budget creation API to support custom category allocations alongside standard 50/30/20 limits
+  - Added robust error handling for invalid budget IDs preventing PostgreSQL conversion errors
 - **January 29, 2025**: Enhanced budget overview with comprehensive category breakdown and insights
   - Redesigned overview tab with detailed financial summary cards (Renda Total, Gastos Realizados, Orçamento Total, Disponível)
   - Added category-specific breakdown cards for Necessidades (50%), Desejos (30%), and Poupança (20%)

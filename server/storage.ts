@@ -327,6 +327,12 @@ export class DatabaseStorage implements IStorage {
   async getBudgetCategories(budgetId: string): Promise<(BudgetCategory & { category: Category })[]> {
     console.log(`🔍 Buscando categorias do orçamento para budgetId: ${budgetId}`);
     
+    // Validate budgetId before query
+    if (!budgetId || budgetId === 'undefined' || budgetId === 'NaN' || typeof budgetId !== 'string') {
+      console.error(`❌ Invalid budgetId: ${budgetId}`);
+      return [];
+    }
+    
     try {
       const result = await db.select()
         .from(budgetCategories)
