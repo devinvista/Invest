@@ -104,7 +104,7 @@ export function Budget() {
       if (budget?.id && budget.id !== 'undefined' && budget.id !== 'NaN' && typeof budget.id === 'string') {
         return fetch(`/api/budget/${budget.id}/categories`, {
           headers: {
-            'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
+            'Authorization': `Bearer ${localStorage.getItem('token')}`,
           }
         }).then(res => res.json());
       }
@@ -378,6 +378,11 @@ export function Budget() {
     }
   });
 
+  // Calculate total income from actual transactions
+  const totalIncome = transactions
+    .filter((t: any) => t.type === 'income')
+    .reduce((sum: number, t: any) => sum + parseFloat(t.amount), 0);
+
   const months = [
     { value: 1, label: 'Janeiro' },
     { value: 2, label: 'Fevereiro' },
@@ -535,88 +540,63 @@ export function Budget() {
               </Card>
             ) : (
               <div className="space-y-6">
-                {/* Modern Financial Overview Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* Renda Total */}
+                {/* Single Revenue Card */}
+                <div className="grid grid-cols-1 gap-6">
+                  {/* Receitas - Similar design to expenses card */}
                   <Card className="financial-card border-0 shadow-lg bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20">
-                    <CardContent className="p-6">
-                      <div className="flex items-start justify-between">
-                        <div className="space-y-2">
-                          <div className="flex items-center space-x-2">
-                            <div className="p-2 rounded-lg bg-green-500/10">
-                              <DollarSign className="h-5 w-5 text-green-600" />
-                            </div>
-                            <h3 className="text-sm font-medium text-green-800 dark:text-green-200">Renda Total</h3>
-                          </div>
-                          <div className="space-y-1">
-                            <p className="text-2xl font-bold text-green-700 dark:text-green-300">
-                              {balanceVisible ? formatCurrency(budget?.totalIncome || 0) : '••••••'}
-                            </p>
-                            <p className="text-xs text-green-600/70 dark:text-green-400/70">
-                              Receitas planejadas para o mês
-                            </p>
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <Badge variant="secondary" className="text-xs bg-green-100 text-green-700">
-                            Meta mensal
-                          </Badge>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  {/* Gastos Realizados vs Orçado */}
-                  <Card className="financial-card border-0 shadow-lg bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-950/20 dark:to-red-950/20">
                     <CardContent className="p-6">
                       <div className="space-y-4">
                         <div className="flex items-center space-x-2">
-                          <div className="p-2 rounded-lg bg-orange-500/10">
-                            <Target className="h-5 w-5 text-orange-600" />
+                          <div className="p-2 rounded-lg bg-green-500/10">
+                            <ArrowUpCircle className="h-5 w-5 text-green-600" />
                           </div>
-                          <h3 className="text-sm font-medium text-orange-800 dark:text-orange-200">Gastos vs Orçamento</h3>
+                          <h3 className="text-sm font-medium text-green-800 dark:text-green-200">Receitas vs Planejado</h3>
                         </div>
                         
                         <div className="grid grid-cols-2 gap-4">
                           <div className="space-y-1">
-                            <p className="text-xs text-muted-foreground">Gastos Realizados</p>
-                            <p className="text-xl font-bold text-orange-600">
-                              {balanceVisible ? formatCurrency(spendingByType.necessities + spendingByType.wants + spendingByType.savings) : '••••••'}
+                            <p className="text-xs text-muted-foreground">Receitas Realizadas</p>
+                            <p className="text-xl font-bold text-green-600">
+                              {balanceVisible ? formatCurrency(totalIncome) : '••••••'}
                             </p>
                           </div>
                           <div className="space-y-1">
-                            <p className="text-xs text-muted-foreground">Orçamento Total</p>
-                            <p className="text-xl font-bold text-orange-800 dark:text-orange-300">
-                              {balanceVisible ? formatCurrency((parseFloat(budget?.necessitiesBudget || '0') + parseFloat(budget?.wantsBudget || '0') + parseFloat(budget?.savingsBudget || '0'))) : '••••••'}
+                            <p className="text-xs text-muted-foreground">Receita Planejada</p>
+                            <p className="text-xl font-bold text-green-800 dark:text-green-300">
+                              {balanceVisible ? formatCurrency(budget?.totalIncome || 0) : '••••••'}
                             </p>
                           </div>
                         </div>
 
                         <div className="space-y-2">
                           <div className="flex justify-between text-xs">
-                            <span className="text-muted-foreground">Utilização do orçamento</span>
+                            <span className="text-muted-foreground">Realização da meta</span>
                             <span className="font-medium">
-                              {Math.round(((spendingByType.necessities + spendingByType.wants + spendingByType.savings) / (parseFloat(budget?.necessitiesBudget || '0') + parseFloat(budget?.wantsBudget || '0') + parseFloat(budget?.savingsBudget || '0') || 1)) * 100)}%
+                              {Math.round((totalIncome / (budget?.totalIncome || 1)) * 100)}%
                             </span>
                           </div>
                           <Progress 
-                            value={Math.min(100, ((spendingByType.necessities + spendingByType.wants + spendingByType.savings) / (parseFloat(budget?.necessitiesBudget || '0') + parseFloat(budget?.wantsBudget || '0') + parseFloat(budget?.savingsBudget || '0') || 1)) * 100)}
+                            value={Math.min(100, (totalIncome / (budget?.totalIncome || 1)) * 100)}
                             className="h-2"
+                            style={{ 
+                              '--progress-background': '#4ADE80',
+                              '--progress-foreground': '#4ADE80'
+                            } as any}
                           />
                         </div>
 
                         <div className="flex justify-between items-center pt-2">
                           <div className="text-right">
-                            <p className="text-xs text-muted-foreground">Disponível</p>
-                            <p className="text-sm font-bold text-green-600">
-                              {balanceVisible ? formatCurrency(Math.max(0, (parseFloat(budget?.necessitiesBudget || '0') + parseFloat(budget?.wantsBudget || '0') + parseFloat(budget?.savingsBudget || '0')) - (spendingByType.necessities + spendingByType.wants + spendingByType.savings))) : '••••••'}
+                            <p className="text-xs text-muted-foreground">Meta Restante</p>
+                            <p className="text-sm font-bold text-blue-600">
+                              {balanceVisible ? formatCurrency(Math.max(0, (budget?.totalIncome || 0) - totalIncome)) : '••••••'}
                             </p>
                           </div>
                           <Badge 
-                            variant={((spendingByType.necessities + spendingByType.wants + spendingByType.savings) / (parseFloat(budget?.necessitiesBudget || '0') + parseFloat(budget?.wantsBudget || '0') + parseFloat(budget?.savingsBudget || '0') || 1)) <= 0.8 ? "default" : "destructive"}
+                            variant={(totalIncome / (budget?.totalIncome || 1)) >= 0.8 ? "default" : "destructive"}
                             className="text-xs"
                           >
-                            {((spendingByType.necessities + spendingByType.wants + spendingByType.savings) / (parseFloat(budget?.necessitiesBudget || '0') + parseFloat(budget?.wantsBudget || '0') + parseFloat(budget?.savingsBudget || '0') || 1)) <= 0.8 ? "No controle" : "Atenção"}
+                            {(totalIncome / (budget?.totalIncome || 1)) >= 0.8 ? "No cronograma" : "Atenção"}
                           </Badge>
                         </div>
                       </div>
@@ -756,61 +736,8 @@ export function Budget() {
                   </Card>
                 </div>
 
-                {/* Main Overview Grid */}
+                {/* Category Breakdown Grid */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                  {/* Budget Distribution Chart */}
-                  <Card className="financial-card">
-                    <CardHeader>
-                      <CardTitle className="flex items-center space-x-2">
-                        <PieChartIcon className="h-5 w-5 text-primary" />
-                        <span>Distribuição 50/30/20</span>
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <ResponsiveContainer width="100%" height={200}>
-                        <PieChart>
-                          <Pie
-                            data={budgetDistributionData}
-                            cx="50%"
-                            cy="50%"
-                            innerRadius={40}
-                            outerRadius={80}
-                            paddingAngle={5}
-                            dataKey="value"
-                          >
-                            {budgetDistributionData.map((entry, index) => (
-                              <Cell key={`cell-${index}`} fill={entry.color} />
-                            ))}
-                          </Pie>
-                          <Tooltip formatter={(value: number) => formatCurrency(value)} />
-                        </PieChart>
-                      </ResponsiveContainer>
-                      <div className="mt-4 space-y-2">
-                        <div className="flex items-center justify-between text-sm">
-                          <div className="flex items-center space-x-2">
-                            <div className="w-3 h-3 rounded bg-orange-500"></div>
-                            <span>Necessidades (50%)</span>
-                          </div>
-                          <span className="font-medium">{formatCurrency(budget?.necessitiesBudget || 0)}</span>
-                        </div>
-                        <div className="flex items-center justify-between text-sm">
-                          <div className="flex items-center space-x-2">
-                            <div className="w-3 h-3 rounded bg-green-500"></div>
-                            <span>Desejos (30%)</span>
-                          </div>
-                          <span className="font-medium">{formatCurrency(budget?.wantsBudget || 0)}</span>
-                        </div>
-                        <div className="flex items-center justify-between text-sm">
-                          <div className="flex items-center space-x-2">
-                            <div className="w-3 h-3 rounded bg-blue-500"></div>
-                            <span>Poupança (20%)</span>
-                          </div>
-                          <span className="font-medium">{formatCurrency(budget?.savingsBudget || 0)}</span>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-
                   {/* Category Breakdown - Necessidades */}
                   <Card className="financial-card">
                     <CardHeader>
