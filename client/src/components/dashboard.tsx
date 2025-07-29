@@ -107,14 +107,14 @@ export function Dashboard() {
 
   // Portfolio evolution data - showing investment growth over time
   const evolutionData = [
-    { month: 'Jul/24', applied: 95000, profit: 8500 },
-    { month: 'Ago/24', applied: 102000, profit: 9200 },
-    { month: 'Set/24', applied: 108500, profit: 11700 },
-    { month: 'Out/24', applied: 115000, profit: 10800 },
-    { month: 'Nov/24', applied: 120000, profit: 14300 },
-    { month: 'Dez/24', applied: 125000, profit: 16100 },
-    { month: 'Jan/25', applied: 130000, profit: totalBalance > 130000 ? totalBalance - 130000 : 18500 }
-  ];
+    { month: 'Jul/24', applied: 95000, profit: 8500, total: 103500 },
+    { month: 'Ago/24', applied: 102000, profit: 9200, total: 111200 },
+    { month: 'Set/24', applied: 108500, profit: 11700, total: 120200 },
+    { month: 'Out/24', applied: 115000, profit: 10800, total: 125800 },
+    { month: 'Nov/24', applied: 120000, profit: 14300, total: 134300 },
+    { month: 'Dez/24', applied: 125000, profit: 16100, total: 141100 },
+    { month: 'Jan/25', applied: 130000, profit: totalBalance > 130000 ? totalBalance - 130000 : 18500, total: totalBalance > 130000 ? totalBalance : 148500 }
+  ].map(item => ({ ...item, total: item.applied + item.profit }));
 
   // Legacy wealth data for simple line chart
   const wealthData = [
@@ -253,6 +253,10 @@ export function Dashboard() {
                         <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3}/>
                         <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
                       </linearGradient>
+                      <linearGradient id="totalGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="hsl(var(--chart-3))" stopOpacity={0.4}/>
+                        <stop offset="95%" stopColor="hsl(var(--chart-3))" stopOpacity={0}/>
+                      </linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                     <XAxis 
@@ -270,7 +274,8 @@ export function Dashboard() {
                     <Tooltip 
                       formatter={(value, name) => [
                         formatCurrency(Number(value)), 
-                        name === 'applied' ? 'Valor Aplicado' : 'Ganho de Capital'
+                        name === 'applied' ? 'Valor Aplicado' : 
+                        name === 'profit' ? 'Ganho de Capital' : 'Valor Total'
                       ]}
                       labelStyle={{ color: 'hsl(var(--foreground))' }}
                       contentStyle={{ 
@@ -278,6 +283,13 @@ export function Dashboard() {
                         border: '1px solid hsl(var(--border))',
                         borderRadius: '8px'
                       }}
+                    />
+                    <Area 
+                      type="monotone" 
+                      dataKey="total" 
+                      stroke="hsl(var(--chart-3))" 
+                      strokeWidth={2}
+                      fill="url(#totalGradient)" 
                     />
                     <Area 
                       type="monotone" 
