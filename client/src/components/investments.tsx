@@ -110,6 +110,46 @@ export function Investments() {
     ]
   } = investmentData || {};
 
+  // Filter asset distribution based on selected category
+  const getFilteredAssetDistribution = () => {
+    if (selectedCategory === 'all') {
+      return assetDistribution;
+    }
+    
+    // Map category values to asset types
+    const categoryMap = {
+      'stocks': ['Ações'],
+      'fixedIncome': ['Renda Fixa'],
+      'crypto': ['Criptos'],
+      'etfs': ['ETFs'],
+      'funds': ['Fundos']
+    };
+    
+    if (selectedCategory === 'stocks') {
+      // Return individual stock assets with more detailed breakdown
+      return [
+        { name: 'BBAS3', value: 18216.00, percentage: 14.53, color: '#8B5CF6' },
+        { name: 'AURE3', value: 16320.00, percentage: 12.89, color: '#A855F7' },
+        { name: 'CSNA3', value: 12555.00, percentage: 9.66, color: '#C084FC' },
+        { name: 'TAEE11', value: 11721.50, percentage: 9.40, color: '#DDD6FE' },
+        { name: 'ITUB4', value: 10502.25, percentage: 8.35, color: '#06B6D4' },
+        { name: 'GRND3', value: 10080.00, percentage: 8.02, color: '#FCD34D' },
+        { name: 'PETR4', value: 9756.00, percentage: 7.76, color: '#10B981' },
+        { name: 'ISAE4', value: 9012.00, percentage: 7.18, color: '#F97316' },
+        { name: 'GOAU4', value: 7620.00, percentage: 6.06, color: '#EF4444' },
+        { name: 'CXSE3', value: 5556.00, percentage: 4.42, color: '#EC4899' },
+        { name: 'FESA4', value: 5394.00, percentage: 4.28, color: '#8B5CF6' },
+        { name: 'BMGB4', value: 5154.00, percentage: 4.10, color: '#6366F1' },
+        { name: 'CMIG4', value: 4212.75, percentage: 3.35, color: '#84CC16' }
+      ];
+    }
+    
+    const targetCategories = categoryMap[selectedCategory as keyof typeof categoryMap] || [];
+    return assetDistribution.filter(asset => targetCategories.includes(asset.name));
+  };
+
+  const filteredAssetDistribution = getFilteredAssetDistribution();
+
   // Portfolio evolution data with total value
   const evolutionData = [
     { month: 'Jul/24', applied: 95000, profit: 8500, total: 103500 },
@@ -359,52 +399,68 @@ export function Investments() {
               <div className="flex items-center justify-between">
                 <CardTitle>Ativos na Carteira</CardTitle>
                 <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                  <SelectTrigger className="w-32">
+                  <SelectTrigger className="w-40">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Todos</SelectItem>
+                    <SelectItem value="all">Todos os tipos</SelectItem>
                     <SelectItem value="stocks">Ações</SelectItem>
                     <SelectItem value="fixedIncome">Renda Fixa</SelectItem>
-                    <SelectItem value="crypto">Crypto</SelectItem>
+                    <SelectItem value="crypto">Criptos</SelectItem>
+                    <SelectItem value="etfs">ETFs</SelectItem>
+                    <SelectItem value="funds">Fundos</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-2 gap-6">
-                <div className="h-48">
+              <div className="flex flex-col lg:flex-row gap-6">
+                <div className="flex-1 h-80 relative">
                   <ResponsiveContainer width="100%" height="100%">
                     <RechartsPieChart>
                       <Pie
-                        data={assetDistribution}
+                        data={filteredAssetDistribution}
                         cx="50%"
                         cy="50%"
-                        innerRadius={40}
-                        outerRadius={80}
-                        paddingAngle={2}
+                        innerRadius={70}
+                        outerRadius={120}
+                        paddingAngle={1}
                         dataKey="value"
+                        stroke="none"
                       >
-                        {assetDistribution.map((entry, index) => (
+                        {filteredAssetDistribution.map((entry, index) => (
                           <Cell key={`cell-${index}`} fill={entry.color} />
                         ))}
                       </Pie>
-                      <Tooltip formatter={(value) => formatCurrency(Number(value))} />
+                      <Tooltip 
+                        formatter={(value, name) => [
+                          balanceVisible ? formatCurrency(Number(value)) : '••••••',
+                          name
+                        ]}
+                        contentStyle={{ 
+                          backgroundColor: 'hsl(var(--card))', 
+                          border: '1px solid hsl(var(--border))',
+                          borderRadius: '8px',
+                          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                        }}
+                      />
                     </RechartsPieChart>
                   </ResponsiveContainer>
                 </div>
-                <div className="space-y-3">
-                  {assetDistribution.map((item, index) => (
-                    <div key={index} className="flex items-center justify-between">
-                      <div className="flex items-center space-x-2">
+                <div className="flex-1 space-y-3 max-h-80 overflow-y-auto pr-2">
+                  {filteredAssetDistribution
+                    .sort((a, b) => b.percentage - a.percentage)
+                    .map((item, index) => (
+                    <div key={index} className="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-accent/30 transition-colors">
+                      <div className="flex items-center space-x-3">
                         <div 
-                          className="w-3 h-3 rounded-full" 
+                          className="w-4 h-4 rounded-sm shadow-sm" 
                           style={{ backgroundColor: item.color }}
                         />
-                        <span className="text-sm font-medium">{item.name}</span>
+                        <span className="text-sm font-medium text-foreground">{item.name}</span>
                       </div>
                       <div className="text-right">
-                        <p className="text-sm font-semibold">
+                        <p className="text-sm font-semibold text-foreground">
                           {formatPercentage(item.percentage)}
                         </p>
                         <p className="text-xs text-muted-foreground">
@@ -413,6 +469,13 @@ export function Investments() {
                       </div>
                     </div>
                   ))}
+                  {filteredAssetDistribution.length === 0 && (
+                    <div className="text-center py-8 text-muted-foreground">
+                      <PieChart className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                      <p className="text-sm">Nenhum ativo na carteira</p>
+                      <p className="text-xs mt-1">Adicione investimentos para ver a distribuição</p>
+                    </div>
+                  )}
                 </div>
               </div>
             </CardContent>

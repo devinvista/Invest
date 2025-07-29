@@ -11,6 +11,13 @@ Visual Identity: Pharos Capital brand guidelines applied.
 
 ## Recent Changes
 
+- **January 29, 2025**: Enhanced asset distribution chart with professional pie chart design and filtering
+  - Updated asset distribution chart to modern donut chart with professional styling
+  - Added category filtering functionality (all types, stocks, renda fixa, crypto, ETFs, funds)
+  - Implemented detailed breakdown for individual stocks when "Ações" filter is selected
+  - Enhanced legend with sorted percentages and improved hover interactions
+  - Applied modern color palette matching user reference design
+  - Improved responsive layout with better mobile and desktop viewing
 - **January 29, 2025**: Updated portfolio evolution chart to professional bar chart design
   - Replaced area chart with modern stacked bar chart featuring gradient colors
   - Applied professional visual styling with emerald gradient theme matching user's reference
