@@ -1021,7 +1021,7 @@ export function Budget() {
                         <div className="space-y-2">
                           <Label className="flex items-center space-x-2 text-sm">
                             <div className="w-3 h-3 rounded bg-orange-500"></div>
-                            <span>Necessidades ({budgetType === 'custom' ? getPercentageByType('necessities') : 50}%)</span>
+                            <span>Necessidades ({getPercentageByType('necessities')}%)</span>
                           </Label>
                           <Input
                             type="number"
@@ -1037,7 +1037,7 @@ export function Budget() {
                         <div className="space-y-2">
                           <Label className="flex items-center space-x-2 text-sm">
                             <div className="w-3 h-3 rounded bg-green-500"></div>
-                            <span>Desejos ({budgetType === 'custom' ? getPercentageByType('wants') : 30}%)</span>
+                            <span>Desejos ({getPercentageByType('wants')}%)</span>
                           </Label>
                           <Input
                             type="number"
@@ -1053,7 +1053,7 @@ export function Budget() {
                         <div className="space-y-2">
                           <Label className="flex items-center space-x-2 text-sm">
                             <div className="w-3 h-3 rounded bg-blue-500"></div>
-                            <span>Poupança ({budgetType === 'custom' ? getPercentageByType('savings') : 20}%)</span>
+                            <span>Poupança ({getPercentageByType('savings')}%)</span>
                           </Label>
                           <Input
                             type="number"
