@@ -558,6 +558,59 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Asset search routes
+  app.get("/api/assets/search", async (req: any, res) => {
+    try {
+      const { q: query, type } = req.query;
+      
+      if (!query) {
+        return res.status(400).json({ message: "Parâmetro de busca 'q' é obrigatório" });
+      }
+
+      const { searchAssets } = await import('./financial-api');
+      const results = await searchAssets(query, type);
+      
+      res.json(results);
+    } catch (error) {
+      res.status(500).json({ message: "Erro ao buscar ativos", error: error instanceof Error ? error.message : "Erro desconhecido" });
+    }
+  });
+
+  app.get("/api/assets/quote/:symbol", async (req: any, res) => {
+    try {
+      const { symbol } = req.params;
+      const { type = 'stock' } = req.query;
+      
+      const { getAssetQuote } = await import('./financial-api');
+      const quote = await getAssetQuote(symbol, type);
+      
+      if (!quote) {
+        return res.status(404).json({ message: "Cotação não encontrada" });
+      }
+      
+      res.json(quote);
+    } catch (error) {
+      res.status(500).json({ message: "Erro ao buscar cotação", error: error instanceof Error ? error.message : "Erro desconhecido" });
+    }
+  });
+
+  app.post("/api/assets/quotes/batch", async (req: any, res) => {
+    try {
+      const { assets } = req.body;
+      
+      if (!Array.isArray(assets)) {
+        return res.status(400).json({ message: "Lista de ativos é obrigatória" });
+      }
+
+      const { updateMultipleQuotes } = await import('./financial-api');
+      const quotes = await updateMultipleQuotes(assets);
+      
+      res.json(quotes);
+    } catch (error) {
+      res.status(500).json({ message: "Erro ao buscar cotações", error: error instanceof Error ? error.message : "Erro desconhecido" });
+    }
+  });
+
   // Goals routes
   app.get("/api/goals", async (req: any, res) => {
     try {
