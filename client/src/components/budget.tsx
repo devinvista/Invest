@@ -20,6 +20,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Calculator, TrendingUp, Target, Plus, Edit3, Eye, EyeOff, BarChart3, PieChart as PieChartIcon, Calendar, Settings, DollarSign, Activity, ArrowUpCircle, ArrowDownCircle, Clock, FileText } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, BarChart, Bar } from 'recharts';
+import { TransactionsTableDialog } from '@/components/ui/transactions-table-dialog';
 
 export function Budget() {
   const { toast } = useToast();
@@ -44,6 +45,11 @@ export function Budget() {
   const [budgetCategories, setBudgetCategories] = useState<any[]>([]);
   const [isTransactionDialogOpen, setIsTransactionDialogOpen] = useState(false);
   const [transactionType, setTransactionType] = useState<'income' | 'expense'>('expense');
+  
+  // Transactions dialog state
+  const [isTransactionsDialogOpen, setIsTransactionsDialogOpen] = useState(false);
+  const [transactionsDialogTitle, setTransactionsDialogTitle] = useState('');
+  const [transactionsDialogFilters, setTransactionsDialogFilters] = useState<any>({});
 
   // Transaction form schema
   const transactionFormSchema = z.object({
@@ -641,11 +647,12 @@ export function Budget() {
                           size="sm" 
                           className="w-full text-xs"
                           onClick={() => {
-                            const params = new URLSearchParams({
-                              filterType: 'income',
+                            setTransactionsDialogTitle('Lançamentos de Receita');
+                            setTransactionsDialogFilters({
+                              type: 'income' as const,
                               period: `${selectedMonth}/${selectedYear}`
                             });
-                            window.location.href = `/reports?${params.toString()}`;
+                            setIsTransactionsDialogOpen(true);
                           }}
                         >
                           <FileText className="w-3 h-3 mr-2" />
@@ -725,12 +732,13 @@ export function Budget() {
                             const necessitiesCategories = categories
                               .filter((cat: any) => cat.type === 'necessities')
                               .map((cat: any) => cat.id);
-                            const params = new URLSearchParams({
-                              filterType: 'expense',
-                              filterCategories: necessitiesCategories.join(','),
+                            setTransactionsDialogTitle('Lançamentos - Necessidades (50%)');
+                            setTransactionsDialogFilters({
+                              type: 'expense' as const,
+                              categoryIds: necessitiesCategories,
                               period: `${selectedMonth}/${selectedYear}`
                             });
-                            window.location.href = `/reports?${params.toString()}`;
+                            setIsTransactionsDialogOpen(true);
                           }}
                         >
                           <FileText className="w-3 h-3 mr-2" />
@@ -805,12 +813,13 @@ export function Budget() {
                             const wantsCategories = categories
                               .filter((cat: any) => cat.type === 'wants')
                               .map((cat: any) => cat.id);
-                            const params = new URLSearchParams({
-                              filterType: 'expense',
-                              filterCategories: wantsCategories.join(','),
+                            setTransactionsDialogTitle('Lançamentos - Desejos (30%)');
+                            setTransactionsDialogFilters({
+                              type: 'expense' as const,
+                              categoryIds: wantsCategories,
                               period: `${selectedMonth}/${selectedYear}`
                             });
-                            window.location.href = `/reports?${params.toString()}`;
+                            setIsTransactionsDialogOpen(true);
                           }}
                         >
                           <FileText className="w-3 h-3 mr-2" />
@@ -888,12 +897,13 @@ export function Budget() {
                             const savingsCategories = categories
                               .filter((cat: any) => cat.type === 'savings')
                               .map((cat: any) => cat.id);
-                            const params = new URLSearchParams({
-                              filterType: 'expense',
-                              filterCategories: savingsCategories.join(','),
+                            setTransactionsDialogTitle('Lançamentos - Poupança (20%)');
+                            setTransactionsDialogFilters({
+                              type: 'expense' as const,
+                              categoryIds: savingsCategories,
                               period: `${selectedMonth}/${selectedYear}`
                             });
-                            window.location.href = `/reports?${params.toString()}`;
+                            setIsTransactionsDialogOpen(true);
                           }}
                         >
                           <FileText className="w-3 h-3 mr-2" />
@@ -1703,6 +1713,14 @@ export function Budget() {
           </Form>
         </DialogContent>
       </Dialog>
+
+      {/* Transactions Dialog */}
+      <TransactionsTableDialog
+        isOpen={isTransactionsDialogOpen}
+        onOpenChange={setIsTransactionsDialogOpen}
+        title={transactionsDialogTitle}
+        initialFilters={transactionsDialogFilters}
+      />
     </div>
   );
 }
