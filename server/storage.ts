@@ -408,56 +408,55 @@ export class DatabaseStorage implements IStorage {
       console.error(`❌ Invalid budgetId format: ${budgetId} (type: ${typeof budgetId}, length: ${budgetId?.length})`);
       return [];
     }
-    
+
+    // First, let's try a simple query without joins to isolate the issue
     try {
-      console.log(`🚀 Executando query para budget_categories com budgetId: ${budgetId}`);
-      
-      const result = await db
-        .select({
-          // Explicitly select only the fields we need from budget_categories
-          id: budgetCategories.id,
-          budgetId: budgetCategories.budgetId,
-          categoryId: budgetCategories.categoryId,
-          allocatedAmount: budgetCategories.allocatedAmount,
-          createdAt: budgetCategories.createdAt,
-          // Select category fields
-          category: {
-            id: categories.id,
-            name: categories.name,
-            type: categories.type,
-            color: categories.color,
-            icon: categories.icon,
-            description: categories.description,
-            transactionType: categories.transactionType,
-            isDefault: categories.isDefault,
-            userId: categories.userId,
-            createdAt: categories.createdAt,
-          }
-        })
+      console.log(`🚀 Testing simple budget_categories query first...`);
+      const simpleBudgetCategories = await db
+        .select()
         .from(budgetCategories)
-        .leftJoin(categories, eq(budgetCategories.categoryId, categories.id))
-        .where(eq(budgetCategories.budgetId, budgetId))
-        .then(rows => {
-          console.log(`🔍 Raw query result sample:`, rows.length > 0 ? JSON.stringify(rows[0], null, 2) : 'No results');
-          return rows.map(row => ({
-            id: row.id,
-            budgetId: row.budgetId,
-            categoryId: row.categoryId,
-            allocatedAmount: row.allocatedAmount,
-            createdAt: row.createdAt,
-            category: row.category!,
-          }));
-        });
+        .where(eq(budgetCategories.budgetId, budgetId));
       
-      console.log(`✅ Budget categories found: ${result.length}`);
+      console.log(`✅ Simple budget categories query successful: ${simpleBudgetCategories.length} records`);
+      
+      if (simpleBudgetCategories.length === 0) {
+        console.log(`ℹ️ No budget categories found for budgetId: ${budgetId}`);
+        return [];
+      }
+
+      // Now try to get categories separately
+      const categoryIds = simpleBudgetCategories.map(bc => bc.categoryId);
+      console.log(`🚀 Getting categories for IDs: ${categoryIds.join(', ')}`);
+      
+      const categoriesData = await db
+        .select()
+        .from(categories)
+        .where(inArray(categories.id, categoryIds));
+      
+      console.log(`✅ Categories query successful: ${categoriesData.length} records`);
+
+      // Manually combine the results
+      const result = simpleBudgetCategories.map(budgetCategory => {
+        const category = categoriesData.find(cat => cat.id === budgetCategory.categoryId);
+        if (!category) {
+          console.warn(`⚠️ Category not found for ID: ${budgetCategory.categoryId}`);
+          return null;
+        }
+        return {
+          ...budgetCategory,
+          category
+        };
+      }).filter(Boolean) as (BudgetCategory & { category: Category })[];
+
+      console.log(`✅ Combined result successful: ${result.length} records`);
       return result;
-      
+
     } catch (error) {
-      console.error(`❌ Erro ao buscar categorias do orçamento ${budgetId}:`, error);
-      console.error(`❌ Query parameters: budgetId="${budgetId}", type=${typeof budgetId}, length=${budgetId?.length}`);
-      console.error(`❌ Stack trace:`, (error as Error).stack);
+      console.error(`❌ Error in simple queries approach:`, error);
+      // Fall back to empty result
       return [];
     }
+
   }
 
   async createBudgetCategories(budgetId: string, categoryData: { categoryId: string; allocatedAmount: string }[]): Promise<void> {
