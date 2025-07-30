@@ -7,7 +7,7 @@ import {
   type BudgetCategory, type InsertBudgetCategory, type InvestmentTransaction, type InsertInvestmentTransaction
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, and, desc, gte, lte, sum, sql } from "drizzle-orm";
+import { eq, and, desc, gte, lte, sum, sql, inArray } from "drizzle-orm";
 
 export interface IStorage {
   // Users
@@ -364,40 +364,37 @@ export class DatabaseStorage implements IStorage {
     try {
       console.log(`🚀 Executando query para budget_categories com budgetId: ${budgetId}`);
       
-      // Additional debugging - check if budgetId contains any non-UUID characters
-      if (budgetId.includes('NaN') || budgetId.includes('undefined') || budgetId.includes('null')) {
-        console.error(`❌ BudgetId contains invalid substring: "${budgetId}"`);
-        return [];
-      }
-      
-      // First try a simple query without join to isolate the issue
-      console.log(`🔍 Testing simple query first...`);
-      const simpleResult = await db.select()
+      // Get budget categories first
+      const budgetCats = await db.select()
         .from(budgetCategories)
         .where(eq(budgetCategories.budgetId, budgetId));
       
-      console.log(`✅ Simple query worked, found ${simpleResult.length} budget categories`);
+      console.log(`✅ Found ${budgetCats.length} budget categories`);
       
-      // If simple query works, try the join
-      if (simpleResult.length > 0) {
-        const result = await db.select({
-          budget_categories: budgetCategories,
-          categories: categories
-        })
-          .from(budgetCategories)
-          .leftJoin(categories, eq(budgetCategories.categoryId, categories.id))
-          .where(eq(budgetCategories.budgetId, budgetId));
-        
-        console.log(`✅ Encontradas ${result.length} categorias para o orçamento ${budgetId}`);
-        
-        return result.map(row => ({
-          ...row.budget_categories,
-          category: row.categories!
-        }));
-      } else {
-        console.log(`ℹ️ No budget categories found for budgetId: ${budgetId}`);
+      if (budgetCats.length === 0) {
         return [];
       }
+      
+      // Get categories separately to avoid join issues
+      const categoryIds = budgetCats.map(bc => bc.categoryId);
+      const cats = await db.select()
+        .from(categories)
+        .where(inArray(categories.id, categoryIds));
+      
+      console.log(`✅ Found ${cats.length} matching categories`);
+      
+      // Manually join the results
+      const result = budgetCats.map(bc => {
+        const category = cats.find(c => c.id === bc.categoryId);
+        return {
+          ...bc,
+          category: category!
+        };
+      });
+      
+      console.log(`✅ Final result: ${result.length} categorias para o orçamento ${budgetId}`);
+      return result;
+      
     } catch (error) {
       console.error(`❌ Erro ao buscar categorias do orçamento ${budgetId}:`, error);
       console.error(`❌ Query parameters: budgetId="${budgetId}", type=${typeof budgetId}, length=${budgetId?.length}`);
