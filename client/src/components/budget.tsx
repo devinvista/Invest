@@ -640,7 +640,13 @@ export function Budget() {
                           variant="outline" 
                           size="sm" 
                           className="w-full text-xs"
-                          onClick={() => window.location.href = '/reports'}
+                          onClick={() => {
+                            const params = new URLSearchParams({
+                              filterType: 'income',
+                              period: `${currentMonth}/${currentYear}`
+                            });
+                            window.location.href = `/reports?${params.toString()}`;
+                          }}
                         >
                           <FileText className="w-3 h-3 mr-2" />
                           Ver Lançamentos
@@ -715,7 +721,17 @@ export function Budget() {
                           variant="outline" 
                           size="sm" 
                           className="w-full text-xs"
-                          onClick={() => window.location.href = '/reports'}
+                          onClick={() => {
+                            const necessitiesCategories = categories
+                              .filter((cat: any) => cat.type === 'necessities')
+                              .map((cat: any) => cat.id);
+                            const params = new URLSearchParams({
+                              filterType: 'expense',
+                              filterCategories: necessitiesCategories.join(','),
+                              period: `${currentMonth}/${currentYear}`
+                            });
+                            window.location.href = `/reports?${params.toString()}`;
+                          }}
                         >
                           <FileText className="w-3 h-3 mr-2" />
                           Ver Lançamentos
@@ -785,7 +801,17 @@ export function Budget() {
                           variant="outline" 
                           size="sm" 
                           className="w-full text-xs"
-                          onClick={() => window.location.href = '/reports'}
+                          onClick={() => {
+                            const wantsCategories = categories
+                              .filter((cat: any) => cat.type === 'wants')
+                              .map((cat: any) => cat.id);
+                            const params = new URLSearchParams({
+                              filterType: 'expense',
+                              filterCategories: wantsCategories.join(','),
+                              period: `${currentMonth}/${currentYear}`
+                            });
+                            window.location.href = `/reports?${params.toString()}`;
+                          }}
                         >
                           <FileText className="w-3 h-3 mr-2" />
                           Ver Lançamentos
@@ -858,7 +884,17 @@ export function Budget() {
                           variant="outline" 
                           size="sm" 
                           className="w-full text-xs"
-                          onClick={() => window.location.href = '/reports'}
+                          onClick={() => {
+                            const savingsCategories = categories
+                              .filter((cat: any) => cat.type === 'savings')
+                              .map((cat: any) => cat.id);
+                            const params = new URLSearchParams({
+                              filterType: 'expense',
+                              filterCategories: savingsCategories.join(','),
+                              period: `${currentMonth}/${currentYear}`
+                            });
+                            window.location.href = `/reports?${params.toString()}`;
+                          }}
                         >
                           <FileText className="w-3 h-3 mr-2" />
                           Ver Lançamentos

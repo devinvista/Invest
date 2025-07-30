@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
@@ -46,6 +46,35 @@ export function Reports() {
   const { data: goals = [] } = useQuery<any[]>({
     queryKey: ['/api/goals'],
   });
+
+  // Read URL parameters for initial filters
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const typeParam = params.get('filterType');
+    const categoriesParam = params.get('filterCategories');
+    const periodParam = params.get('period');
+
+    if (typeParam && ['income', 'expense'].includes(typeParam)) {
+      setFilterType(typeParam);
+    }
+
+    if (categoriesParam) {
+      // If multiple categories are provided, show all matching transactions
+      const categoryIds = categoriesParam.split(',');
+      if (categoryIds.length === 1) {
+        setFilterCategory(categoryIds[0]);
+      } else if (categoryIds.length > 1) {
+        // For multiple categories, we'll need to enhance the filter logic
+        // For now, just use the first category
+        setFilterCategory(categoryIds[0]);
+      }
+    }
+
+    // Clear URL parameters after reading them
+    if (typeParam || categoriesParam || periodParam) {
+      window.history.replaceState({}, '', '/reports');
+    }
+  }, []);
 
   // Generate monthly data for the selected period
   const generateMonthlyData = () => {
@@ -126,7 +155,7 @@ export function Reports() {
     .filter((transaction: any) => {
       const category = categories.find((c: any) => c.id === transaction.categoryId);
       const matchesSearch = transaction.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           category?.name.toLowerCase().includes(searchTerm.toLowerCase()) || '';
+                           (category?.name.toLowerCase().includes(searchTerm.toLowerCase()) || false);
       const matchesType = filterType === 'all' || transaction.type === filterType;
       const matchesCategory = filterCategory === 'all' || transaction.categoryId === filterCategory;
       

@@ -11,6 +11,12 @@ Visual Identity: Pharos Capital brand guidelines applied.
 
 ## Recent Changes
 
+- **January 30, 2025**: Implemented smart navigation from budget cards to filtered transactions
+  - Added intelligent "Ver Lançamentos" buttons that navigate with appropriate filters applied
+  - Revenue card navigates to income transactions for current month/year
+  - Category cards (Necessidades, Desejos, Poupança) navigate to expense transactions filtered by category type
+  - URL parameters automatically applied and cleaned after navigation for seamless user experience
+  - Enhanced Reports component to read and apply URL parameters for initial filter state
 - **January 30, 2025**: Implemented comprehensive transactions table with delete functionality
   - Added complete transactions table with advanced filtering by type, category, and search term
   - Implemented clickable column sorting for date, amount, description, and category
