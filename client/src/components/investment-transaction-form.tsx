@@ -330,12 +330,10 @@ export function InvestmentTransactionForm() {
               name="assetId"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Ativo</FormLabel>
-                  
-                  {/* Asset Type Filter */}
-                  <div className="flex gap-2 mb-3">
+                  <div className="flex items-center justify-between mb-2">
+                    <FormLabel>Ativo</FormLabel>
                     <Select value={assetTypeFilter} onValueChange={setAssetTypeFilter}>
-                      <SelectTrigger className="w-[200px]">
+                      <SelectTrigger className="w-[180px]">
                         <SelectValue placeholder="Filtrar por tipo" />
                       </SelectTrigger>
                       <SelectContent>
@@ -348,93 +346,103 @@ export function InvestmentTransactionForm() {
                     </Select>
                   </div>
 
-                  {/* Asset Search */}
-                  <div className="space-y-3">
-                    <div className="relative">
-                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-                      <Input
-                        placeholder="Pesquisar ativos..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="pl-10"
-                      />
-                    </div>
-
-                    {/* Search Results */}
-                    {searchQuery.length >= 2 && (
-                      <div className="border rounded-lg p-2 max-h-48 overflow-y-auto">
-                        {isSearching ? (
-                          <div className="flex items-center justify-center p-4">
-                            <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                            Buscando...
-                          </div>
-                        ) : searchResults.length > 0 ? (
-                          <div className="space-y-1">
-                            <div className="text-sm font-medium text-muted-foreground mb-2">
-                              Resultados da pesquisa:
-                            </div>
-                            {searchResults.map((result, index) => (
-                              <div
-                                key={index}
-                                className="flex items-center justify-between p-2 hover:bg-muted rounded cursor-pointer"
-                                onClick={() => {
-                                  setSelectedSearchResult(result);
-                                  setShowNewAssetForm(true);
-                                }}
-                              >
-                                <div>
-                                  <div className="font-medium">{result.symbol}</div>
-                                  <div className="text-sm text-muted-foreground">{result.name}</div>
-                                  <Badge variant="outline" className="text-xs">
-                                    {assetTypeOptions.find(opt => opt.value === result.type)?.label || result.type}
-                                  </Badge>
-                                </div>
-                                <div className="text-right">
-                                  <div className="font-medium">R$ {result.currentPrice.toFixed(2)}</div>
-                                  <Button size="sm" variant="outline">
-                                    <Plus className="w-3 h-3 mr-1" />
-                                    Adicionar
-                                  </Button>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        ) : (
-                          <div className="text-center p-4 text-muted-foreground">
-                            Nenhum ativo encontrado
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-
-                  <Separator />
-
-                  {/* Existing Assets Selection */}
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Selecione um ativo existente" />
+                        <SelectValue placeholder="Selecione ou pesquise um ativo" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {filteredAssets.map((asset) => (
-                        <SelectItem key={asset.id} value={asset.id}>
-                          <div className="flex items-center justify-between w-full">
-                            <div className="flex flex-col">
-                              <span className="font-medium">{asset.symbol}</span>
-                              <span className="text-sm text-muted-foreground">{asset.name}</span>
+                      {/* Search Input */}
+                      <div className="p-2 border-b">
+                        <div className="relative">
+                          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+                          <Input
+                            placeholder="Pesquisar ativos..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="pl-10 h-8"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Search Results Section */}
+                      {searchQuery.length >= 2 && (
+                        <div className="max-h-48 overflow-y-auto">
+                          {isSearching ? (
+                            <div className="flex items-center justify-center p-4">
+                              <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                              <span className="text-sm">Buscando...</span>
                             </div>
-                            <Badge variant="outline" className="ml-2">
-                              {assetTypeOptions.find(opt => opt.value === asset.type)?.label || asset.type}
-                            </Badge>
+                          ) : searchResults.length > 0 ? (
+                            <>
+                              <div className="px-2 py-1 text-xs font-medium text-muted-foreground bg-muted">
+                                Novos ativos encontrados:
+                              </div>
+                              {searchResults.map((result, index) => (
+                                <div
+                                  key={`search-${index}`}
+                                  className="flex items-center justify-between p-2 hover:bg-muted cursor-pointer border-b last:border-b-0"
+                                  onClick={() => {
+                                    setSelectedSearchResult(result);
+                                    setShowNewAssetForm(true);
+                                  }}
+                                >
+                                  <div className="flex-1">
+                                    <div className="font-medium text-sm">{result.symbol}</div>
+                                    <div className="text-xs text-muted-foreground">{result.name}</div>
+                                    <Badge variant="outline" className="text-xs mt-1">
+                                      {assetTypeOptions.find(opt => opt.value === result.type)?.label || result.type}
+                                    </Badge>
+                                  </div>
+                                  <div className="text-right ml-2">
+                                    <div className="text-sm font-medium">R$ {result.currentPrice.toFixed(2)}</div>
+                                    <Button size="sm" variant="outline" className="h-6 text-xs">
+                                      <Plus className="w-3 h-3 mr-1" />
+                                      Adicionar
+                                    </Button>
+                                  </div>
+                                </div>
+                              ))}
+                              <Separator />
+                            </>
+                          ) : (
+                            <div className="p-4 text-center text-sm text-muted-foreground">
+                              Nenhum ativo encontrado
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Existing Assets Section */}
+                      {filteredAssets.length > 0 && (
+                        <>
+                          <div className="px-2 py-1 text-xs font-medium text-muted-foreground bg-muted">
+                            Meus ativos:
                           </div>
-                        </SelectItem>
-                      ))}
-                      {filteredAssets.length === 0 && (
-                        <SelectItem value="none" disabled>
-                          Nenhum ativo encontrado para este tipo
-                        </SelectItem>
+                          {filteredAssets.map((asset) => (
+                            <SelectItem key={asset.id} value={asset.id}>
+                              <div className="flex items-center justify-between w-full">
+                                <div className="flex flex-col">
+                                  <span className="font-medium">{asset.symbol}</span>
+                                  <span className="text-sm text-muted-foreground">{asset.name}</span>
+                                </div>
+                                <Badge variant="outline" className="ml-2">
+                                  {assetTypeOptions.find(opt => opt.value === asset.type)?.label || asset.type}
+                                </Badge>
+                              </div>
+                            </SelectItem>
+                          ))}
+                        </>
+                      )}
+
+                      {filteredAssets.length === 0 && searchQuery.length < 2 && (
+                        <div className="p-4 text-center text-sm text-muted-foreground">
+                          {assetTypeFilter === 'all' 
+                            ? 'Nenhum ativo cadastrado. Use a busca para encontrar e adicionar novos ativos.'
+                            : `Nenhum ativo do tipo "${assetTypeOptions.find(opt => opt.value === assetTypeFilter)?.label}" encontrado.`
+                          }
+                        </div>
                       )}
                     </SelectContent>
                   </Select>
