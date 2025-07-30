@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Progress } from '@/components/ui/progress';
@@ -18,9 +18,12 @@ import { useToast } from '@/hooks/use-toast';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Calculator, TrendingUp, Target, Plus, Edit3, Eye, EyeOff, BarChart3, PieChart as PieChartIcon, Calendar, Settings, DollarSign, Activity, ArrowUpCircle, ArrowDownCircle, Clock, FileText } from 'lucide-react';
+import { Calculator, TrendingUp, Target, Plus, Edit3, Eye, EyeOff, BarChart3, PieChart as PieChartIcon, Calendar, Settings, DollarSign, Activity, ArrowUpCircle, ArrowDownCircle, Clock, FileText, Repeat, CalendarClock } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, BarChart, Bar } from 'recharts';
 import { TransactionsTableDialog } from '@/components/ui/transactions-table-dialog';
+import PendingTransactions from '@/components/pending-transactions';
+import RecurrenceForm from '@/components/recurrence-form';
+import RecurrencesList from '@/components/recurrences-list';
 
 export function Budget() {
   const { toast } = useToast();
@@ -32,6 +35,7 @@ export function Budget() {
   const [budgetType, setBudgetType] = useState<'default' | 'custom'>('default');
   const [balanceVisible, setBalanceVisible] = useState(true);
   const [activeTab, setActiveTab] = useState('overview');
+  const [plannedTab, setPlannedTab] = useState('pending');
   
   const [budgetForm, setBudgetForm] = useState({
     totalIncome: '',
@@ -51,8 +55,7 @@ export function Budget() {
   const [transactionsDialogTitle, setTransactionsDialogTitle] = useState('');
   const [transactionsDialogFilters, setTransactionsDialogFilters] = useState<any>({});
   
-  // Planned transactions dialog state
-  const [isPlannedDialogOpen, setIsPlannedDialogOpen] = useState(false);
+
 
   // Transaction form schema
   const transactionFormSchema = z.object({
@@ -1040,64 +1043,75 @@ export function Budget() {
 
           <TabsContent value="planned" className="space-y-6">
             <div className="space-y-6">
-              {/* Header with Add Button */}
-              <div className="flex justify-between items-center">
+              <div className="flex items-center gap-3">
+                <CalendarClock className="h-6 w-6 text-primary" />
                 <div>
-                  <h3 className="text-lg font-semibold">Lançamentos Planejados</h3>
+                  <h3 className="text-xl font-semibold">Lançamentos Planejados</h3>
                   <p className="text-sm text-muted-foreground">
-                    Gerencie transações recorrentes e programadas
+                    Gerencie transações pendentes e configure recorrências automáticas
                   </p>
                 </div>
-                <Button 
-                  onClick={() => setIsPlannedDialogOpen(true)}
-                  className="pharos-gradient"
-                >
-                  <Plus className="w-4 h-4 mr-2" />
-                  Nova Recorrência
-                </Button>
               </div>
 
-              {/* Recurrences List */}
-              <Card className="financial-card">
-                <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <Clock className="h-5 w-5 text-primary" />
-                    <span>Recorrências Ativas</span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div className="text-center text-muted-foreground py-8">
-                      <Calendar className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
-                      <p>Nenhuma recorrência cadastrada</p>
-                      <p className="text-sm">
-                        Clique em "Nova Recorrência" para adicionar lançamentos automáticos
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+              <Tabs value={plannedTab} onValueChange={setPlannedTab} className="w-full">
+                <TabsList className="grid w-full grid-cols-3">
+                  <TabsTrigger value="pending" className="flex items-center gap-2">
+                    <Clock className="h-4 w-4" />
+                    Pendentes
+                  </TabsTrigger>
+                  <TabsTrigger value="recurrences" className="flex items-center gap-2">
+                    <Repeat className="h-4 w-4" />
+                    Recorrências
+                  </TabsTrigger>
+                  <TabsTrigger value="new-recurrence" className="flex items-center gap-2">
+                    <Plus className="h-4 w-4" />
+                    Nova Recorrência
+                  </TabsTrigger>
+                </TabsList>
 
-              {/* Upcoming Transactions */}
-              <Card className="financial-card">
-                <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <Activity className="h-5 w-5 text-blue-600" />
-                    <span>Próximos Lançamentos</span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div className="text-center text-muted-foreground py-8">
-                      <FileText className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
-                      <p>Nenhum lançamento programado</p>
-                      <p className="text-sm">
-                        Lançamentos futuros aparecerão aqui
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+                <TabsContent value="pending" className="space-y-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Clock className="h-5 w-5" />
+                        Transações Pendentes
+                      </CardTitle>
+                      <CardDescription>
+                        Confirme ou gerencie lançamentos que estão aguardando sua aprovação
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <PendingTransactions />
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+
+                <TabsContent value="recurrences" className="space-y-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Repeat className="h-5 w-5" />
+                        Suas Recorrências
+                      </CardTitle>
+                      <CardDescription>
+                        Visualize e gerencie todas as suas transações recorrentes configuradas
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <RecurrencesList />
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+
+                <TabsContent value="new-recurrence" className="space-y-6">
+                  <RecurrenceForm 
+                    onSuccess={() => {
+                      // Switch to recurrences tab after successful creation
+                      setPlannedTab('recurrences');
+                    }}
+                  />
+                </TabsContent>
+              </Tabs>
             </div>
           </TabsContent>
 
@@ -1787,240 +1801,6 @@ export function Budget() {
         initialFilters={transactionsDialogFilters}
       />
 
-      {/* Planned Transactions Full-Screen Dialog */}
-      <Dialog open={isPlannedDialogOpen} onOpenChange={setIsPlannedDialogOpen}>
-        <DialogContent className="max-w-screen-xl w-full h-full max-h-screen m-0 rounded-none p-0 overflow-hidden">
-          <DialogHeader className="sr-only">
-            <DialogTitle>Nova Recorrência</DialogTitle>
-            <DialogDescription>Configure um lançamento automático recorrente</DialogDescription>
-          </DialogHeader>
-          
-          {/* Header */}
-          <div className="flex items-center justify-between p-6 border-b bg-gradient-to-r from-blue-600 to-purple-600 text-white">
-            <div className="flex items-center space-x-3">
-              <Calendar className="h-6 w-6" />
-              <div>
-                <h2 className="text-xl font-semibold">Nova Recorrência</h2>
-                <p className="text-sm text-blue-100">
-                  Configure um lançamento automático recorrente
-                </p>
-              </div>
-            </div>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setIsPlannedDialogOpen(false)}
-              className="text-white hover:bg-white/20"
-            >
-              ×
-            </Button>
-          </div>
-
-          {/* Content */}
-          <div className="flex-1 overflow-y-auto p-6">
-            <div className="max-w-3xl mx-auto space-y-6">
-              {/* Recurrence Form */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <Settings className="h-5 w-5 text-primary" />
-                    <span>Configuração da Recorrência</span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {/* Left Column */}
-                    <div className="space-y-4">
-                      {/* Transaction Type */}
-                      <div className="space-y-2">
-                        <Label>Tipo de Transação</Label>
-                        <Select defaultValue="expense">
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="income">
-                              <div className="flex items-center">
-                                <ArrowUpCircle className="w-4 h-4 mr-2 text-green-600" />
-                                Receita
-                              </div>
-                            </SelectItem>
-                            <SelectItem value="expense">
-                              <div className="flex items-center">
-                                <ArrowDownCircle className="w-4 h-4 mr-2 text-red-600" />
-                                Despesa
-                              </div>
-                            </SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      {/* Description */}
-                      <div className="space-y-2">
-                        <Label>Descrição</Label>
-                        <Input placeholder="Ex: Salário, Aluguel, Internet..." />
-                      </div>
-
-                      {/* Amount */}
-                      <div className="space-y-2">
-                        <Label>Valor (R$)</Label>
-                        <Input type="number" step="0.01" placeholder="0,00" />
-                      </div>
-
-                      {/* Category */}
-                      <div className="space-y-2">
-                        <Label>Categoria</Label>
-                        <Select>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Selecione uma categoria" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {categories?.map((category: any) => (
-                              <SelectItem key={category.id} value={category.id}>
-                                <div className="flex items-center">
-                                  <div 
-                                    className="w-3 h-3 rounded mr-2"
-                                    style={{ backgroundColor: category.color }}
-                                  />
-                                  {category.name}
-                                </div>
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-
-                    {/* Right Column */}
-                    <div className="space-y-4">
-                      {/* Account */}
-                      <div className="space-y-2">
-                        <Label>Conta</Label>
-                        <Select>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Selecione uma conta" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {accounts?.map((account: any) => (
-                              <SelectItem key={account.id} value={account.id}>
-                                <div className="flex items-center">
-                                  <span className="capitalize">{account.type}</span>
-                                  <span className="mx-2">•</span>
-                                  <span>{account.name}</span>
-                                  <span className="ml-2 text-muted-foreground">
-                                    ({formatCurrency(account.balance)})
-                                  </span>
-                                </div>
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      {/* Frequency */}
-                      <div className="space-y-2">
-                        <Label>Frequência</Label>
-                        <Select defaultValue="monthly">
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="daily">Diário</SelectItem>
-                            <SelectItem value="weekly">Semanal</SelectItem>
-                            <SelectItem value="monthly">Mensal</SelectItem>
-                            <SelectItem value="yearly">Anual</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      {/* Start Date */}
-                      <div className="space-y-2">
-                        <Label>Data de Início</Label>
-                        <Input type="date" />
-                      </div>
-
-                      {/* End Date */}
-                      <div className="space-y-2">
-                        <Label>Data de Fim (opcional)</Label>
-                        <Input type="date" />
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Additional Options */}
-                  <div className="border-t pt-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      {/* Installments */}
-                      <div className="space-y-2">
-                        <Label>Número de Parcelas (opcional)</Label>
-                        <Input type="number" min="1" placeholder="Ex: 12 para parcelamento em 12x" />
-                      </div>
-
-                      {/* Status */}
-                      <div className="space-y-2">
-                        <Label className="flex items-center space-x-2">
-                          <span>Status</span>
-                        </Label>
-                        <div className="flex items-center space-x-2">
-                          <Switch defaultChecked />
-                          <Label className="text-sm">Ativo</Label>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Action Buttons */}
-                  <div className="flex justify-end space-x-4 pt-6 border-t">
-                    <Button
-                      variant="outline"
-                      onClick={() => setIsPlannedDialogOpen(false)}
-                    >
-                      Cancelar
-                    </Button>
-                    <Button className="pharos-gradient">
-                      <Plus className="w-4 h-4 mr-2" />
-                      Criar Recorrência
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Preview Card */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <Eye className="h-5 w-5 text-blue-600" />
-                    <span>Visualização</span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="bg-muted rounded-lg p-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                          <DollarSign className="h-5 w-5 text-primary" />
-                        </div>
-                        <div>
-                          <p className="font-medium">Descrição da Recorrência</p>
-                          <p className="text-sm text-muted-foreground">
-                            Mensal • Categoria • Conta
-                          </p>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <p className="font-semibold text-lg">R$ 0,00</p>
-                        <p className="text-sm text-muted-foreground">
-                          Próximo: --/--/----
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
