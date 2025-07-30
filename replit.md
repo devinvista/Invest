@@ -11,6 +11,14 @@ Visual Identity: Pharos Capital brand guidelines applied.
 
 ## Recent Changes
 
+- **January 30, 2025**: Implemented comprehensive transactions table with delete functionality
+  - Added complete transactions table with advanced filtering by type, category, and search term
+  - Implemented clickable column sorting for date, amount, description, and category
+  - Created delete transaction feature with confirmation dialog and safety checks
+  - Enhanced transaction security - users can only delete their own transactions
+  - Added proper credit card balance adjustment when deleting card-related transactions
+  - Professional UI with color-coded badges and responsive design
+  - Fixed PostgreSQL UUID validation errors in budget categories endpoint
 - **January 30, 2025**: Added transaction viewing buttons to budget cards and completed migration from Replit Agent
   - Fixed PostgreSQL error with invalid UUID parameters in budget categories endpoint by implementing proper database query
   - Added "Ver Lançamentos" buttons to all budget category cards (Receitas, Necessidades, Desejos, Poupança)

@@ -408,6 +408,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.delete("/api/transactions/:id", async (req: any, res) => {
+    try {
+      const transactionId = req.params.id;
+      
+      // Check if transaction belongs to user
+      const transaction = await storage.getTransaction(transactionId);
+      if (!transaction || transaction.userId !== req.userId) {
+        return res.status(404).json({ message: "Transação não encontrada" });
+      }
+      
+      await storage.deleteTransaction(transactionId);
+      res.json({ message: "Transação excluída com sucesso" });
+    } catch (error) {
+      res.status(500).json({ message: "Erro ao excluir transação", error: error instanceof Error ? error.message : "Erro desconhecido" });
+    }
+  });
+
   // Criar transação para investimento (categorizada como "Investimentos Futuros")
   app.post("/api/transactions/investment", async (req: any, res) => {
     try {

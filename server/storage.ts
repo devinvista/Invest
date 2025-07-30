@@ -226,6 +226,35 @@ export class DatabaseStorage implements IStorage {
     return newTransaction;
   }
 
+  async getTransaction(transactionId: string): Promise<Transaction | undefined> {
+    const [transaction] = await db.select().from(transactions).where(eq(transactions.id, transactionId));
+    return transaction;
+  }
+
+  async deleteTransaction(transactionId: string): Promise<void> {
+    // Get transaction details before deletion for potential credit card balance adjustment
+    const transaction = await this.getTransaction(transactionId);
+    
+    if (transaction && transaction.creditCardId && transaction.type === 'expense') {
+      // Get current credit card to calculate new usage
+      const [currentCard] = await db.select()
+        .from(creditCards)
+        .where(eq(creditCards.id, transaction.creditCardId));
+      
+      if (currentCard) {
+        // Calculate new used amount (subtract the deleted transaction)
+        const currentUsed = parseFloat(currentCard.usedAmount || '0');
+        const transactionAmount = parseFloat(transaction.amount);
+        const newUsedAmount = Math.max(0, currentUsed - transactionAmount).toFixed(2);
+        
+        // Update credit card usage
+        await this.updateCreditCardUsage(transaction.creditCardId, newUsedAmount);
+      }
+    }
+    
+    await db.delete(transactions).where(eq(transactions.id, transactionId));
+  }
+
   // Assets
   async getUserAssets(userId: string): Promise<Asset[]> {
     return await db.select().from(assets).where(eq(assets.userId, userId));

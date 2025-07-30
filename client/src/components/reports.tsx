@@ -1,13 +1,16 @@
 import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useToast } from '@/hooks/use-toast';
+import { apiRequest } from '@/lib/queryClient';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { formatCurrency, formatDate } from '@/lib/financial-utils';
-import { Download, FileText, PieChart, TrendingUp, Calendar, Filter, Search, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
+import { Download, FileText, PieChart, TrendingUp, Calendar, Filter, Search, ArrowUpDown, ArrowUp, ArrowDown, Trash2 } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart as RechartsPieChart, Pie, Cell } from 'recharts';
 
 const COLORS = {
@@ -28,6 +31,9 @@ export function Reports() {
   const [filterCategory, setFilterCategory] = useState('all');
   const [sortBy, setSortBy] = useState('date');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+  
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const { data: transactions = [] } = useQuery<any[]>({
     queryKey: ['/api/transactions'],
@@ -168,6 +174,36 @@ export function Reports() {
       setSortOrder('desc');
     }
   };
+
+  // Delete transaction mutation
+  const deleteTransactionMutation = useMutation({
+    mutationFn: async (transactionId: string) => {
+      const response = await fetch(`/api/transactions/${transactionId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
+      });
+      if (!response.ok) {
+        throw new Error('Failed to delete transaction');
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/transactions'] });
+      toast({
+        title: "Transação excluída",
+        description: "A transação foi excluída com sucesso.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Erro ao excluir transação",
+        description: error.message || "Ocorreu um erro ao excluir a transação.",
+        variant: "destructive",
+      });
+    },
+  });
 
   const exportData = () => {
     const reportData = {
@@ -613,12 +649,13 @@ export function Reports() {
                       {sortBy !== 'amount' && <ArrowUpDown className="w-4 h-4 opacity-50" />}
                     </div>
                   </TableHead>
+                  <TableHead className="text-center">Ações</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredTransactions.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                    <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
                       Nenhuma transação encontrada com os filtros aplicados
                     </TableCell>
                   </TableRow>
@@ -669,6 +706,43 @@ export function Reports() {
                             {isIncome ? '+' : isExpense ? '-' : ''}
                             {formatCurrency(parseFloat(transaction.amount))}
                           </span>
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button
+                                variant="ghost" 
+                                size="sm"
+                                className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Excluir Transação</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Tem certeza que deseja excluir esta transação? Esta ação não pode ser desfeita.
+                                  <br />
+                                  <br />
+                                  <strong>Transação:</strong> {transaction.description}
+                                  <br />
+                                  <strong>Valor:</strong> {formatCurrency(parseFloat(transaction.amount))}
+                                  <br />
+                                  <strong>Data:</strong> {formatDate(transaction.date)}
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                <AlertDialogAction
+                                  onClick={() => deleteTransactionMutation.mutate(transaction.id)}
+                                  className="bg-red-600 hover:bg-red-700"
+                                >
+                                  Excluir
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
                         </TableCell>
                       </TableRow>
                     );
