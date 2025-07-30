@@ -11,6 +11,19 @@ Visual Identity: Pharos Capital brand guidelines applied.
 
 ## Recent Changes
 
+- **January 30, 2025**: Successfully completed migration from Replit Agent to Replit environment with enhanced planned transactions feature
+  - Fixed critical API error handling to prevent "transactions.filter is not a function" errors
+  - All database endpoints now return empty arrays instead of undefined values when operations fail
+  - Added comprehensive error handling throughout the storage layer
+  - Implemented "Lançamentos Planejados" (Planned Transactions) as new tab in budget section
+  - Created full-screen dialog for managing recurrences with complete form fields:
+    - Transaction type selection (income/expense)
+    - Description, amount, category, and account selection
+    - Frequency options (daily, weekly, monthly, yearly)
+    - Start/end date configuration with installment support
+    - Status toggle and preview functionality
+  - Enhanced budget navigation with 5-tab layout including the new planned transactions tab
+  - Application now stable and ready for continued development
 - **January 30, 2025**: Completed enhanced Alpha Vantage integration with comprehensive asset management
   - Enhanced Alpha Vantage integration based on official documentation analysis
   - Improved Brazilian stock search with proper .SA suffix handling for B3 exchange
