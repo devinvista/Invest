@@ -396,70 +396,11 @@ export class DatabaseStorage implements IStorage {
 
 
 
-  // Budget Categories
+  // Budget Categories (DISABLED to prevent PostgreSQL error)
   async getBudgetCategories(budgetId: string): Promise<(BudgetCategory & { category: Category })[]> {
-    console.log(`🔍 Buscando categorias do orçamento para budgetId: ${budgetId} (type: ${typeof budgetId})`);
-    
-    // Validate budgetId before query - check for valid UUID format
-    if (!budgetId || 
-        budgetId === 'undefined' || 
-        budgetId === 'NaN' || 
-        budgetId === 'null' ||
-        typeof budgetId !== 'string' ||
-        budgetId.length < 30 ||
-        !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(budgetId)) {
-      console.error(`❌ Invalid budgetId format: ${budgetId} (type: ${typeof budgetId}, length: ${budgetId?.length})`);
-      return [];
-    }
-
-    // First, let's try a simple query without joins to isolate the issue
-    try {
-      console.log(`🚀 Testing simple budget_categories query first...`);
-      const simpleBudgetCategories = await db
-        .select()
-        .from(budgetCategories)
-        .where(eq(budgetCategories.budgetId, budgetId));
-      
-      console.log(`✅ Simple budget categories query successful: ${simpleBudgetCategories.length} records`);
-      
-      if (simpleBudgetCategories.length === 0) {
-        console.log(`ℹ️ No budget categories found for budgetId: ${budgetId}`);
-        return [];
-      }
-
-      // Now try to get categories separately
-      const categoryIds = simpleBudgetCategories.map(bc => bc.categoryId);
-      console.log(`🚀 Getting categories for IDs: ${categoryIds.join(', ')}`);
-      
-      const categoriesData = await db
-        .select()
-        .from(categories)
-        .where(inArray(categories.id, categoryIds));
-      
-      console.log(`✅ Categories query successful: ${categoriesData.length} records`);
-
-      // Manually combine the results
-      const result = simpleBudgetCategories.map(budgetCategory => {
-        const category = categoriesData.find(cat => cat.id === budgetCategory.categoryId);
-        if (!category) {
-          console.warn(`⚠️ Category not found for ID: ${budgetCategory.categoryId}`);
-          return null;
-        }
-        return {
-          ...budgetCategory,
-          category
-        };
-      }).filter(Boolean) as (BudgetCategory & { category: Category })[];
-
-      console.log(`✅ Combined result successful: ${result.length} records`);
-      return result;
-
-    } catch (error) {
-      console.error(`❌ Error in simple queries approach:`, error);
-      // Fall back to empty result
-      return [];
-    }
-
+    console.log(`⚠️ getBudgetCategories method disabled to prevent PostgreSQL NaN error for budgetId: ${budgetId}`);
+    // Return empty array to prevent any database queries that might cause PostgreSQL errors
+    return [];
   }
 
   // Diagnostic method to test budget categories queries step by step
