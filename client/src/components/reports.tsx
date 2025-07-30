@@ -4,8 +4,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { formatCurrency, formatDate } from '@/lib/financial-utils';
-import { Download, FileText, PieChart, TrendingUp, Calendar, Filter } from 'lucide-react';
+import { Download, FileText, PieChart, TrendingUp, Calendar, Filter, Search, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart as RechartsPieChart, Pie, Cell } from 'recharts';
 
 const COLORS = {
@@ -19,6 +21,13 @@ const COLORS = {
 export function Reports() {
   const [selectedPeriod, setSelectedPeriod] = useState('6months');
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear().toString());
+  
+  // Transaction filters
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterType, setFilterType] = useState('all');
+  const [filterCategory, setFilterCategory] = useState('all');
+  const [sortBy, setSortBy] = useState('date');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
   const { data: transactions = [] } = useQuery<any[]>({
     queryKey: ['/api/transactions'],
@@ -105,6 +114,60 @@ export function Reports() {
   const topCategories = categoryData
     .sort((a: any, b: any) => b.value - a.value)
     .slice(0, 5);
+
+  // Filter and sort transactions
+  const filteredTransactions = transactions
+    .filter((transaction: any) => {
+      const category = categories.find((c: any) => c.id === transaction.categoryId);
+      const matchesSearch = transaction.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           category?.name.toLowerCase().includes(searchTerm.toLowerCase()) || '';
+      const matchesType = filterType === 'all' || transaction.type === filterType;
+      const matchesCategory = filterCategory === 'all' || transaction.categoryId === filterCategory;
+      
+      return matchesSearch && matchesType && matchesCategory;
+    })
+    .sort((a: any, b: any) => {
+      let aValue, bValue;
+      
+      switch (sortBy) {
+        case 'date':
+          aValue = new Date(a.date).getTime();
+          bValue = new Date(b.date).getTime();
+          break;
+        case 'amount':
+          aValue = parseFloat(a.amount);
+          bValue = parseFloat(b.amount);
+          break;
+        case 'description':
+          aValue = a.description.toLowerCase();
+          bValue = b.description.toLowerCase();
+          break;
+        case 'category':
+          const categoryA = categories.find((c: any) => c.id === a.categoryId)?.name || '';
+          const categoryB = categories.find((c: any) => c.id === b.categoryId)?.name || '';
+          aValue = categoryA.toLowerCase();
+          bValue = categoryB.toLowerCase();
+          break;
+        default:
+          aValue = a[sortBy];
+          bValue = b[sortBy];
+      }
+      
+      if (sortOrder === 'asc') {
+        return aValue > bValue ? 1 : -1;
+      } else {
+        return aValue < bValue ? 1 : -1;
+      }
+    });
+
+  const handleSort = (column: string) => {
+    if (sortBy === column) {
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortBy(column);
+      setSortOrder('desc');
+    }
+  };
 
   const exportData = () => {
     const reportData = {
@@ -426,6 +489,201 @@ export function Reports() {
               </p>
             </div>
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Complete Transactions Table */}
+      <Card className="financial-card">
+        <CardHeader>
+          <CardTitle className="flex items-center justify-between">
+            <span>Todas as Transações</span>
+            <Badge variant="outline">{filteredTransactions.length} transações</Badge>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {/* Filters Section */}
+          <div className="mb-6 space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              {/* Search */}
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+                <Input
+                  placeholder="Buscar transações..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+
+              {/* Type Filter */}
+              <Select value={filterType} onValueChange={setFilterType}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Tipo" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos os tipos</SelectItem>
+                  <SelectItem value="income">Receitas</SelectItem>
+                  <SelectItem value="expense">Despesas</SelectItem>
+                  <SelectItem value="transfer">Transferências</SelectItem>
+                </SelectContent>
+              </Select>
+
+              {/* Category Filter */}
+              <Select value={filterCategory} onValueChange={setFilterCategory}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Categoria" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todas as categorias</SelectItem>
+                  {categories.map((category: any) => (
+                    <SelectItem key={category.id} value={category.id}>
+                      {category.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              {/* Clear Filters */}
+              <Button 
+                variant="outline" 
+                onClick={() => {
+                  setSearchTerm('');
+                  setFilterType('all');
+                  setFilterCategory('all');
+                }}
+                className="w-full"
+              >
+                <Filter className="w-4 h-4 mr-2" />
+                Limpar Filtros
+              </Button>
+            </div>
+          </div>
+
+          {/* Transactions Table */}
+          <div className="border rounded-lg overflow-hidden">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead 
+                    className="cursor-pointer hover:bg-muted/50"
+                    onClick={() => handleSort('date')}
+                  >
+                    <div className="flex items-center space-x-1">
+                      <span>Data</span>
+                      {sortBy === 'date' && (
+                        sortOrder === 'asc' ? <ArrowUp className="w-4 h-4" /> : <ArrowDown className="w-4 h-4" />
+                      )}
+                      {sortBy !== 'date' && <ArrowUpDown className="w-4 h-4 opacity-50" />}
+                    </div>
+                  </TableHead>
+                  <TableHead 
+                    className="cursor-pointer hover:bg-muted/50"
+                    onClick={() => handleSort('description')}
+                  >
+                    <div className="flex items-center space-x-1">
+                      <span>Descrição</span>
+                      {sortBy === 'description' && (
+                        sortOrder === 'asc' ? <ArrowUp className="w-4 h-4" /> : <ArrowDown className="w-4 h-4" />
+                      )}
+                      {sortBy !== 'description' && <ArrowUpDown className="w-4 h-4 opacity-50" />}
+                    </div>
+                  </TableHead>
+                  <TableHead 
+                    className="cursor-pointer hover:bg-muted/50"
+                    onClick={() => handleSort('category')}
+                  >
+                    <div className="flex items-center space-x-1">
+                      <span>Categoria</span>
+                      {sortBy === 'category' && (
+                        sortOrder === 'asc' ? <ArrowUp className="w-4 h-4" /> : <ArrowDown className="w-4 h-4" />
+                      )}
+                      {sortBy !== 'category' && <ArrowUpDown className="w-4 h-4 opacity-50" />}
+                    </div>
+                  </TableHead>
+                  <TableHead>Tipo</TableHead>
+                  <TableHead 
+                    className="text-right cursor-pointer hover:bg-muted/50"
+                    onClick={() => handleSort('amount')}
+                  >
+                    <div className="flex items-center justify-end space-x-1">
+                      <span>Valor</span>
+                      {sortBy === 'amount' && (
+                        sortOrder === 'asc' ? <ArrowUp className="w-4 h-4" /> : <ArrowDown className="w-4 h-4" />
+                      )}
+                      {sortBy !== 'amount' && <ArrowUpDown className="w-4 h-4 opacity-50" />}
+                    </div>
+                  </TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredTransactions.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                      Nenhuma transação encontrada com os filtros aplicados
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  filteredTransactions.map((transaction: any) => {
+                    const category = categories.find((c: any) => c.id === transaction.categoryId);
+                    const isIncome = transaction.type === 'income';
+                    const isExpense = transaction.type === 'expense';
+                    const isTransfer = transaction.type === 'transfer';
+                    
+                    return (
+                      <TableRow key={transaction.id} className="hover:bg-muted/50">
+                        <TableCell className="font-medium">
+                          {formatDate(transaction.date)}
+                        </TableCell>
+                        <TableCell>{transaction.description}</TableCell>
+                        <TableCell>
+                          {category ? (
+                            <div className="flex items-center space-x-2">
+                              <div 
+                                className="w-3 h-3 rounded-full" 
+                                style={{ backgroundColor: category.color }}
+                              ></div>
+                              <span>{category.name}</span>
+                            </div>
+                          ) : (
+                            <span className="text-muted-foreground">Sem categoria</span>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          <Badge 
+                            variant={isIncome ? "default" : isExpense ? "destructive" : "secondary"}
+                            className={
+                              isIncome ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200" :
+                              isExpense ? "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200" :
+                              "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
+                            }
+                          >
+                            {isIncome ? 'Receita' : isExpense ? 'Despesa' : 'Transferência'}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <span className={`font-semibold ${
+                            isIncome ? 'text-green-600' : 
+                            isExpense ? 'text-red-600' : 
+                            'text-blue-600'
+                          }`}>
+                            {isIncome ? '+' : isExpense ? '-' : ''}
+                            {formatCurrency(parseFloat(transaction.amount))}
+                          </span>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })
+                )}
+              </TableBody>
+            </Table>
+          </div>
+
+          {/* Pagination Info */}
+          {filteredTransactions.length > 0 && (
+            <div className="mt-4 text-sm text-muted-foreground text-center">
+              Mostrando {filteredTransactions.length} de {transactions.length} transações
+            </div>
+          )}
         </CardContent>
       </Card>
       </div>
