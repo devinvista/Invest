@@ -239,9 +239,9 @@ export function Budget() {
     }
   }, [customCategories, budgetType, categories]);
 
-  // Automatically recalculate 50/30/20 when income changes in default mode
+  // Automatically recalculate 50/30/20 when income changes in both default and custom modes
   useEffect(() => {
-    if (budgetType === 'default' && budgetForm.totalIncome && isEditing) {
+    if (budgetForm.totalIncome && isEditing) {
       const totalIncome = parseFloat(budgetForm.totalIncome) || 0;
       if (totalIncome > 0) {
         const necessities = totalIncome * 0.5;
