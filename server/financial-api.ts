@@ -6,6 +6,8 @@ interface AssetSearchResult {
   currency: string;
   exchange: string;
   lastUpdate: string;
+  matchScore?: number;
+  region?: string;
 }
 
 interface AssetQuote {
@@ -17,64 +19,172 @@ interface AssetQuote {
   currency: string;
 }
 
-// Função para buscar ações brasileiras usando Alpha Vantage
-async function searchBrazilianStocks(query: string): Promise<AssetSearchResult[]> {
+// Função para buscar ações usando Alpha Vantage (melhorada para ações brasileiras e internacionais)
+async function searchStocks(query: string, assetType: string = 'stock'): Promise<AssetSearchResult[]> {
   const apiKey = process.env.ALPHA_VANTAGE_API_KEY;
   if (!apiKey) {
     throw new Error('ALPHA_VANTAGE_API_KEY não configurada');
   }
 
   try {
-    // Buscar por símbolo ou nome de ações brasileiras
+    // Buscar por símbolo ou nome usando Alpha Vantage Symbol Search
     const searchUrl = `https://www.alphavantage.co/query?function=SYMBOL_SEARCH&keywords=${encodeURIComponent(query)}&apikey=${apiKey}`;
     const response = await fetch(searchUrl);
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
     const data = await response.json();
 
     if (data['Error Message']) {
-      throw new Error(data['Error Message']);
+      console.error('Alpha Vantage Error:', data['Error Message']);
+      return [];
+    }
+
+    if (data['Note']) {
+      console.warn('Alpha Vantage Note:', data['Note']);
+      return [];
     }
 
     const matches = data.bestMatches || [];
-    const brazilianStocks = matches
-      .filter((match: any) => 
-        match['4. region'] === 'Brazil' || 
-        match['1. symbol'].includes('.SA') ||
-        match['1. symbol'].includes('.SAO')
-      )
-      .map((match: any) => ({
-        symbol: match['1. symbol'].replace('.SA', '').replace('.SAO', ''),
-        name: match['2. name'],
-        type: 'stock',
-        currentPrice: 0, // Será buscado separadamente
-        currency: 'BRL',
-        exchange: 'B3',
-        lastUpdate: new Date().toISOString()
-      }));
+    const results: AssetSearchResult[] = [];
 
-    return brazilianStocks.slice(0, 10); // Limitar a 10 resultados
+    for (const match of matches.slice(0, 15)) {
+      const symbol = match['1. symbol'];
+      const name = match['2. name'];
+      const type = match['3. type'];
+      const region = match['4. region'];
+      const marketOpen = match['5. marketOpen'];
+      const marketClose = match['6. marketClose'];
+      const timezone = match['7. timezone'];
+      const currency = match['8. currency'];
+      const matchScore = parseFloat(match['9. matchScore']);
+
+      // Identificar tipo de ativo e região
+      let assetCategory = 'stock';
+      let exchange = 'Unknown';
+      let assetCurrency = currency || 'USD';
+
+      // Classificar por região e exchange
+      if (region === 'Brazil' || symbol.includes('.SA')) {
+        exchange = 'B3';
+        assetCurrency = 'BRL';
+      } else if (symbol.includes('.LON')) {
+        exchange = 'LSE';
+        assetCurrency = 'GBP';
+      } else if (symbol.includes('.TRT') || symbol.includes('.TO')) {
+        exchange = 'TSX';
+        assetCurrency = 'CAD';
+      } else if (symbol.includes('.DEX') || symbol.includes('.FRK')) {
+        exchange = 'XETRA';
+        assetCurrency = 'EUR';
+      } else if (symbol.includes('.BSE') || symbol.includes('.NSE')) {
+        exchange = region === 'India' ? 'BSE' : 'NSE';
+        assetCurrency = 'INR';
+      } else if (symbol.includes('.SHH') || symbol.includes('.SHZ')) {
+        exchange = symbol.includes('.SHH') ? 'SSE' : 'SZSE';
+        assetCurrency = 'CNY';
+      } else if (region === 'United States') {
+        exchange = 'NASDAQ/NYSE';
+        assetCurrency = 'USD';
+      }
+
+      // Identificar tipo de ativo
+      if (type?.toLowerCase().includes('etf')) {
+        assetCategory = 'etf';
+      } else if (type?.toLowerCase().includes('fund') || type?.toLowerCase().includes('mutual')) {
+        assetCategory = 'fund';
+      } else if (symbol.includes('11') && region === 'Brazil') {
+        assetCategory = 'fii'; // FIIs brasileiros geralmente terminam em 11
+      }
+
+      // Filtrar por tipo se especificado
+      if (assetType !== 'all' && assetType !== assetCategory) {
+        continue;
+      }
+
+      // Buscar cotação atual (limitado para evitar rate limiting)
+      let currentPrice = 0;
+      try {
+        // Apenas buscar cotação para os primeiros 5 resultados para evitar rate limiting
+        if (results.length < 5) {
+          const quote = await getStockQuote(symbol);
+          if (quote) {
+            currentPrice = quote.currentPrice;
+          }
+          // Pequeno delay para respeitar rate limits
+          await new Promise(resolve => setTimeout(resolve, 300));
+        }
+      } catch (error) {
+        console.warn(`Erro ao buscar cotação para ${symbol}:`, error);
+      }
+
+      results.push({
+        symbol: symbol.replace('.SA', '').replace('.SAO', ''), // Remover sufixo para ações brasileiras
+        name: name,
+        type: assetCategory,
+        currentPrice: currentPrice,
+        currency: assetCurrency,
+        exchange: exchange,
+        lastUpdate: new Date().toISOString(),
+        matchScore: matchScore,
+        region: region
+      });
+    }
+
+    // Ordenar por match score (relevância)
+    return results.sort((a, b) => (b.matchScore || 0) - (a.matchScore || 0)).slice(0, 10);
   } catch (error) {
-    console.error('Erro ao buscar ações brasileiras:', error);
+    console.error('Erro ao buscar ações:', error);
     return [];
   }
 }
 
-// Função para buscar cotação atual de uma ação brasileira
-async function getBrazilianStockQuote(symbol: string): Promise<AssetQuote | null> {
+// Função para buscar cotação de ações usando Alpha Vantage Global Quote
+async function getStockQuote(symbol: string): Promise<AssetQuote | null> {
   const apiKey = process.env.ALPHA_VANTAGE_API_KEY;
   if (!apiKey) {
     throw new Error('ALPHA_VANTAGE_API_KEY não configurada');
   }
 
   try {
-    // Adicionar .SA para ações brasileiras se não tiver
-    const fullSymbol = symbol.includes('.') ? symbol : `${symbol}.SA`;
+    // Determinar formato do símbolo baseado no tipo
+    let fullSymbol = symbol;
+    let currency = 'USD';
+
+    // Adicionar sufixos apropriados para diferentes exchanges
+    if (symbol.match(/^[A-Z]{4}[0-9]?$/)) {
+      // Ações brasileiras (ex: BBAS3, VALE3)
+      fullSymbol = symbol.includes('.') ? symbol : `${symbol}.SA`;
+      currency = 'BRL';
+    } else if (symbol.includes('.')) {
+      // Já tem sufixo de exchange
+      if (symbol.includes('.SA')) currency = 'BRL';
+      else if (symbol.includes('.LON')) currency = 'GBP';
+      else if (symbol.includes('.TRT') || symbol.includes('.TO')) currency = 'CAD';
+      else if (symbol.includes('.DEX') || symbol.includes('.FRK')) currency = 'EUR';
+      else if (symbol.includes('.BSE') || symbol.includes('.NSE')) currency = 'INR';
+      else if (symbol.includes('.SHH') || symbol.includes('.SHZ')) currency = 'CNY';
+    }
     
     const quoteUrl = `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${fullSymbol}&apikey=${apiKey}`;
     const response = await fetch(quoteUrl);
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
     const data = await response.json();
 
     if (data['Error Message']) {
-      throw new Error(data['Error Message']);
+      console.error('Alpha Vantage Error:', data['Error Message']);
+      return null;
+    }
+
+    if (data['Note']) {
+      console.warn('Alpha Vantage Note:', data['Note']);
+      return null;
     }
 
     const quote = data['Global Quote'];
@@ -82,16 +192,21 @@ async function getBrazilianStockQuote(symbol: string): Promise<AssetQuote | null
       return null;
     }
 
+    const price = parseFloat(quote['05. price']);
+    const change = parseFloat(quote['09. change']);
+    const changePercentStr = quote['10. change percent'];
+    const changePercent = parseFloat(changePercentStr?.replace('%', '') || '0');
+
     return {
       symbol: symbol,
-      currentPrice: parseFloat(quote['05. price']),
-      change: parseFloat(quote['09. change']),
-      changePercent: parseFloat(quote['10. change percent'].replace('%', '')),
+      currentPrice: price,
+      change: change,
+      changePercent: changePercent,
       lastUpdate: quote['07. latest trading day'],
-      currency: 'BRL'
+      currency: currency
     };
   } catch (error) {
-    console.error('Erro ao buscar cotação:', error);
+    console.error(`Erro ao buscar cotação para ${symbol}:`, error);
     return null;
   }
 }
@@ -150,23 +265,31 @@ export async function searchAssets(query: string, type?: string): Promise<AssetS
   const results: AssetSearchResult[] = [];
 
   try {
-    if (!type || type === 'stock') {
-      const stocks = await searchBrazilianStocks(query);
+    // Buscar ações, ETFs, FIIs e fundos usando Alpha Vantage
+    if (!type || ['stock', 'etf', 'fii', 'fund', 'fixed_income'].includes(type)) {
+      const assetType = type || 'all';
+      const stocks = await searchStocks(query, assetType);
       results.push(...stocks);
     }
 
+    // Buscar criptomoedas usando CoinGecko
     if (!type || type === 'crypto') {
       const cryptos = await searchCrypto(query);
+      // Buscar cotações para as criptomoedas encontradas
+      for (const crypto of cryptos) {
+        try {
+          const quote = await getCryptoQuote(crypto.symbol);
+          if (quote) {
+            crypto.currentPrice = quote.currentPrice;
+          }
+        } catch (error) {
+          console.warn(`Erro ao buscar cotação para ${crypto.symbol}:`, error);
+        }
+      }
       results.push(...cryptos);
     }
 
-    // Para outros tipos (ETF, FII, etc.), usar busca de ações
-    if (type === 'etf' || type === 'fii') {
-      const etfs = await searchBrazilianStocks(query);
-      results.push(...etfs.map(asset => ({ ...asset, type })));
-    }
-
-    return results;
+    return results.slice(0, 15); // Limitar resultados totais
   } catch (error) {
     console.error('Erro na busca de ativos:', error);
     return [];
@@ -179,7 +302,7 @@ export async function getAssetQuote(symbol: string, type: string): Promise<Asset
     if (type === 'crypto') {
       return await getCryptoQuote(symbol);
     } else {
-      return await getBrazilianStockQuote(symbol);
+      return await getStockQuote(symbol);
     }
   } catch (error) {
     console.error('Erro ao buscar cotação:', error);
@@ -191,11 +314,11 @@ export async function getAssetQuote(symbol: string, type: string): Promise<Asset
 export async function updateMultipleQuotes(assets: Array<{symbol: string, type: string}>): Promise<Record<string, AssetQuote | null>> {
   const quotes: Record<string, AssetQuote | null> = {};
   
-  // Processar em lotes para evitar rate limiting
-  const batchSize = 5;
+  // Processar em lotes para evitar rate limiting da Alpha Vantage (5 requests/min no plano free)
+  const batchSize = 3;
   for (let i = 0; i < assets.length; i += batchSize) {
     const batch = assets.slice(i, i + batchSize);
-    const batchPromises = batch.map(async asset => {
+    const batchPromises = batch.map(async (asset: {symbol: string, type: string}) => {
       const quote = await getAssetQuote(asset.symbol, asset.type);
       return { symbol: asset.symbol, quote };
     });
@@ -205,9 +328,9 @@ export async function updateMultipleQuotes(assets: Array<{symbol: string, type: 
       quotes[result.symbol] = result.quote;
     });
     
-    // Delay entre lotes para respeitar rate limits
+    // Delay entre lotes para respeitar rate limits (Alpha Vantage: 5 calls/minute)
     if (i + batchSize < assets.length) {
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise(resolve => setTimeout(resolve, 15000)); // 15 segundos entre lotes
     }
   }
   

@@ -11,6 +11,15 @@ Visual Identity: Pharos Capital brand guidelines applied.
 
 ## Recent Changes
 
+- **January 30, 2025**: Enhanced Alpha Vantage integration for Brazilian and international assets
+  - Improved Alpha Vantage integration based on official documentation analysis
+  - Enhanced Brazilian stock search with proper .SA suffix handling for B3 exchange
+  - Added international market support (LSE, TSX, XETRA, BSE, NSE, SSE, SZSE)
+  - Implemented intelligent asset type classification (stocks, ETFs, FIIs, funds)
+  - Enhanced symbol search with relevance scoring and proper currency detection
+  - Added comprehensive error handling and rate limiting for API quota management
+  - Improved search results with exchange identification and regional classification
+  - Enhanced quote fetching with multi-currency support (BRL, USD, EUR, GBP, CAD, INR, CNY)
 - **January 30, 2025**: Enhanced investment transaction form with integrated asset search and manual asset creation
   - Integrated asset search functionality directly within the asset selection dropdown (no separate field)
   - Added asset type filter dropdown (Ações, FIIs, Crypto, Renda Fixa, ETFs, Fundos) in the asset label row
