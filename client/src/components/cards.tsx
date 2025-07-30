@@ -265,42 +265,48 @@ export function Cards() {
         </Button>
       </div>
 
-      {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {/* Summary Cards - Compact Design */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card className="vibrant-card-purple">
-          <CardContent className="pt-6">
+          <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Limite Total</p>
-                <p className="text-2xl font-bold text-foreground">{formatCurrency(getTotalLimit())}</p>
+                <p className="text-xs font-medium text-muted-foreground mb-1">Limite Total</p>
+                <p className="text-lg font-bold text-foreground">{formatCurrency(getTotalLimit())}</p>
               </div>
-              <CreditCard className="h-8 w-8 text-vibrant-purple" />
+              <CreditCard className="h-6 w-6 text-vibrant-purple" />
             </div>
           </CardContent>
         </Card>
 
         <Card className="vibrant-card-orange">
-          <CardContent className="pt-6">
+          <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Usado</p>
-                <p className="text-2xl font-bold text-vibrant-orange">{formatCurrency(getTotalUsed())}</p>
+                <p className="text-xs font-medium text-muted-foreground mb-1">Usado</p>
+                <p className="text-lg font-bold text-vibrant-orange">{formatCurrency(getTotalUsed())}</p>
+                <p className="text-xs text-muted-foreground">
+                  {getTotalLimit() > 0 ? `${((getTotalUsed() / getTotalLimit()) * 100).toFixed(1)}% do limite` : '0%'}
+                </p>
               </div>
-              <DollarSign className="h-8 w-8 text-vibrant-orange" />
+              <DollarSign className="h-6 w-6 text-vibrant-orange" />
             </div>
           </CardContent>
         </Card>
 
         <Card className="vibrant-card-teal">
-          <CardContent className="pt-6">
+          <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Disponível</p>
-                <p className="text-2xl font-bold text-vibrant-teal">
+                <p className="text-xs font-medium text-muted-foreground mb-1">Disponível</p>
+                <p className="text-lg font-bold text-vibrant-teal">
                   {formatCurrency(getTotalLimit() - getTotalUsed())}
                 </p>
+                <p className="text-xs text-muted-foreground">
+                  {creditCards.length} {creditCards.length === 1 ? 'cartão' : 'cartões'}
+                </p>
               </div>
-              <Wallet className="h-8 w-8 text-vibrant-teal" />
+              <Wallet className="h-6 w-6 text-vibrant-teal" />
             </div>
           </CardContent>
         </Card>
