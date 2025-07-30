@@ -142,17 +142,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const currentYear = now.getFullYear();
 
       const [accounts, creditCards, transactions, goals, budget] = await Promise.all([
-        storage.getUserAccounts(userId),
-        storage.getUserCreditCards(userId),
-        storage.getUserTransactions(userId, 10),
-        storage.getUserGoals(userId),
+        storage.getUserAccounts(userId).then(r => r || []),
+        storage.getUserCreditCards(userId).then(r => r || []),
+        storage.getUserTransactions(userId, 10).then(r => r || []),
+        storage.getUserGoals(userId).then(r => r || []),
         storage.getBudget(userId, currentMonth, currentYear)
       ]);
 
       const totalBalance = accounts.reduce((sum, acc) => sum + parseFloat(acc.balance), 0);
       const totalCreditUsed = creditCards.reduce((sum, card) => sum + parseFloat(card.usedAmount), 0);
       
-      const monthlyTransactions = await storage.getTransactionsByMonth(userId, currentMonth, currentYear);
+      const monthlyTransactions = await storage.getTransactionsByMonth(userId, currentMonth, currentYear).then(r => r || []);
       // Excluir transferências de investimento do cálculo de receitas e despesas
       const monthlyIncome = monthlyTransactions
         .filter(t => t.type === 'income' && !t.isInvestmentTransfer)
@@ -381,17 +381,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/transactions", async (req: any, res) => {
     try {
       const { month, year, limit } = req.query;
-      let transactions;
+      let transactions = [];
       
       if (month && year) {
-        transactions = await storage.getTransactionsByMonth(req.userId, parseInt(month), parseInt(year));
+        transactions = await storage.getTransactionsByMonth(req.userId, parseInt(month), parseInt(year)) || [];
       } else {
-        transactions = await storage.getUserTransactions(req.userId, limit ? parseInt(limit) : undefined);
+        transactions = await storage.getUserTransactions(req.userId, limit ? parseInt(limit) : undefined) || [];
       }
       
       res.json(transactions);
     } catch (error) {
-      res.status(500).json({ message: "Erro ao carregar transações", error: error instanceof Error ? error.message : "Erro desconhecido" });
+      console.error("Transaction API error:", error);
+      res.json([]); // Return empty array instead of error to prevent frontend crashes
     }
   });
 
@@ -531,10 +532,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Pending transactions routes
   app.get("/api/transactions/pending", authenticateToken, async (req: any, res) => {
     try {
-      const pendingTransactions = await storage.getPendingTransactions(req.userId);
+      const pendingTransactions = await storage.getPendingTransactions(req.userId) || [];
       res.json(pendingTransactions);
     } catch (error) {
-      res.status(500).json({ message: "Erro ao carregar transações pendentes", error: error instanceof Error ? error.message : "Erro desconhecido" });
+      console.error("Pending transactions API error:", error);
+      res.json([]); // Return empty array instead of error to prevent frontend crashes
     }
   });
 
@@ -563,10 +565,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Recurrences routes
   app.get("/api/recurrences", authenticateToken, async (req: any, res) => {
     try {
-      const recurrences = await storage.getUserRecurrences(req.userId);
+      const recurrences = await storage.getUserRecurrences(req.userId) || [];
       res.json(recurrences);
     } catch (error) {
-      res.status(500).json({ message: "Erro ao carregar recorrências", error: error instanceof Error ? error.message : "Erro desconhecido" });
+      console.error("Recurrences API error:", error);
+      res.json([]); // Return empty array instead of error to prevent frontend crashes
     }
   });
 

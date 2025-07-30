@@ -193,26 +193,36 @@ export class DatabaseStorage implements IStorage {
 
   // Transactions
   async getUserTransactions(userId: string, limit?: number): Promise<Transaction[]> {
-    let query = db.select().from(transactions).where(eq(transactions.userId, userId)).orderBy(desc(transactions.date));
-    if (limit) {
-      query = query.limit(limit) as any;
+    try {
+      let query = db.select().from(transactions).where(eq(transactions.userId, userId)).orderBy(desc(transactions.date));
+      if (limit) {
+        query = query.limit(limit) as any;
+      }
+      return await query;
+    } catch (error) {
+      console.error("getUserTransactions error:", error);
+      return [];
     }
-    return await query;
   }
 
   async getTransactionsByMonth(userId: string, month: number, year: number): Promise<Transaction[]> {
-    const startDate = new Date(year, month - 1, 1);
-    const endDate = new Date(year, month, 0, 23, 59, 59);
-    
-    return await db.select().from(transactions)
-      .where(
-        and(
-          eq(transactions.userId, userId),
-          gte(transactions.date, startDate),
-          lte(transactions.date, endDate)
+    try {
+      const startDate = new Date(year, month - 1, 1);
+      const endDate = new Date(year, month, 0, 23, 59, 59);
+      
+      return await db.select().from(transactions)
+        .where(
+          and(
+            eq(transactions.userId, userId),
+            gte(transactions.date, startDate),
+            lte(transactions.date, endDate)
+          )
         )
-      )
-      .orderBy(desc(transactions.date));
+        .orderBy(desc(transactions.date));
+    } catch (error) {
+      console.error("getTransactionsByMonth error:", error);
+      return [];
+    }
   }
 
   async createTransaction(transaction: InsertTransaction): Promise<Transaction> {
@@ -275,23 +285,33 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getPendingTransactions(userId: string): Promise<Transaction[]> {
-    return await db.select()
-      .from(transactions)
-      .where(
-        and(
-          eq(transactions.userId, userId),
-          eq(transactions.status, 'pending')
+    try {
+      return await db.select()
+        .from(transactions)
+        .where(
+          and(
+            eq(transactions.userId, userId),
+            eq(transactions.status, 'pending')
+          )
         )
-      )
-      .orderBy(transactions.date);
+        .orderBy(transactions.date);
+    } catch (error) {
+      console.error("getPendingTransactions error:", error);
+      return [];
+    }
   }
 
   // Recurrences
   async getUserRecurrences(userId: string): Promise<Recurrence[]> {
-    return await db.select()
-      .from(recurrences)
-      .where(eq(recurrences.userId, userId))
-      .orderBy(desc(recurrences.createdAt));
+    try {
+      return await db.select()
+        .from(recurrences)
+        .where(eq(recurrences.userId, userId))
+        .orderBy(desc(recurrences.createdAt));
+    } catch (error) {
+      console.error("getUserRecurrences error:", error);
+      return [];
+    }
   }
 
   async createRecurrence(recurrence: InsertRecurrence): Promise<Recurrence> {
