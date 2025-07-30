@@ -643,7 +643,7 @@ export function Budget() {
                           onClick={() => {
                             const params = new URLSearchParams({
                               filterType: 'income',
-                              period: `${currentMonth}/${currentYear}`
+                              period: `${selectedMonth}/${selectedYear}`
                             });
                             window.location.href = `/reports?${params.toString()}`;
                           }}
@@ -728,7 +728,7 @@ export function Budget() {
                             const params = new URLSearchParams({
                               filterType: 'expense',
                               filterCategories: necessitiesCategories.join(','),
-                              period: `${currentMonth}/${currentYear}`
+                              period: `${selectedMonth}/${selectedYear}`
                             });
                             window.location.href = `/reports?${params.toString()}`;
                           }}
@@ -808,7 +808,7 @@ export function Budget() {
                             const params = new URLSearchParams({
                               filterType: 'expense',
                               filterCategories: wantsCategories.join(','),
-                              period: `${currentMonth}/${currentYear}`
+                              period: `${selectedMonth}/${selectedYear}`
                             });
                             window.location.href = `/reports?${params.toString()}`;
                           }}
@@ -891,7 +891,7 @@ export function Budget() {
                             const params = new URLSearchParams({
                               filterType: 'expense',
                               filterCategories: savingsCategories.join(','),
-                              period: `${currentMonth}/${currentYear}`
+                              period: `${selectedMonth}/${selectedYear}`
                             });
                             window.location.href = `/reports?${params.toString()}`;
                           }}

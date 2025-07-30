@@ -417,12 +417,13 @@ export class DatabaseStorage implements IStorage {
         .from(budgetCategories)
         .leftJoin(categories, eq(budgetCategories.categoryId, categories.id))
         .where(eq(budgetCategories.budgetId, budgetId))
-        .then(rows => 
-          rows.map(row => ({
+        .then(rows => {
+          console.log(`🔍 Raw query result sample:`, rows.length > 0 ? JSON.stringify(rows[0], null, 2) : 'No results');
+          return rows.map(row => ({
             ...row.budget_categories,
             category: row.categories!,
-          }))
-        );
+          }));
+        });
       
       console.log(`✅ Budget categories found: ${result.length}`);
       return result;
