@@ -223,7 +223,7 @@ export function Budget() {
     }
   }, [existingBudgetCategories]);
 
-  // Recalculate income when custom categories change and we're in custom mode
+  // Recalculate income and adapt 50/30/20 when custom categories change
   useEffect(() => {
     if (budgetType === 'custom' && categories.length > 0) {
       const incomeCategories = categories.filter((cat: any) => !cat.type);
@@ -232,9 +232,27 @@ export function Budget() {
         return sum + amount;
       }, 0);
       
+      // Calculate actual totals by category type
+      const necessitiesTotal = getTotalByType('necessities');
+      const wantsTotal = getTotalByType('wants');
+      const savingsTotal = getTotalByType('savings');
+      
+      // Calculate standard 50/30/20 values
+      const standardNecessities = totalIncome * 0.5;
+      const standardWants = totalIncome * 0.3;
+      const standardSavings = totalIncome * 0.2;
+      
+      // Use the higher value between standard distribution and actual category allocations
+      const adaptedNecessities = Math.max(necessitiesTotal, standardNecessities);
+      const adaptedWants = Math.max(wantsTotal, standardWants);
+      const adaptedSavings = Math.max(savingsTotal, standardSavings);
+      
       setBudgetForm(prev => ({
         ...prev,
-        totalIncome: totalIncome.toFixed(2)
+        totalIncome: totalIncome.toFixed(2),
+        necessitiesBudget: adaptedNecessities.toFixed(2),
+        wantsBudget: adaptedWants.toFixed(2),
+        savingsBudget: adaptedSavings.toFixed(2)
       }));
     }
   }, [customCategories, budgetType, categories]);

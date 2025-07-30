@@ -363,6 +363,13 @@ export class DatabaseStorage implements IStorage {
     
     try {
       console.log(`🚀 Executando query para budget_categories com budgetId: ${budgetId}`);
+      
+      // Additional debugging - check if budgetId contains any non-UUID characters
+      if (budgetId.includes('NaN') || budgetId.includes('undefined') || budgetId.includes('null')) {
+        console.error(`❌ BudgetId contains invalid substring: "${budgetId}"`);
+        return [];
+      }
+      
       const result = await db.select()
         .from(budgetCategories)
         .leftJoin(categories, eq(budgetCategories.categoryId, categories.id))
@@ -376,7 +383,8 @@ export class DatabaseStorage implements IStorage {
       }));
     } catch (error) {
       console.error(`❌ Erro ao buscar categorias do orçamento ${budgetId}:`, error);
-      console.error(`❌ Query parameters: budgetId=${budgetId}, type=${typeof budgetId}`);
+      console.error(`❌ Query parameters: budgetId="${budgetId}", type=${typeof budgetId}, length=${budgetId?.length}`);
+      console.error(`❌ Stack trace:`, (error as Error).stack);
       return [];
     }
   }
