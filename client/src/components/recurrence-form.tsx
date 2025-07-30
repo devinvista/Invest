@@ -216,6 +216,9 @@ export default function RecurrenceForm({ onSuccess }: RecurrenceFormProps) {
                   ))}
                 </SelectContent>
               </Select>
+              {form.formState.errors.accountId && (
+                <p className="text-sm text-destructive">{form.formState.errors.accountId.message}</p>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -346,6 +349,17 @@ export default function RecurrenceForm({ onSuccess }: RecurrenceFormProps) {
             className="w-full" 
             disabled={createRecurrenceMutation.isPending}
             data-testid="button-create-recurrence"
+            onClick={(e) => {
+              console.log('Button clicked');
+              console.log('Form valid:', form.formState.isValid);
+              console.log('Form errors:', form.formState.errors);
+              console.log('Form values:', form.getValues());
+              // Check if form validation is preventing submission
+              if (!form.formState.isValid) {
+                e.preventDefault();
+                console.log('Form is invalid, preventing submission');
+              }
+            }}
           >
             {createRecurrenceMutation.isPending ? (
               <>
