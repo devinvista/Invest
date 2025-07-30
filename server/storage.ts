@@ -413,15 +413,39 @@ export class DatabaseStorage implements IStorage {
       console.log(`🚀 Executando query para budget_categories com budgetId: ${budgetId}`);
       
       const result = await db
-        .select()
+        .select({
+          // Explicitly select only the fields we need from budget_categories
+          id: budgetCategories.id,
+          budgetId: budgetCategories.budgetId,
+          categoryId: budgetCategories.categoryId,
+          allocatedAmount: budgetCategories.allocatedAmount,
+          createdAt: budgetCategories.createdAt,
+          // Select category fields
+          category: {
+            id: categories.id,
+            name: categories.name,
+            type: categories.type,
+            color: categories.color,
+            icon: categories.icon,
+            description: categories.description,
+            transactionType: categories.transactionType,
+            isDefault: categories.isDefault,
+            userId: categories.userId,
+            createdAt: categories.createdAt,
+          }
+        })
         .from(budgetCategories)
         .leftJoin(categories, eq(budgetCategories.categoryId, categories.id))
         .where(eq(budgetCategories.budgetId, budgetId))
         .then(rows => {
           console.log(`🔍 Raw query result sample:`, rows.length > 0 ? JSON.stringify(rows[0], null, 2) : 'No results');
           return rows.map(row => ({
-            ...row.budget_categories,
-            category: row.categories!,
+            id: row.id,
+            budgetId: row.budgetId,
+            categoryId: row.categoryId,
+            allocatedAmount: row.allocatedAmount,
+            createdAt: row.createdAt,
+            category: row.category!,
           }));
         });
       

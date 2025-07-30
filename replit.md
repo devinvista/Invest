@@ -11,6 +11,13 @@ Visual Identity: Pharos Capital brand guidelines applied.
 
 ## Recent Changes
 
+- **January 30, 2025**: Implemented full-screen transaction dialogs replacing page navigation
+  - Created TransactionsTableDialog component with comprehensive filtering and sorting capabilities
+  - Replaced "Ver Lançamentos" navigation buttons with dialog-opening functions in budget cards
+  - Added category-specific filtering for each budget section (income, necessities, wants, savings)
+  - Implemented delete transaction functionality with confirmation dialogs
+  - Fixed PostgreSQL "invalid input syntax for type integer: NaN" error by improving query structure
+  - Enhanced dialog accessibility with proper ARIA descriptions
 - **January 30, 2025**: Completed migration from Replit Agent with Alpha Vantage API configuration
   - Successfully migrated OrçaFácil application from Replit Agent to standard Replit environment
   - Added Alpha Vantage API key (8Q28M0SC2UJ7G8F7) as secure environment variable for real-time stock quotes
