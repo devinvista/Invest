@@ -695,8 +695,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { budgetId } = req.params;
       
-      // Validate budgetId
-      if (!budgetId || budgetId === 'undefined' || budgetId === 'NaN' || typeof budgetId !== 'string') {
+      // Validate budgetId - check for valid UUID format
+      if (!budgetId || 
+          budgetId === 'undefined' || 
+          budgetId === 'NaN' || 
+          budgetId === 'null' ||
+          typeof budgetId !== 'string' ||
+          budgetId.length < 30 ||
+          !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(budgetId)) {
         console.error(`❌ Invalid budgetId received: ${budgetId}`);
         return res.status(400).json({ message: "ID do orçamento inválido" });
       }

@@ -349,9 +349,15 @@ export class DatabaseStorage implements IStorage {
   async getBudgetCategories(budgetId: string): Promise<(BudgetCategory & { category: Category })[]> {
     console.log(`🔍 Buscando categorias do orçamento para budgetId: ${budgetId}`);
     
-    // Validate budgetId before query
-    if (!budgetId || budgetId === 'undefined' || budgetId === 'NaN' || typeof budgetId !== 'string') {
-      console.error(`❌ Invalid budgetId: ${budgetId}`);
+    // Validate budgetId before query - check for valid UUID format
+    if (!budgetId || 
+        budgetId === 'undefined' || 
+        budgetId === 'NaN' || 
+        budgetId === 'null' ||
+        typeof budgetId !== 'string' ||
+        budgetId.length < 30 ||
+        !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(budgetId)) {
+      console.error(`❌ Invalid budgetId format: ${budgetId}`);
       return [];
     }
     

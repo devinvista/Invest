@@ -239,6 +239,25 @@ export function Budget() {
     }
   }, [customCategories, budgetType, categories]);
 
+  // Automatically recalculate 50/30/20 when income changes in default mode
+  useEffect(() => {
+    if (budgetType === 'default' && budgetForm.totalIncome && isEditing) {
+      const totalIncome = parseFloat(budgetForm.totalIncome) || 0;
+      if (totalIncome > 0) {
+        const necessities = totalIncome * 0.5;
+        const wants = totalIncome * 0.3;
+        const savings = totalIncome * 0.2;
+        
+        setBudgetForm(prev => ({
+          ...prev,
+          necessitiesBudget: necessities.toFixed(2),
+          wantsBudget: wants.toFixed(2),
+          savingsBudget: savings.toFixed(2),
+        }));
+      }
+    }
+  }, [budgetForm.totalIncome, budgetType, isEditing]);
+
   // Transaction form handlers
   const openTransactionDialog = (type: 'income' | 'expense') => {
     setTransactionType(type);
