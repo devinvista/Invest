@@ -18,7 +18,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Calculator, TrendingUp, Target, Plus, Edit3, Eye, EyeOff, BarChart3, PieChart as PieChartIcon, Calendar, Settings, DollarSign, Activity, ArrowUpCircle, ArrowDownCircle, Clock } from 'lucide-react';
+import { Calculator, TrendingUp, Target, Plus, Edit3, Eye, EyeOff, BarChart3, PieChart as PieChartIcon, Calendar, Settings, DollarSign, Activity, ArrowUpCircle, ArrowDownCircle, Clock, FileText } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, BarChart, Bar } from 'recharts';
 
 export function Budget() {
@@ -635,6 +635,17 @@ export function Budget() {
                             </div>
                           ))}
                       </div>
+                      <div className="pt-3 border-t">
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="w-full text-xs"
+                          onClick={() => window.location.href = '/reports'}
+                        >
+                          <FileText className="w-3 h-3 mr-2" />
+                          Ver Lançamentos
+                        </Button>
+                      </div>
                     </CardContent>
                   </Card>
                 </div>
@@ -699,6 +710,17 @@ export function Budget() {
                             </div>
                           ))}
                       </div>
+                      <div className="pt-3 border-t">
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="w-full text-xs"
+                          onClick={() => window.location.href = '/reports'}
+                        >
+                          <FileText className="w-3 h-3 mr-2" />
+                          Ver Lançamentos
+                        </Button>
+                      </div>
                     </CardContent>
                   </Card>
 
@@ -757,6 +779,17 @@ export function Budget() {
                               <span>{formatCurrency(category.categorySpent)}</span>
                             </div>
                           ))}
+                      </div>
+                      <div className="pt-3 border-t">
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="w-full text-xs"
+                          onClick={() => window.location.href = '/reports'}
+                        >
+                          <FileText className="w-3 h-3 mr-2" />
+                          Ver Lançamentos
+                        </Button>
                       </div>
                     </CardContent>
                   </Card>
@@ -819,6 +852,17 @@ export function Budget() {
                               <span>{formatCurrency(category.categorySpent)}</span>
                             </div>
                           ))}
+                      </div>
+                      <div className="pt-3 border-t">
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="w-full text-xs"
+                          onClick={() => window.location.href = '/reports'}
+                        >
+                          <FileText className="w-3 h-3 mr-2" />
+                          Ver Lançamentos
+                        </Button>
                       </div>
                     </CardContent>
                   </Card>

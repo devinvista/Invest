@@ -11,6 +11,12 @@ Visual Identity: Pharos Capital brand guidelines applied.
 
 ## Recent Changes
 
+- **January 30, 2025**: Added transaction viewing buttons to budget cards and completed migration from Replit Agent
+  - Fixed PostgreSQL error with invalid UUID parameters in budget categories endpoint by implementing proper database query
+  - Added "Ver Lançamentos" buttons to all budget category cards (Receitas, Necessidades, Desejos, Poupança)
+  - Transaction viewing buttons navigate to Reports page where users can view all their transactions
+  - Enhanced user experience by providing direct access to transaction details from budget overview
+  - All budget cards now have consistent UI with transaction viewing capability
 - **January 30, 2025**: Migration from Replit Agent to Replit environment completed successfully
   - Fixed PostgreSQL error with invalid UUID parameters in budget categories endpoint  
   - Enhanced UUID validation in route handlers and storage layer to prevent "NaN" parameter issues

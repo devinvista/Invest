@@ -383,9 +383,20 @@ export class DatabaseStorage implements IStorage {
     try {
       console.log(`🚀 Executando query para budget_categories com budgetId: ${budgetId}`);
       
-      // For now, return empty array to bypass the PostgreSQL error while we investigate
-      console.log(`⚠️ Temporarily returning empty array to bypass PostgreSQL error`);
-      return [];
+      const result = await db
+        .select()
+        .from(budgetCategories)
+        .leftJoin(categories, eq(budgetCategories.categoryId, categories.id))
+        .where(eq(budgetCategories.budgetId, budgetId))
+        .then(rows => 
+          rows.map(row => ({
+            ...row.budget_categories,
+            category: row.categories!,
+          }))
+        );
+      
+      console.log(`✅ Budget categories found: ${result.length}`);
+      return result;
       
     } catch (error) {
       console.error(`❌ Erro ao buscar categorias do orçamento ${budgetId}:`, error);
