@@ -241,8 +241,13 @@ export function InvestmentTransactionForm() {
       newAssetForm.setValue('name', selectedSearchResult.name);
       newAssetForm.setValue('type', selectedSearchResult.type as any);
       newAssetForm.setValue('currentPrice', selectedSearchResult.currentPrice.toString());
+    } else if (showNewAssetForm && !selectedSearchResult) {
+      // Reset form when creating a new asset without search results
+      newAssetForm.reset({
+        type: assetTypeFilter === 'all' ? 'stock' : assetTypeFilter,
+      });
     }
-  }, [selectedSearchResult, showNewAssetForm, newAssetForm]);
+  }, [selectedSearchResult, showNewAssetForm, newAssetForm, assetTypeFilter]);
 
   const watchedQuantity = form.watch("quantity");
   const watchedPrice = form.watch("price");
@@ -407,8 +412,31 @@ export function InvestmentTransactionForm() {
                               <Separator />
                             </>
                           ) : (
-                            <div className="p-4 text-center text-sm text-muted-foreground">
-                              Nenhum ativo encontrado
+                            <div className="p-4 text-center">
+                              <div className="text-sm text-muted-foreground mb-3">
+                                Nenhum ativo encontrado
+                              </div>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="h-7 text-xs"
+                                onClick={() => {
+                                  // Create a new asset with the search query as symbol
+                                  setSelectedSearchResult({
+                                    symbol: searchQuery.toUpperCase(),
+                                    name: searchQuery,
+                                    type: assetTypeFilter === 'all' ? 'stock' : assetTypeFilter,
+                                    currentPrice: 0,
+                                    currency: 'BRL',
+                                    exchange: 'B3',
+                                    lastUpdate: new Date().toISOString()
+                                  });
+                                  setShowNewAssetForm(true);
+                                }}
+                              >
+                                <Plus className="w-3 h-3 mr-1" />
+                                Criar "{searchQuery.toUpperCase()}"
+                              </Button>
                             </div>
                           )}
                         </div>
@@ -437,11 +465,27 @@ export function InvestmentTransactionForm() {
                       )}
 
                       {filteredAssets.length === 0 && searchQuery.length < 2 && (
-                        <div className="p-4 text-center text-sm text-muted-foreground">
-                          {assetTypeFilter === 'all' 
-                            ? 'Nenhum ativo cadastrado. Use a busca para encontrar e adicionar novos ativos.'
-                            : `Nenhum ativo do tipo "${assetTypeOptions.find(opt => opt.value === assetTypeFilter)?.label}" encontrado.`
-                          }
+                        <div className="p-4 text-center">
+                          <div className="text-sm text-muted-foreground mb-3">
+                            {assetTypeFilter === 'all' 
+                              ? 'Nenhum ativo cadastrado. Use a busca para encontrar e adicionar novos ativos.'
+                              : `Nenhum ativo do tipo "${assetTypeOptions.find(opt => opt.value === assetTypeFilter)?.label}" encontrado.`
+                            }
+                          </div>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="h-7 text-xs"
+                            onClick={() => {
+                              // Create a blank new asset form
+                              setSelectedSearchResult(null);
+                              newAssetForm.setValue('type', assetTypeFilter === 'all' ? 'stock' : assetTypeFilter);
+                              setShowNewAssetForm(true);
+                            }}
+                          >
+                            <Plus className="w-3 h-3 mr-1" />
+                            Criar Novo Ativo
+                          </Button>
                         </div>
                       )}
                     </SelectContent>
