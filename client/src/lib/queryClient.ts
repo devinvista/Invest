@@ -8,8 +8,8 @@ async function throwIfResNotOk(res: Response) {
 }
 
 export async function apiRequest(
-  url: string,
   method: string,
+  url: string,
   data?: unknown | undefined,
 ): Promise<Response> {
   try {
@@ -26,7 +26,7 @@ export async function apiRequest(
     await throwIfResNotOk(res);
     return res;
   } catch (error) {
-    console.error(`🚨 API Request failed: ${url} ${method}`, error);
+    console.error(`🚨 API Request failed: ${method} ${url}`, error);
     console.error("🔥 Unhandled promise rejection detected:");
     console.error("Error reason:", error);
     console.error("Promise:", Promise.resolve(error));
