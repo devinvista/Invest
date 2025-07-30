@@ -20,6 +20,7 @@ const transactionFormSchema = z.object({
   creditCardId: z.string().optional(),
   date: z.string(),
   installments: z.number().min(1).max(60).optional(),
+  status: z.enum(['pending', 'confirmed']).optional(),
 });
 
 type TransactionFormData = z.infer<typeof transactionFormSchema>;
@@ -39,6 +40,7 @@ export function TransactionForm({ onSuccess }: TransactionFormProps) {
       type: 'expense',
       date: new Date().toISOString().split('T')[0],
       installments: 1,
+      status: 'confirmed',
     },
   });
 
@@ -200,6 +202,28 @@ export function TransactionForm({ onSuccess }: TransactionFormProps) {
                 <FormControl>
                   <Input type="date" {...field} />
                 </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="status"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Status</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Status da transação" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="confirmed">Confirmada (imediata)</SelectItem>
+                    <SelectItem value="pending">Pendente (aguarda confirmação)</SelectItem>
+                  </SelectContent>
+                </Select>
                 <FormMessage />
               </FormItem>
             )}

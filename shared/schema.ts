@@ -10,6 +10,8 @@ export const accountTypeEnum = pgEnum('account_type', ['checking', 'savings', 'i
 export const assetTypeEnum = pgEnum('asset_type', ['stock', 'fii', 'crypto', 'fixed_income', 'etf', 'fund']);
 export const investmentOperationEnum = pgEnum('investment_operation', ['buy', 'sell']);
 export const goalStatusEnum = pgEnum('goal_status', ['active', 'completed', 'paused']);
+export const transactionStatusEnum = pgEnum('transaction_status', ['confirmed', 'pending']);
+export const recurrenceFrequencyEnum = pgEnum('recurrence_frequency', ['daily', 'weekly', 'monthly', 'yearly']);
 
 // Users table
 export const users = pgTable("users", {
@@ -71,11 +73,34 @@ export const transactions = pgTable("transactions", {
   amount: decimal("amount", { precision: 12, scale: 2 }).notNull(),
   description: text("description").notNull(),
   date: timestamp("date").notNull(),
+  status: transactionStatusEnum("status").default("confirmed").notNull(), // Status da transação
   installments: integer("installments").default(1),
   currentInstallment: integer("current_installment").default(1),
   // Campos para controle de transferências para investimento
   transferToAccountId: uuid("transfer_to_account_id").references(() => accounts.id), // Conta de destino se for transferência
   isInvestmentTransfer: boolean("is_investment_transfer").default(false).notNull(), // Se é transferência para investimento
+  // Campos para recorrência
+  recurrenceId: uuid("recurrence_id").references(() => recurrences.id), // Link para recorrência
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// Recurrences table - for recurring transactions
+export const recurrences = pgTable("recurrences", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: uuid("user_id").references(() => users.id).notNull(),
+  accountId: uuid("account_id").references(() => accounts.id),
+  creditCardId: uuid("credit_card_id").references(() => creditCards.id),
+  categoryId: uuid("category_id").references(() => categories.id).notNull(),
+  type: transactionTypeEnum("type").notNull(),
+  amount: decimal("amount", { precision: 12, scale: 2 }).notNull(),
+  description: text("description").notNull(),
+  frequency: recurrenceFrequencyEnum("frequency").notNull(),
+  startDate: timestamp("start_date").notNull(),
+  endDate: timestamp("end_date"), // Opcional, se null = recorrência infinita
+  isActive: boolean("is_active").default(true).notNull(),
+  installments: integer("installments").default(1),
+  nextExecutionDate: timestamp("next_execution_date").notNull(), // Próxima data de execução
+  lastExecutedDate: timestamp("last_executed_date"), // Última vez que foi executada
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -161,6 +186,7 @@ export const usersRelations = relations(users, ({ many }) => ({
   creditCards: many(creditCards),
   categories: many(categories),
   transactions: many(transactions),
+  recurrences: many(recurrences),
   assets: many(assets),
   goals: many(goals),
   budgets: many(budgets),
@@ -188,6 +214,15 @@ export const transactionsRelations = relations(transactions, ({ one }) => ({
   account: one(accounts, { fields: [transactions.accountId], references: [accounts.id] }),
   creditCard: one(creditCards, { fields: [transactions.creditCardId], references: [creditCards.id] }),
   category: one(categories, { fields: [transactions.categoryId], references: [categories.id] }),
+  recurrence: one(recurrences, { fields: [transactions.recurrenceId], references: [recurrences.id] }),
+}));
+
+export const recurrencesRelations = relations(recurrences, ({ one, many }) => ({
+  user: one(users, { fields: [recurrences.userId], references: [users.id] }),
+  account: one(accounts, { fields: [recurrences.accountId], references: [accounts.id] }),
+  creditCard: one(creditCards, { fields: [recurrences.creditCardId], references: [creditCards.id] }),
+  category: one(categories, { fields: [recurrences.categoryId], references: [categories.id] }),
+  transactions: many(transactions),
 }));
 
 export const assetsRelations = relations(assets, ({ one, many }) => ({
@@ -240,6 +275,17 @@ export const insertTransactionSchema = createInsertSchema(transactions)
     currentInstallment: z.union([z.string(), z.number()]).transform(val => Number(val)).optional(),
     isInvestmentTransfer: z.boolean().optional(),
     transferToAccountId: z.string().optional(),
+    status: z.enum(['confirmed', 'pending']).optional(),
+    recurrenceId: z.string().optional(),
+  });
+
+export const insertRecurrenceSchema = createInsertSchema(recurrences)
+  .omit({ id: true, createdAt: true, nextExecutionDate: true, lastExecutedDate: true })
+  .extend({
+    amount: z.union([z.string(), z.number()]).transform(val => val.toString()),
+    installments: z.union([z.string(), z.number()]).transform(val => Number(val)).optional(),
+    frequency: z.enum(['daily', 'weekly', 'monthly', 'yearly']),
+    isActive: z.boolean().optional(),
   });
 export const insertAssetSchema = createInsertSchema(assets)
   .omit({ id: true, createdAt: true })
@@ -278,25 +324,28 @@ export const insertInvestmentTransactionSchema = createInsertSchema(investmentTr
     fees: z.union([z.string(), z.number()]).transform(val => val.toString()).optional(),
   });
 
-// Type definitions
+// Types
 export type User = typeof users.$inferSelect;
-export type Account = typeof accounts.$inferSelect;
-export type CreditCard = typeof creditCards.$inferSelect;
-export type Category = typeof categories.$inferSelect;
-export type Transaction = typeof transactions.$inferSelect;
-export type Asset = typeof assets.$inferSelect;
-export type Goal = typeof goals.$inferSelect;
-export type Budget = typeof budgets.$inferSelect;
-export type BudgetCategory = typeof budgetCategories.$inferSelect;
-export type InvestmentTransaction = typeof investmentTransactions.$inferSelect;
-
 export type InsertUser = z.infer<typeof insertUserSchema>;
+export type Account = typeof accounts.$inferSelect;
 export type InsertAccount = z.infer<typeof insertAccountSchema>;
+export type CreditCard = typeof creditCards.$inferSelect;
 export type InsertCreditCard = z.infer<typeof insertCreditCardSchema>;
+export type Category = typeof categories.$inferSelect;
 export type InsertCategory = z.infer<typeof insertCategorySchema>;
+export type Transaction = typeof transactions.$inferSelect;
 export type InsertTransaction = z.infer<typeof insertTransactionSchema>;
+export type Recurrence = typeof recurrences.$inferSelect;
+export type InsertRecurrence = z.infer<typeof insertRecurrenceSchema>;
+export type Asset = typeof assets.$inferSelect;
 export type InsertAsset = z.infer<typeof insertAssetSchema>;
+export type Goal = typeof goals.$inferSelect;
 export type InsertGoal = z.infer<typeof insertGoalSchema>;
+export type Budget = typeof budgets.$inferSelect;
 export type InsertBudget = z.infer<typeof insertBudgetSchema>;
+export type BudgetCategory = typeof budgetCategories.$inferSelect;
 export type InsertBudgetCategory = z.infer<typeof insertBudgetCategorySchema>;
+export type InvestmentTransaction = typeof investmentTransactions.$inferSelect;
 export type InsertInvestmentTransaction = z.infer<typeof insertInvestmentTransactionSchema>;
+
+

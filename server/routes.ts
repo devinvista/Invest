@@ -4,7 +4,8 @@ import { storage } from "./storage";
 import { 
   insertUserSchema, insertAccountSchema, insertCreditCardSchema, 
   insertCategorySchema, insertTransactionSchema, insertAssetSchema,
-  insertGoalSchema, insertBudgetSchema, insertInvestmentTransactionSchema
+  insertGoalSchema, insertBudgetSchema, insertInvestmentTransactionSchema,
+  insertRecurrenceSchema
 } from "@shared/schema";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
@@ -524,6 +525,94 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
     } catch (error) {
       res.status(500).json({ message: "Erro ao criar investimento", error: error instanceof Error ? error.message : "Erro desconhecido" });
+    }
+  });
+
+  // Pending transactions routes
+  app.get("/api/transactions/pending", authenticateToken, async (req: any, res) => {
+    try {
+      const pendingTransactions = await storage.getPendingTransactions(req.userId);
+      res.json(pendingTransactions);
+    } catch (error) {
+      res.status(500).json({ message: "Erro ao carregar transações pendentes", error: error instanceof Error ? error.message : "Erro desconhecido" });
+    }
+  });
+
+  // Confirm a pending transaction
+  app.put("/api/transactions/:id/confirm", authenticateToken, async (req: any, res) => {
+    try {
+      const transactionId = req.params.id;
+      
+      // Check if transaction belongs to user and is pending
+      const transaction = await storage.getTransaction(transactionId);
+      if (!transaction || transaction.userId !== req.userId) {
+        return res.status(404).json({ message: "Transação não encontrada" });
+      }
+      
+      if (transaction.status !== 'pending') {
+        return res.status(400).json({ message: "Transação já foi confirmada" });
+      }
+      
+      await storage.updateTransactionStatus(transactionId, 'confirmed');
+      res.json({ message: "Transação confirmada com sucesso" });
+    } catch (error) {
+      res.status(500).json({ message: "Erro ao confirmar transação", error: error instanceof Error ? error.message : "Erro desconhecido" });
+    }
+  });
+
+  // Recurrences routes
+  app.get("/api/recurrences", authenticateToken, async (req: any, res) => {
+    try {
+      const recurrences = await storage.getUserRecurrences(req.userId);
+      res.json(recurrences);
+    } catch (error) {
+      res.status(500).json({ message: "Erro ao carregar recorrências", error: error instanceof Error ? error.message : "Erro desconhecido" });
+    }
+  });
+
+  app.post("/api/recurrences", authenticateToken, async (req: any, res) => {
+    try {
+      const recurrenceData = insertRecurrenceSchema.parse({ 
+        ...req.body, 
+        userId: req.userId,
+        startDate: new Date(req.body.startDate),
+        endDate: req.body.endDate ? new Date(req.body.endDate) : undefined
+      });
+      
+      const recurrence = await storage.createRecurrence(recurrenceData);
+      res.json(recurrence);
+    } catch (error) {
+      res.status(400).json({ message: "Erro ao criar recorrência", error: error instanceof Error ? error.message : "Erro desconhecido" });
+    }
+  });
+
+  app.put("/api/recurrences/:id", authenticateToken, async (req: any, res) => {
+    try {
+      const recurrenceId = req.params.id;
+      const updates = insertRecurrenceSchema.partial().parse(req.body);
+      
+      // Process dates if provided
+      if (updates.startDate && typeof updates.startDate === 'string') {
+        updates.startDate = new Date(updates.startDate);
+      }
+      if (updates.endDate && typeof updates.endDate === 'string') {
+        updates.endDate = new Date(updates.endDate);
+      }
+      
+      const recurrence = await storage.updateRecurrence(recurrenceId, updates);
+      res.json(recurrence);
+    } catch (error) {
+      res.status(400).json({ message: "Erro ao atualizar recorrência", error: error instanceof Error ? error.message : "Erro desconhecido" });
+    }
+  });
+
+  app.delete("/api/recurrences/:id", authenticateToken, async (req: any, res) => {
+    try {
+      const recurrenceId = req.params.id;
+      await storage.deactivateRecurrence(recurrenceId);
+      res.json({ message: "Recorrência desativada com sucesso" });
+    } catch (error) {
+      res.status(500).json({ message: "Erro ao desativar recorrência", error: error instanceof Error ? error.message : "Erro desconhecido" });
     }
   });
 

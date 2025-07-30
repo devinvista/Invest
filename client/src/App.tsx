@@ -18,6 +18,7 @@ import { Reports } from "@/components/reports";
 import { Education } from "@/components/education";
 import { Settings } from "@/components/settings";
 import { Login } from "@/pages/auth/login";
+import PlannedTransactionsPage from "@/pages/planned-transactions";
 import NotFound from "@/pages/not-found";
 
 function AppContent() {
@@ -62,6 +63,7 @@ function AppContent() {
             <Route path="/settings" component={Settings} />
             <Route path="/reports" component={Reports} />
             <Route path="/education" component={Education} />
+            <Route path="/planned-transactions" component={PlannedTransactionsPage} />
             <Route component={NotFound} />
           </Switch>
         </main>

@@ -13,6 +13,7 @@ import {
   Settings,
   BarChart3,
   GraduationCap,
+  CalendarClock,
   Plus,
   X,
 } from 'lucide-react';
@@ -24,6 +25,7 @@ const navigationItems = [
   { name: 'Cartões', href: '/cards', icon: CreditCard, current: false },
   { name: 'Investimentos', href: '/investments', icon: TrendingUp, current: false },
   { name: 'Metas', href: '/goals', icon: Target, current: false },
+  { name: 'Lançamentos Planejados', href: '/planned-transactions', icon: CalendarClock, current: false },
   { name: 'Relatórios', href: '/reports', icon: BarChart3, current: false },
   { name: 'Educação', href: '/education', icon: GraduationCap, current: false },
   { name: 'Configurações', href: '/settings', icon: Settings, current: false },

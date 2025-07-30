@@ -1,10 +1,11 @@
 import { 
-  users, accounts, creditCards, categories, transactions, assets, goals, budgets, budgetCategories, investmentTransactions,
+  users, accounts, creditCards, categories, transactions, assets, goals, budgets, budgetCategories, investmentTransactions, recurrences,
   type User, type InsertUser, type Account, type InsertAccount, 
   type CreditCard, type InsertCreditCard, type Category, type InsertCategory,
   type Transaction, type InsertTransaction, type Asset, type InsertAsset,
   type Goal, type InsertGoal, type Budget, type InsertBudget,
-  type BudgetCategory, type InsertBudgetCategory, type InvestmentTransaction, type InsertInvestmentTransaction
+  type BudgetCategory, type InsertBudgetCategory, type InvestmentTransaction, type InsertInvestmentTransaction,
+  type Recurrence, type InsertRecurrence
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc, gte, lte, sum, sql, inArray } from "drizzle-orm";
@@ -40,6 +41,17 @@ export interface IStorage {
   getUserTransactions(userId: string, limit?: number): Promise<Transaction[]>;
   getTransactionsByMonth(userId: string, month: number, year: number): Promise<Transaction[]>;
   createTransaction(transaction: InsertTransaction): Promise<Transaction>;
+  updateTransactionStatus(transactionId: string, status: 'confirmed' | 'pending'): Promise<void>;
+  deleteTransaction(transactionId: string): Promise<void>;
+  getPendingTransactions(userId: string): Promise<Transaction[]>;
+
+  // Recurrences
+  getUserRecurrences(userId: string): Promise<Recurrence[]>;
+  createRecurrence(recurrence: InsertRecurrence): Promise<Recurrence>;
+  updateRecurrence(recurrenceId: string, updates: Partial<InsertRecurrence>): Promise<Recurrence>;
+  deactivateRecurrence(recurrenceId: string): Promise<void>;
+  getActiveRecurrencesToExecute(): Promise<Recurrence[]>;
+  updateRecurrenceNextExecution(recurrenceId: string, nextDate: Date, lastDate?: Date): Promise<void>;
 
   // Assets
   getUserAssets(userId: string): Promise<Asset[]>;
@@ -254,6 +266,104 @@ export class DatabaseStorage implements IStorage {
     }
     
     await db.delete(transactions).where(eq(transactions.id, transactionId));
+  }
+
+  async updateTransactionStatus(transactionId: string, status: 'confirmed' | 'pending'): Promise<void> {
+    await db.update(transactions)
+      .set({ status })
+      .where(eq(transactions.id, transactionId));
+  }
+
+  async getPendingTransactions(userId: string): Promise<Transaction[]> {
+    return await db.select()
+      .from(transactions)
+      .where(
+        and(
+          eq(transactions.userId, userId),
+          eq(transactions.status, 'pending')
+        )
+      )
+      .orderBy(transactions.date);
+  }
+
+  // Recurrences
+  async getUserRecurrences(userId: string): Promise<Recurrence[]> {
+    return await db.select()
+      .from(recurrences)
+      .where(eq(recurrences.userId, userId))
+      .orderBy(desc(recurrences.createdAt));
+  }
+
+  async createRecurrence(recurrence: InsertRecurrence): Promise<Recurrence> {
+    // Calculate next execution date based on frequency
+    const nextDate = this.calculateNextExecutionDate(recurrence.startDate, recurrence.frequency);
+    
+    const recurrenceData = {
+      ...recurrence,
+      nextExecutionDate: nextDate,
+      isActive: recurrence.isActive ?? true,
+    };
+    
+    const [newRecurrence] = await db.insert(recurrences).values(recurrenceData).returning();
+    return newRecurrence;
+  }
+
+  async updateRecurrence(recurrenceId: string, updates: Partial<InsertRecurrence>): Promise<Recurrence> {
+    const [updatedRecurrence] = await db.update(recurrences)
+      .set(updates)
+      .where(eq(recurrences.id, recurrenceId))
+      .returning();
+    return updatedRecurrence;
+  }
+
+  async deactivateRecurrence(recurrenceId: string): Promise<void> {
+    await db.update(recurrences)
+      .set({ isActive: false })
+      .where(eq(recurrences.id, recurrenceId));
+  }
+
+  async getActiveRecurrencesToExecute(): Promise<Recurrence[]> {
+    const now = new Date();
+    return await db.select()
+      .from(recurrences)
+      .where(
+        and(
+          eq(recurrences.isActive, true),
+          lte(recurrences.nextExecutionDate, now)
+        )
+      );
+  }
+
+  async updateRecurrenceNextExecution(recurrenceId: string, nextDate: Date, lastDate?: Date): Promise<void> {
+    const updateData: any = { nextExecutionDate: nextDate };
+    if (lastDate) {
+      updateData.lastExecutedDate = lastDate;
+    }
+    
+    await db.update(recurrences)
+      .set(updateData)
+      .where(eq(recurrences.id, recurrenceId));
+  }
+
+  private calculateNextExecutionDate(currentDate: Date, frequency: string): Date {
+    const next = new Date(currentDate);
+    
+    switch (frequency) {
+      case 'daily':
+        next.setDate(next.getDate() + 1);
+        break;
+      case 'weekly':
+        next.setDate(next.getDate() + 7);
+        break;
+      case 'monthly':
+        next.setMonth(next.getMonth() + 1);
+        break;
+      case 'yearly':
+        next.setFullYear(next.getFullYear() + 1);
+        break;
+    }
+    
+    return next;
   }
 
   // Assets
