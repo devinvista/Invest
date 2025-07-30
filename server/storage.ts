@@ -262,12 +262,27 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createAsset(asset: InsertAsset): Promise<Asset> {
-    const [newAsset] = await db.insert(assets).values(asset).returning();
+    const assetData = {
+      ...asset,
+      lastQuoteUpdate: new Date()
+    };
+    const [newAsset] = await db.insert(assets).values(assetData).returning();
     return newAsset;
   }
 
   async updateAssetPrice(assetId: string, currentPrice: string): Promise<void> {
-    await db.update(assets).set({ currentPrice }).where(eq(assets.id, assetId));
+    await db.update(assets)
+      .set({ 
+        currentPrice: currentPrice,
+        lastQuoteUpdate: new Date()
+      })
+      .where(eq(assets.id, assetId));
+  }
+
+  async updateAssetPrices(updates: Array<{assetId: string, currentPrice: string}>): Promise<void> {
+    for (const update of updates) {
+      await this.updateAssetPrice(update.assetId, update.currentPrice);
+    }
   }
 
   // Goals

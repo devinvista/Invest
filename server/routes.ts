@@ -605,6 +605,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Single asset quote endpoint
+  app.get("/api/assets/quote", async (req: any, res) => {
+    try {
+      const { symbol, type = 'stock' } = req.query;
+      
+      if (!symbol) {
+        return res.status(400).json({ message: "Parâmetro 'symbol' é obrigatório" });
+      }
+      
+      const { getAssetQuote } = await import('./financial-api');
+      const quote = await getAssetQuote(symbol, type);
+      
+      if (!quote) {
+        return res.status(404).json({ message: "Cotação não encontrada" });
+      }
+      
+      res.json(quote);
+    } catch (error) {
+      res.status(500).json({ message: "Erro ao buscar cotação", error: error instanceof Error ? error.message : "Erro desconhecido" });
+    }
+  });
+
   app.get("/api/assets/quote/:symbol", async (req: any, res) => {
     try {
       const { symbol } = req.params;
@@ -637,6 +659,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(quotes);
     } catch (error) {
       res.status(500).json({ message: "Erro ao buscar cotações", error: error instanceof Error ? error.message : "Erro desconhecido" });
+    }
+  });
+
+  // Update user assets with latest quotes
+  app.post("/api/assets/refresh-quotes", async (req: any, res) => {
+    try {
+      const userAssets = await storage.getUserAssets(req.userId);
+      
+      if (userAssets.length === 0) {
+        return res.json({ message: "Nenhum ativo encontrado", updated: 0 });
+      }
+
+      const { updateMultipleQuotes } = await import('./financial-api');
+      const assetsForUpdate = userAssets.map(asset => ({
+        symbol: asset.symbol,
+        type: asset.type
+      }));
+
+      const quotes = await updateMultipleQuotes(assetsForUpdate);
+      
+      // Update asset prices in database
+      const updates = [];
+      for (const asset of userAssets) {
+        const quote = quotes[asset.symbol];
+        if (quote && quote.currentPrice) {
+          updates.push({
+            assetId: asset.id,
+            currentPrice: quote.currentPrice.toString()
+          });
+        }
+      }
+
+      if (updates.length > 0) {
+        await storage.updateAssetPrices(updates);
+      }
+
+      res.json({ 
+        message: "Cotações atualizadas com sucesso", 
+        updated: updates.length,
+        total: userAssets.length 
+      });
+    } catch (error) {
+      res.status(500).json({ message: "Erro ao atualizar cotações", error: error instanceof Error ? error.message : "Erro desconhecido" });
     }
   });
 

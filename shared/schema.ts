@@ -90,6 +90,12 @@ export const assets = pgTable("assets", {
   averagePrice: decimal("average_price", { precision: 12, scale: 2 }).notNull(),
   currentPrice: decimal("current_price", { precision: 12, scale: 2 }).default("0.00"),
   sector: text("sector"),
+  // Enhanced metadata for API integration
+  exchange: text("exchange"), // B3, NYSE, NASDAQ, etc.
+  currency: text("currency").default("BRL"), // BRL, USD, EUR, etc.
+  coinGeckoId: text("coingecko_id"), // For crypto assets
+  region: text("region"), // Brazil, United States, etc.
+  lastQuoteUpdate: timestamp("last_quote_update"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 

@@ -8,6 +8,7 @@ interface AssetSearchResult {
   lastUpdate: string;
   matchScore?: number;
   region?: string;
+  coinGeckoId?: string; // Para criptomoedas
 }
 
 interface AssetQuote {
@@ -211,22 +212,49 @@ async function getStockQuote(symbol: string): Promise<AssetQuote | null> {
   }
 }
 
-// Função para buscar criptomoedas usando CoinGecko (gratuita)
+// Função para buscar criptomoedas usando CoinGecko API (com tratamento de throttling)
 async function searchCrypto(query: string): Promise<AssetSearchResult[]> {
   try {
     const searchUrl = `https://api.coingecko.com/api/v3/search?query=${encodeURIComponent(query)}`;
-    const response = await fetch(searchUrl);
-    const data = await response.json();
+    const response = await fetch(searchUrl, {
+      headers: {
+        'Accept': 'application/json',
+        'User-Agent': 'OrçaFácil/1.0'
+      }
+    });
+
+    // Check if response is ok
+    if (!response.ok) {
+      console.warn(`CoinGecko API returned ${response.status}: ${response.statusText}`);
+      return [];
+    }
+
+    const text = await response.text();
+    
+    // Check if response starts with "Throttled" (rate limiting)
+    if (text.startsWith('Throttled')) {
+      console.warn('CoinGecko API throttled - rate limit exceeded');
+      return [];
+    }
+
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch (parseError) {
+      console.error('Error parsing CoinGecko response:', text.substring(0, 100));
+      return [];
+    }
 
     const coins = data.coins || [];
-    return coins.slice(0, 10).map((coin: any) => ({
+    return coins.slice(0, 8).map((coin: any) => ({
       symbol: coin.symbol.toUpperCase(),
       name: coin.name,
       type: 'crypto',
-      currentPrice: 0, // Será buscado separadamente
+      currentPrice: 0, // Será buscado separadamente para evitar mais calls
       currency: 'USD',
       exchange: 'CoinGecko',
-      lastUpdate: new Date().toISOString()
+      lastUpdate: new Date().toISOString(),
+      coinGeckoId: coin.id // Salvar ID para buscar cotação depois
     }));
   } catch (error) {
     console.error('Erro ao buscar criptomoedas:', error);
@@ -234,20 +262,45 @@ async function searchCrypto(query: string): Promise<AssetSearchResult[]> {
   }
 }
 
-// Função para buscar cotação de criptomoeda
-async function getCryptoQuote(symbol: string): Promise<AssetQuote | null> {
+// Função para buscar cotação de criptomoeda usando CoinGecko ID
+async function getCryptoQuote(coinId: string): Promise<AssetQuote | null> {
   try {
-    const quoteUrl = `https://api.coingecko.com/api/v3/simple/price?ids=${symbol.toLowerCase()}&vs_currencies=usd,brl&include_24hr_change=true`;
-    const response = await fetch(quoteUrl);
-    const data = await response.json();
+    const quoteUrl = `https://api.coingecko.com/api/v3/simple/price?ids=${coinId.toLowerCase()}&vs_currencies=usd,brl&include_24hr_change=true`;
+    const response = await fetch(quoteUrl, {
+      headers: {
+        'Accept': 'application/json',
+        'User-Agent': 'OrçaFácil/1.0'
+      }
+    });
 
-    const coinData = data[symbol.toLowerCase()];
+    if (!response.ok) {
+      console.warn(`CoinGecko quote API returned ${response.status}: ${response.statusText}`);
+      return null;
+    }
+
+    const text = await response.text();
+    
+    // Check if response starts with "Throttled"
+    if (text.startsWith('Throttled')) {
+      console.warn('CoinGecko quote API throttled');
+      return null;
+    }
+
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch (parseError) {
+      console.error('Error parsing CoinGecko quote response:', text.substring(0, 100));
+      return null;
+    }
+
+    const coinData = data[coinId.toLowerCase()];
     if (!coinData) {
       return null;
     }
 
     return {
-      symbol: symbol.toUpperCase(),
+      symbol: coinId.toUpperCase(),
       currentPrice: coinData.brl || coinData.usd,
       change: 0,
       changePercent: coinData.usd_24h_change || 0,
@@ -272,20 +325,9 @@ export async function searchAssets(query: string, type?: string): Promise<AssetS
       results.push(...stocks);
     }
 
-    // Buscar criptomoedas usando CoinGecko
+    // Buscar criptomoedas usando CoinGecko (sem buscar cotação individual para evitar rate limiting)
     if (!type || type === 'crypto') {
       const cryptos = await searchCrypto(query);
-      // Buscar cotações para as criptomoedas encontradas
-      for (const crypto of cryptos) {
-        try {
-          const quote = await getCryptoQuote(crypto.symbol);
-          if (quote) {
-            crypto.currentPrice = quote.currentPrice;
-          }
-        } catch (error) {
-          console.warn(`Erro ao buscar cotação para ${crypto.symbol}:`, error);
-        }
-      }
       results.push(...cryptos);
     }
 

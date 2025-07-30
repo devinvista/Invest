@@ -182,9 +182,31 @@ export function InvestmentTransactionForm() {
     },
   });
 
-  // Create new asset mutation
+  // Create new asset mutation with real-time price integration
   const createAssetMutation = useMutation({
     mutationFn: async (data: NewAssetFormData) => {
+      // First, try to get current price from API if not provided
+      let finalPrice = data.currentPrice;
+      
+      if (!finalPrice || finalPrice === "0") {
+        try {
+          const quoteResponse = await fetch(`/api/assets/quote?symbol=${data.symbol}&type=${data.type}`, {
+            headers: {
+              "Authorization": `Bearer ${localStorage.getItem("token")}`,
+            },
+          });
+          
+          if (quoteResponse.ok) {
+            const quote = await quoteResponse.json();
+            if (quote && quote.currentPrice) {
+              finalPrice = quote.currentPrice.toString();
+            }
+          }
+        } catch (error) {
+          console.warn("Não foi possível buscar cotação atual:", error);
+        }
+      }
+
       const response = await fetch("/api/assets", {
         method: "POST",
         headers: {
@@ -193,8 +215,13 @@ export function InvestmentTransactionForm() {
         },
         body: JSON.stringify({
           ...data,
+          currentPrice: finalPrice || "0",
           quantity: "0",
-          averagePrice: data.currentPrice || "0",
+          averagePrice: finalPrice || "0",
+          // Additional metadata from search results
+          exchange: selectedSearchResult?.exchange || 'Unknown',
+          currency: selectedSearchResult?.currency || 'BRL',
+          coinGeckoId: (selectedSearchResult as any)?.coinGeckoId || null,
         }),
       });
       
@@ -207,11 +234,17 @@ export function InvestmentTransactionForm() {
     },
     onSuccess: (newAsset) => {
       toast({
-        title: "Ativo criado",
-        description: "O ativo foi adicionado com sucesso.",
+        title: "Ativo criado com sucesso",
+        description: `${newAsset.name} foi adicionado ao seu portfólio.`,
       });
       queryClient.invalidateQueries({ queryKey: ['/api/assets'] });
       form.setValue('assetId', newAsset.id);
+      
+      // Pre-populate transaction form with asset's current price if available
+      if (newAsset.currentPrice && parseFloat(newAsset.currentPrice) > 0) {
+        form.setValue('price', newAsset.currentPrice);
+      }
+      
       setShowNewAssetForm(false);
       newAssetForm.reset();
       setSelectedSearchResult(null);
@@ -244,7 +277,7 @@ export function InvestmentTransactionForm() {
     } else if (showNewAssetForm && !selectedSearchResult) {
       // Reset form when creating a new asset without search results
       newAssetForm.reset({
-        type: assetTypeFilter === 'all' ? 'stock' : assetTypeFilter,
+        type: assetTypeFilter === 'all' ? 'stock' : assetTypeFilter as any,
       });
     }
   }, [selectedSearchResult, showNewAssetForm, newAssetForm, assetTypeFilter]);
@@ -479,7 +512,7 @@ export function InvestmentTransactionForm() {
                             onClick={() => {
                               // Create a blank new asset form
                               setSelectedSearchResult(null);
-                              newAssetForm.setValue('type', assetTypeFilter === 'all' ? 'stock' : assetTypeFilter);
+                              newAssetForm.setValue('type', (assetTypeFilter === 'all' ? 'stock' : assetTypeFilter) as any);
                               setShowNewAssetForm(true);
                             }}
                           >
