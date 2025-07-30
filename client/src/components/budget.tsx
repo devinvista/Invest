@@ -55,6 +55,9 @@ export function Budget() {
   const [transactionsDialogTitle, setTransactionsDialogTitle] = useState('');
   const [transactionsDialogFilters, setTransactionsDialogFilters] = useState<any>({});
   
+  // Planned transactions dialog state
+  const [isPlannedDialogOpen, setIsPlannedDialogOpen] = useState(false);
+  
 
 
   // Transaction form schema
@@ -1043,18 +1046,27 @@ export function Budget() {
 
           <TabsContent value="planned" className="space-y-6">
             <div className="space-y-6">
-              <div className="flex items-center gap-3">
-                <CalendarClock className="h-6 w-6 text-primary" />
-                <div>
-                  <h3 className="text-xl font-semibold">Lançamentos Planejados</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Gerencie transações pendentes e configure recorrências automáticas
-                  </p>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <CalendarClock className="h-6 w-6 text-primary" />
+                  <div>
+                    <h3 className="text-xl font-semibold">Lançamentos Planejados</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Gerencie transações pendentes e configure recorrências automáticas
+                    </p>
+                  </div>
                 </div>
+                <Button 
+                  onClick={() => setIsPlannedDialogOpen(true)}
+                  className="pharos-gradient"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Nova Recorrência
+                </Button>
               </div>
 
               <Tabs value={plannedTab} onValueChange={setPlannedTab} className="w-full">
-                <TabsList className="grid w-full grid-cols-3">
+                <TabsList className="grid w-full grid-cols-2">
                   <TabsTrigger value="pending" className="flex items-center gap-2">
                     <Clock className="h-4 w-4" />
                     Pendentes
@@ -1062,10 +1074,6 @@ export function Budget() {
                   <TabsTrigger value="recurrences" className="flex items-center gap-2">
                     <Repeat className="h-4 w-4" />
                     Recorrências
-                  </TabsTrigger>
-                  <TabsTrigger value="new-recurrence" className="flex items-center gap-2">
-                    <Plus className="h-4 w-4" />
-                    Nova Recorrência
                   </TabsTrigger>
                 </TabsList>
 
@@ -1103,14 +1111,7 @@ export function Budget() {
                   </Card>
                 </TabsContent>
 
-                <TabsContent value="new-recurrence" className="space-y-6">
-                  <RecurrenceForm 
-                    onSuccess={() => {
-                      // Switch to recurrences tab after successful creation
-                      setPlannedTab('recurrences');
-                    }}
-                  />
-                </TabsContent>
+
               </Tabs>
             </div>
           </TabsContent>
@@ -1800,6 +1801,53 @@ export function Budget() {
         title={transactionsDialogTitle}
         initialFilters={transactionsDialogFilters}
       />
+
+      {/* Planned Transactions Full-Screen Dialog */}
+      <Dialog open={isPlannedDialogOpen} onOpenChange={setIsPlannedDialogOpen}>
+        <DialogContent className="max-w-screen-xl w-full h-full max-h-screen m-0 rounded-none p-0 overflow-hidden">
+          <DialogHeader className="sr-only">
+            <DialogTitle>Nova Recorrência</DialogTitle>
+            <DialogDescription>Configure um lançamento automático recorrente</DialogDescription>
+          </DialogHeader>
+          
+          {/* Header */}
+          <div className="flex items-center justify-between p-6 border-b bg-gradient-to-r from-blue-600 to-purple-600 text-white">
+            <div className="flex items-center space-x-3">
+              <Calendar className="h-6 w-6" />
+              <div>
+                <h2 className="text-xl font-semibold">Nova Recorrência</h2>
+                <p className="text-sm text-blue-100">
+                  Configure um lançamento automático recorrente
+                </p>
+              </div>
+            </div>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsPlannedDialogOpen(false)}
+              className="text-white hover:bg-white/20"
+            >
+              ×
+            </Button>
+          </div>
+
+          {/* Content */}
+          <div className="flex-1 overflow-y-auto p-6">
+            <div className="max-w-3xl mx-auto">
+              <RecurrenceForm 
+                onSuccess={() => {
+                  setIsPlannedDialogOpen(false);
+                  setPlannedTab('recurrences');
+                  toast({
+                    title: "Recorrência criada com sucesso!",
+                    description: "Sua nova recorrência foi configurada e está ativa.",
+                  });
+                }}
+              />
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
     </div>
   );
