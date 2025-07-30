@@ -1091,7 +1091,6 @@ export function Budget() {
                               
                               return { ...category, categoryIncome, budgetAmount };
                             })
-                            .filter((category: any) => category.categoryIncome > 0 || category.budgetAmount > 0 || customCategories[category.id])
                             .map((category: any) => (
                               <div key={category.id} className="space-y-2">
                                 <Label className="text-sm">{category.name}</Label>
@@ -1210,7 +1209,6 @@ export function Budget() {
                                   
                                   return { ...category, categorySpent, budgetAmount };
                                 })
-                                .filter((category: any) => category.categorySpent > 0 || category.budgetAmount > 0 || customCategories[category.id])
                                 .map((category: any) => (
                                   <div key={category.id} className="space-y-2">
                                     <Label className="text-sm">{category.name}</Label>
@@ -1252,7 +1250,6 @@ export function Budget() {
                                   
                                   return { ...category, categorySpent, budgetAmount };
                                 })
-                                .filter((category: any) => category.categorySpent > 0 || category.budgetAmount > 0 || customCategories[category.id])
                                 .map((category: any) => (
                                   <div key={category.id} className="space-y-2">
                                     <Label className="text-sm">{category.name}</Label>
@@ -1294,7 +1291,6 @@ export function Budget() {
                                   
                                   return { ...category, categorySpent, budgetAmount };
                                 })
-                                .filter((category: any) => category.categorySpent > 0 || category.budgetAmount > 0 || customCategories[category.id])
                                 .map((category: any) => (
                                   <div key={category.id} className="space-y-2">
                                     <Label className="text-sm">{category.name}</Label>

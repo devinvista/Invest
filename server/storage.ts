@@ -347,7 +347,7 @@ export class DatabaseStorage implements IStorage {
 
   // Budget Categories
   async getBudgetCategories(budgetId: string): Promise<(BudgetCategory & { category: Category })[]> {
-    console.log(`🔍 Buscando categorias do orçamento para budgetId: ${budgetId}`);
+    console.log(`🔍 Buscando categorias do orçamento para budgetId: ${budgetId} (type: ${typeof budgetId})`);
     
     // Validate budgetId before query - check for valid UUID format
     if (!budgetId || 
@@ -357,11 +357,12 @@ export class DatabaseStorage implements IStorage {
         typeof budgetId !== 'string' ||
         budgetId.length < 30 ||
         !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(budgetId)) {
-      console.error(`❌ Invalid budgetId format: ${budgetId}`);
+      console.error(`❌ Invalid budgetId format: ${budgetId} (type: ${typeof budgetId}, length: ${budgetId?.length})`);
       return [];
     }
     
     try {
+      console.log(`🚀 Executando query para budget_categories com budgetId: ${budgetId}`);
       const result = await db.select()
         .from(budgetCategories)
         .leftJoin(categories, eq(budgetCategories.categoryId, categories.id))
@@ -375,6 +376,7 @@ export class DatabaseStorage implements IStorage {
       }));
     } catch (error) {
       console.error(`❌ Erro ao buscar categorias do orçamento ${budgetId}:`, error);
+      console.error(`❌ Query parameters: budgetId=${budgetId}, type=${typeof budgetId}`);
       return [];
     }
   }
