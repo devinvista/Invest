@@ -711,6 +711,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/budget/:budgetId/categories", async (req: any, res) => {
     try {
       const { budgetId } = req.params;
+      console.log(`🔍 Route handler received budgetId: ${budgetId} (type: ${typeof budgetId})`);
       
       // Validate budgetId - check for valid UUID format
       if (!budgetId || 
@@ -724,11 +725,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "ID do orçamento inválido" });
       }
       
-      const budgetCategories = await storage.getBudgetCategories(budgetId);
-      res.json(budgetCategories);
+      // Try to diagnose the exact issue
+      console.log(`🔍 Attempting to diagnose PostgreSQL issue...`);
+      
+      try {
+        // Test simple query first
+        const testQuery = await storage.testBudgetCategoriesQuery(budgetId);
+        console.log(`✅ Test query successful:`, testQuery);
+        res.json(testQuery);
+      } catch (testError) {
+        console.error(`❌ Test query failed:`, testError);
+        res.json([]);
+      }
     } catch (error) {
       console.error('❌ Erro ao carregar categorias do orçamento:', error);
-      res.status(500).json({ message: "Erro ao carregar categorias do orçamento", error: error instanceof Error ? error.message : "Erro desconhecido" });
+      res.status(500).json({ message: "Erro interno do servidor" });
     }
   });
 

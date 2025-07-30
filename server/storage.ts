@@ -59,6 +59,7 @@ export interface IStorage {
   
   // Budget Categories
   getBudgetCategories(budgetId: string): Promise<(BudgetCategory & { category: Category })[]>;
+  testBudgetCategoriesQuery(budgetId: string): Promise<any>;
   createBudgetCategories(budgetId: string, categories: { categoryId: string; allocatedAmount: string }[]): Promise<void>;
   deleteBudgetCategories(budgetId: string): Promise<void>;
 
@@ -393,6 +394,8 @@ export class DatabaseStorage implements IStorage {
       .where(eq(budgets.id, budgetId));
   }
 
+
+
   // Budget Categories
   async getBudgetCategories(budgetId: string): Promise<(BudgetCategory & { category: Category })[]> {
     console.log(`🔍 Buscando categorias do orçamento para budgetId: ${budgetId} (type: ${typeof budgetId})`);
@@ -457,6 +460,58 @@ export class DatabaseStorage implements IStorage {
       return [];
     }
 
+  }
+
+  // Diagnostic method to test budget categories queries step by step
+  async testBudgetCategoriesQuery(budgetId: string): Promise<any> {
+    console.log(`🧪 Testing budget categories queries for budgetId: ${budgetId}`);
+    
+    try {
+      // Test 1: Simple select from budget_categories
+      console.log(`🧪 Test 1: Simple budget_categories query`);
+      const budgetCats = await db
+        .select({
+          id: budgetCategories.id,
+          budgetId: budgetCategories.budgetId,
+          categoryId: budgetCategories.categoryId,
+          allocatedAmount: budgetCategories.allocatedAmount
+        })
+        .from(budgetCategories)
+        .where(eq(budgetCategories.budgetId, budgetId));
+      
+      console.log(`✅ Test 1 passed: ${budgetCats.length} records`);
+      
+      if (budgetCats.length === 0) {
+        return { success: true, message: "No budget categories found", data: [] };
+      }
+
+      // Test 2: Get first category ID and test categories table
+      const firstCategoryId = budgetCats[0].categoryId;
+      console.log(`🧪 Test 2: Categories query for categoryId: ${firstCategoryId}`);
+      
+      const testCategory = await db
+        .select({
+          id: categories.id,
+          name: categories.name,
+          type: categories.type
+        })
+        .from(categories)
+        .where(eq(categories.id, firstCategoryId))
+        .limit(1);
+      
+      console.log(`✅ Test 2 passed: Found category:`, testCategory[0]);
+      
+      return {
+        success: true,
+        message: "All tests passed",
+        budgetCategories: budgetCats,
+        sampleCategory: testCategory[0]
+      };
+      
+    } catch (error) {
+      console.error(`❌ Diagnostic test failed:`, error);
+      throw error;
+    }
   }
 
   async createBudgetCategories(budgetId: string, categoryData: { categoryId: string; allocatedAmount: string }[]): Promise<void> {
