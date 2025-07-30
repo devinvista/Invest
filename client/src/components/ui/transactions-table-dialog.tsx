@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { formatCurrency, formatDate } from '@/lib/financial-utils';
-import { Search, ArrowUpDown, ArrowUp, ArrowDown, Trash2, X } from 'lucide-react';
+import { Search, ArrowUpDown, ArrowUp, ArrowDown, Trash2 } from 'lucide-react';
 
 interface TransactionsTableDialogProps {
   isOpen: boolean;
@@ -164,16 +164,7 @@ export function TransactionsTableDialog({
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-7xl h-[90vh] flex flex-col">
         <DialogHeader className="flex-shrink-0">
-          <DialogTitle className="flex items-center justify-between">
-            <span>{title}</span>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => onOpenChange(false)}
-            >
-              <X className="w-4 h-4" />
-            </Button>
-          </DialogTitle>
+          <DialogTitle>{title}</DialogTitle>
           <DialogDescription className="sr-only">
             Visualizar e gerenciar transações filtradas por categoria e tipo
           </DialogDescription>

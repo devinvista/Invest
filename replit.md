@@ -11,6 +11,11 @@ Visual Identity: Pharos Capital brand guidelines applied.
 
 ## Recent Changes
 
+- **January 30, 2025**: Fixed duplicate close buttons in transaction dialog during Replit Agent migration
+  - Removed duplicate close button from TransactionsTableDialog header 
+  - Cleaned up unused imports (X icon from lucide-react)
+  - Dialog now has single close button with proper UX behavior
+  - Enhanced dialog user experience with cleaner interface
 - **January 30, 2025**: Implemented full-screen transaction dialogs replacing page navigation
   - Created TransactionsTableDialog component with comprehensive filtering and sorting capabilities
   - Replaced "Ver Lançamentos" navigation buttons with dialog-opening functions in budget cards
