@@ -11,6 +11,14 @@ Visual Identity: Pharos Capital brand guidelines applied.
 
 ## Recent Changes
 
+- **January 30, 2025**: Enhanced investment transaction form with asset type filtering and integrated asset creation
+  - Added asset type filter dropdown (Ações, FIIs, Crypto, Renda Fixa, ETFs, Fundos) for better asset organization
+  - Implemented real-time asset search functionality with external API integration
+  - Created inline asset creation capability within transaction form - users can search and add new assets directly
+  - Enhanced UI with search results display showing asset details, prices, and type badges
+  - Streamlined workflow: search → select → create asset → automatically populate transaction form
+  - Improved asset selection with type-based filtering of existing user assets
+  - Added comprehensive form validation and error handling for new asset creation
 - **January 30, 2025**: Fixed duplicate close buttons in transaction dialog during Replit Agent migration
   - Removed duplicate close button from TransactionsTableDialog header 
   - Cleaned up unused imports (X icon from lucide-react)
