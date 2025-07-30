@@ -370,7 +370,10 @@ export class DatabaseStorage implements IStorage {
         return [];
       }
       
-      const result = await db.select()
+      const result = await db.select({
+        budget_categories: budgetCategories,
+        categories: categories
+      })
         .from(budgetCategories)
         .leftJoin(categories, eq(budgetCategories.categoryId, categories.id))
         .where(eq(budgetCategories.budgetId, budgetId));

@@ -15,8 +15,9 @@ Visual Identity: Pharos Capital brand guidelines applied.
   - Fixed PostgreSQL error with invalid UUID parameters in budget categories endpoint  
   - Enhanced UUID validation in route handlers and storage layer to prevent "NaN" parameter issues
   - Implemented automatic 50/30/20 recalculation when income changes in default budget mode
-  - Strengthened parameter validation with regex UUID format checking
+  - Implemented adaptive 50/30/20 budget logic where values adjust when category allocations exceed standard distribution
   - Fixed budget category visibility - all registered categories now visible in budget allocation (hiding only applies to "realizado" view)
+  - Enhanced budget system with real-time recalculation in both default and custom modes
   - All core functionality verified working including budget system, transactions, and financial calculations
   - Project ready for continued development in standard Replit environment  
   - Fixed PostgreSQL error with invalid UUID parameters in budget categories endpoint
