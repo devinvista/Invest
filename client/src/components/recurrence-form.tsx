@@ -29,6 +29,9 @@ const recurrenceFormSchema = z.object({
   startDate: z.date(),
   endDate: z.date().optional(),
   installments: z.number().optional(),
+}).refine((data) => data.accountId || data.creditCardId, {
+  message: "Conta ou cartão de crédito é obrigatório",
+  path: ["accountId"],
 });
 
 type RecurrenceFormData = z.infer<typeof recurrenceFormSchema>;
@@ -97,6 +100,10 @@ export default function RecurrenceForm({ onSuccess }: RecurrenceFormProps) {
   });
 
   const onSubmit = (data: RecurrenceFormData) => {
+    console.log('Form submission data:', data);
+    console.log('Start date:', startDate);
+    console.log('Form errors:', form.formState.errors);
+    
     if (!startDate) {
       toast({
         title: 'Erro',
