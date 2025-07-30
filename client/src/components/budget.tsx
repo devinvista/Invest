@@ -198,7 +198,7 @@ export function Budget() {
         necessitiesBudget: budget.necessitiesBudget?.toString() || '',
         wantsBudget: budget.wantsBudget?.toString() || '',
         savingsBudget: budget.savingsBudget?.toString() || '',
-        isDefault: budget.isDefault !== undefined ? budget.isDefault : true,
+        isDefault: true, // Always default to true for consistency
       });
     } else if (!budget && isEditing) {
       // Reset form to default values when creating new budget

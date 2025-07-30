@@ -370,20 +370,34 @@ export class DatabaseStorage implements IStorage {
         return [];
       }
       
-      const result = await db.select({
-        budget_categories: budgetCategories,
-        categories: categories
-      })
+      // First try a simple query without join to isolate the issue
+      console.log(`🔍 Testing simple query first...`);
+      const simpleResult = await db.select()
         .from(budgetCategories)
-        .leftJoin(categories, eq(budgetCategories.categoryId, categories.id))
         .where(eq(budgetCategories.budgetId, budgetId));
       
-      console.log(`✅ Encontradas ${result.length} categorias para o orçamento ${budgetId}`);
+      console.log(`✅ Simple query worked, found ${simpleResult.length} budget categories`);
       
-      return result.map(row => ({
-        ...row.budget_categories,
-        category: row.categories!
-      }));
+      // If simple query works, try the join
+      if (simpleResult.length > 0) {
+        const result = await db.select({
+          budget_categories: budgetCategories,
+          categories: categories
+        })
+          .from(budgetCategories)
+          .leftJoin(categories, eq(budgetCategories.categoryId, categories.id))
+          .where(eq(budgetCategories.budgetId, budgetId));
+        
+        console.log(`✅ Encontradas ${result.length} categorias para o orçamento ${budgetId}`);
+        
+        return result.map(row => ({
+          ...row.budget_categories,
+          category: row.categories!
+        }));
+      } else {
+        console.log(`ℹ️ No budget categories found for budgetId: ${budgetId}`);
+        return [];
+      }
     } catch (error) {
       console.error(`❌ Erro ao buscar categorias do orçamento ${budgetId}:`, error);
       console.error(`❌ Query parameters: budgetId="${budgetId}", type=${typeof budgetId}, length=${budgetId?.length}`);
