@@ -1061,7 +1061,7 @@ export function Budget() {
                   className="pharos-gradient"
                 >
                   <Plus className="w-4 h-4 mr-2" />
-                  Nova Recorrência
+                  Novo Lançamento
                 </Button>
               </div>
 
@@ -1806,7 +1806,7 @@ export function Budget() {
       <Dialog open={isPlannedDialogOpen} onOpenChange={setIsPlannedDialogOpen}>
         <DialogContent className="max-w-screen-xl w-full h-full max-h-screen m-0 rounded-none p-0 overflow-hidden">
           <DialogHeader className="sr-only">
-            <DialogTitle>Nova Recorrência</DialogTitle>
+            <DialogTitle>Novo Lançamento Planejado</DialogTitle>
             <DialogDescription>Configure um lançamento automático recorrente</DialogDescription>
           </DialogHeader>
           
@@ -1815,7 +1815,7 @@ export function Budget() {
             <div className="flex items-center space-x-3">
               <Calendar className="h-6 w-6" />
               <div>
-                <h2 className="text-xl font-semibold">Nova Recorrência</h2>
+                <h2 className="text-xl font-semibold">Novo Lançamento Planejado</h2>
                 <p className="text-sm text-blue-100">
                   Configure um lançamento automático recorrente
                 </p>

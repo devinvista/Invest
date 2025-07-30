@@ -25,13 +25,17 @@ const recurrenceFormSchema = z.object({
   type: z.enum(['income', 'expense']),
   amount: z.string().min(1, "Valor é obrigatório"),
   description: z.string().min(1, "Descrição é obrigatória"),
-  frequency: z.enum(['daily', 'weekly', 'monthly', 'yearly']),
+  isRecurring: z.boolean(),
+  frequency: z.enum(['daily', 'weekly', 'monthly', 'yearly']).optional(),
   startDate: z.date(),
   endDate: z.date().optional(),
   installments: z.number().optional(),
 }).refine((data) => data.accountId || data.creditCardId, {
   message: "Conta ou cartão de crédito é obrigatório",
   path: ["accountId"],
+}).refine((data) => !data.isRecurring || data.frequency, {
+  message: "Frequência é obrigatória para transações recorrentes",
+  path: ["frequency"],
 });
 
 type RecurrenceFormData = z.infer<typeof recurrenceFormSchema>;
@@ -44,6 +48,7 @@ export default function RecurrenceForm({ onSuccess }: RecurrenceFormProps) {
   const [startDate, setStartDate] = useState<Date | undefined>(new Date());
   const [endDate, setEndDate] = useState<Date | undefined>();
   const [showEndDate, setShowEndDate] = useState(false);
+  const [isRecurring, setIsRecurring] = useState(false);
 
   const { data: accounts = [] } = useQuery<Account[]>({
     queryKey: ['/api/accounts'],
@@ -61,9 +66,10 @@ export default function RecurrenceForm({ onSuccess }: RecurrenceFormProps) {
     resolver: zodResolver(recurrenceFormSchema),
     defaultValues: {
       type: 'expense',
+      isRecurring: false,
+      description: '',
       frequency: 'monthly',
       amount: '',
-      description: '',
       installments: 1,
     },
   });
@@ -75,6 +81,7 @@ export default function RecurrenceForm({ onSuccess }: RecurrenceFormProps) {
         amount: parseFloat(data.amount),
         startDate: startDate,
         endDate: showEndDate ? endDate : null,
+        frequency: data.isRecurring ? data.frequency : 'monthly', // Default for one-time
       };
       return apiRequest('POST', '/api/recurrences', payload);
     },
@@ -82,18 +89,19 @@ export default function RecurrenceForm({ onSuccess }: RecurrenceFormProps) {
       queryClient.invalidateQueries({ queryKey: ['/api/recurrences'] });
       toast({
         title: 'Sucesso',
-        description: 'Recorrência criada com sucesso!',
+        description: 'Lançamento planejado criado com sucesso!',
       });
       form.reset();
       setStartDate(new Date());
       setEndDate(undefined);
       setShowEndDate(false);
+      setIsRecurring(false);
       onSuccess?.();
     },
     onError: (error: any) => {
       toast({
         title: 'Erro',
-        description: error.message || 'Erro ao criar recorrência',
+        description: error.message || 'Erro ao criar lançamento planejado',
         variant: 'destructive',
       });
     },
@@ -138,10 +146,10 @@ export default function RecurrenceForm({ onSuccess }: RecurrenceFormProps) {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Repeat className="h-5 w-5" />
-          Nova Recorrência
+          Novo Lançamento Planejado
         </CardTitle>
         <CardDescription>
-          Configure uma transação recorrente que será criada automaticamente
+          Configure um lançamento único ou recorrente para seu orçamento
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -164,9 +172,31 @@ export default function RecurrenceForm({ onSuccess }: RecurrenceFormProps) {
             </div>
 
             <div className="space-y-2">
+              <Label htmlFor="frequency">Tipo de Lançamento</Label>
+              <Select 
+                value={isRecurring ? 'recurring' : 'once'} 
+                onValueChange={(value) => {
+                  const recurring = value === 'recurring';
+                  setIsRecurring(recurring);
+                  form.setValue('isRecurring', recurring);
+                }}
+              >
+                <SelectTrigger data-testid="select-recurring-type">
+                  <SelectValue placeholder="Selecione o tipo" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="once">Uma única vez</SelectItem>
+                  <SelectItem value="recurring">Recorrente</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          {isRecurring && (
+            <div className="space-y-2">
               <Label htmlFor="frequency">Frequência</Label>
               <Select 
-                value={form.watch('frequency')} 
+                value={form.watch('frequency') || ''} 
                 onValueChange={(value: 'daily' | 'weekly' | 'monthly' | 'yearly') => 
                   form.setValue('frequency', value)
                 }
@@ -182,8 +212,11 @@ export default function RecurrenceForm({ onSuccess }: RecurrenceFormProps) {
                   ))}
                 </SelectContent>
               </Select>
+              {form.formState.errors.frequency && (
+                <p className="text-sm text-destructive">{form.formState.errors.frequency.message}</p>
+              )}
             </div>
-          </div>
+          )}
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
@@ -369,7 +402,7 @@ export default function RecurrenceForm({ onSuccess }: RecurrenceFormProps) {
             ) : (
               <>
                 <Plus className="mr-2 h-4 w-4" />
-                Criar Recorrência
+                Criar Lançamento
               </>
             )}
           </Button>
