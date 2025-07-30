@@ -74,6 +74,8 @@ export function TransactionForm({ onSuccess }: TransactionFormProps) {
       });
       queryClient.invalidateQueries({ queryKey: ['/api/transactions'] });
       queryClient.invalidateQueries({ queryKey: ['/api/dashboard'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/credit-cards'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/accounts'] });
       form.reset();
       onSuccess?.();
     },

@@ -204,6 +204,25 @@ export class DatabaseStorage implements IStorage {
 
   async createTransaction(transaction: InsertTransaction): Promise<Transaction> {
     const [newTransaction] = await db.insert(transactions).values(transaction).returning();
+    
+    // Update credit card usage if transaction involves a credit card
+    if (newTransaction.creditCardId && newTransaction.type === 'expense') {
+      // Get current credit card to calculate new usage
+      const [currentCard] = await db.select()
+        .from(creditCards)
+        .where(eq(creditCards.id, newTransaction.creditCardId));
+      
+      if (currentCard) {
+        // Calculate new used amount
+        const currentUsed = parseFloat(currentCard.usedAmount || '0');
+        const transactionAmount = parseFloat(newTransaction.amount);
+        const newUsedAmount = (currentUsed + transactionAmount).toFixed(2);
+        
+        // Update credit card usage
+        await this.updateCreditCardUsage(newTransaction.creditCardId, newUsedAmount);
+      }
+    }
+    
     return newTransaction;
   }
 
