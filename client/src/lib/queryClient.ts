@@ -26,7 +26,11 @@ export async function apiRequest(
     await throwIfResNotOk(res);
     return res;
   } catch (error) {
-    console.error(`🚨 API Request failed: ${method} ${url}`, error);
+    console.error(`🚨 API Request failed: ${url} ${method}`, error);
+    console.error("🔥 Unhandled promise rejection detected:");
+    console.error("Error reason:", error);
+    console.error("Promise:", Promise.resolve(error));
+    console.error("Stack trace:", (error as Error).stack);
     throw error;
   }
 }
