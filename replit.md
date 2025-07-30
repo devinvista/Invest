@@ -18,6 +18,8 @@ Visual Identity: Pharos Capital brand guidelines applied.
   - Created recurrences table with proper foreign key relationships
   - Enhanced database schema with transaction_status and recurrence_frequency enums
   - Application now running cleanly with all recurrence functionality working
+  - Verified recurrence form supports both bank accounts and credit cards with proper category filtering
+  - Confirmed categories are filtered by transaction type (income/expense) as required
   - Migration completed successfully with all core features operational
 - **January 30, 2025**: Previously completed migration from Replit Agent to Replit environment with enhanced planned transactions feature
   - Fixed critical API error handling to prevent "transactions.filter is not a function" errors
