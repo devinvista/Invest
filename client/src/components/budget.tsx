@@ -1790,6 +1790,11 @@ export function Budget() {
       {/* Planned Transactions Full-Screen Dialog */}
       <Dialog open={isPlannedDialogOpen} onOpenChange={setIsPlannedDialogOpen}>
         <DialogContent className="max-w-screen-xl w-full h-full max-h-screen m-0 rounded-none p-0 overflow-hidden">
+          <DialogHeader className="sr-only">
+            <DialogTitle>Nova Recorrência</DialogTitle>
+            <DialogDescription>Configure um lançamento automático recorrente</DialogDescription>
+          </DialogHeader>
+          
           {/* Header */}
           <div className="flex items-center justify-between p-6 border-b bg-gradient-to-r from-blue-600 to-purple-600 text-white">
             <div className="flex items-center space-x-3">
@@ -1870,11 +1875,17 @@ export function Budget() {
                             <SelectValue placeholder="Selecione uma categoria" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="salary">Salário</SelectItem>
-                            <SelectItem value="rent">Aluguel</SelectItem>
-                            <SelectItem value="utilities">Utilidades</SelectItem>
-                            <SelectItem value="food">Alimentação</SelectItem>
-                            <SelectItem value="transport">Transporte</SelectItem>
+                            {categories?.map((category: any) => (
+                              <SelectItem key={category.id} value={category.id}>
+                                <div className="flex items-center">
+                                  <div 
+                                    className="w-3 h-3 rounded mr-2"
+                                    style={{ backgroundColor: category.color }}
+                                  />
+                                  {category.name}
+                                </div>
+                              </SelectItem>
+                            ))}
                           </SelectContent>
                         </Select>
                       </div>
@@ -1890,9 +1901,18 @@ export function Budget() {
                             <SelectValue placeholder="Selecione uma conta" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="checking">Conta Corrente</SelectItem>
-                            <SelectItem value="savings">Poupança</SelectItem>
-                            <SelectItem value="credit">Cartão de Crédito</SelectItem>
+                            {accounts?.map((account: any) => (
+                              <SelectItem key={account.id} value={account.id}>
+                                <div className="flex items-center">
+                                  <span className="capitalize">{account.type}</span>
+                                  <span className="mx-2">•</span>
+                                  <span>{account.name}</span>
+                                  <span className="ml-2 text-muted-foreground">
+                                    ({formatCurrency(account.balance)})
+                                  </span>
+                                </div>
+                              </SelectItem>
+                            ))}
                           </SelectContent>
                         </Select>
                       </div>
