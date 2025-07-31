@@ -31,12 +31,12 @@ import { AssetForm } from './asset-form';
 import { QuoteUpdater } from './quote-updater';
 
 const ASSET_COLORS = {
-  stocks: '#3B82F6',
-  fixedIncome: '#10B981',
-  crypto: '#F59E0B',
-  etfs: '#8B5CF6',
-  funds: '#EF4444',
-  others: '#6B7280'
+  stocks: '#195AB4',      // Pharos Capital primary blue
+  fixedIncome: '#059669', // Darker emerald for better contrast
+  crypto: '#D97706',      // Darker amber for better contrast
+  etfs: '#7C3AED',        // Darker violet for better contrast
+  funds: '#DC2626',       // Darker red for better contrast
+  others: '#4B5563'       // Darker gray for better contrast
 };
 
 interface Asset {
@@ -459,12 +459,12 @@ export function Investments() {
                   <BarChart data={evolutionData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
                     <defs>
                       <linearGradient id="appliedGradientBar" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#10b981" stopOpacity={1}/>
-                        <stop offset="100%" stopColor="#059669" stopOpacity={1}/>
+                        <stop offset="0%" stopColor="#195AB4" stopOpacity={1}/>
+                        <stop offset="100%" stopColor="#144A94" stopOpacity={1}/>
                       </linearGradient>
                       <linearGradient id="profitGradientBar" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#34d399" stopOpacity={1}/>
-                        <stop offset="100%" stopColor="#10b981" stopOpacity={1}/>
+                        <stop offset="0%" stopColor="#F59E0B" stopOpacity={1}/>
+                        <stop offset="100%" stopColor="#D97706" stopOpacity={1}/>
                       </linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
@@ -512,12 +512,12 @@ export function Investments() {
               </div>
               <div className="mt-4 flex items-center justify-center space-x-6">
                 <div className="flex items-center space-x-2">
-                  <div className="w-3 h-3 rounded-sm bg-gradient-to-b from-emerald-500 to-emerald-600"></div>
-                  <span className="text-sm font-medium">Valor aplicado</span>
+                  <div className="w-3 h-3 rounded-sm bg-gradient-to-b from-[#195AB4] to-[#144A94]"></div>
+                  <span className="text-sm font-medium text-foreground">Valor aplicado</span>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <div className="w-3 h-3 rounded-sm bg-gradient-to-b from-emerald-400 to-emerald-500"></div>
-                  <span className="text-sm font-medium">Ganho capital</span>
+                  <div className="w-3 h-3 rounded-sm bg-gradient-to-b from-[#F59E0B] to-[#D97706]"></div>
+                  <span className="text-sm font-medium text-foreground">Ganho capital</span>
                 </div>
               </div>
             </CardContent>
@@ -581,19 +581,19 @@ export function Investments() {
                   {filteredAssetDistribution
                     .sort((a, b) => b.percentage - a.percentage)
                     .map((item, index) => (
-                    <div key={index} className="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-accent/30 transition-colors">
+                    <div key={index} className="flex items-center justify-between py-3 px-4 rounded-lg hover:bg-accent/40 transition-all duration-200 border border-transparent hover:border-border/50">
                       <div className="flex items-center space-x-3">
                         <div 
-                          className="w-4 h-4 rounded-sm shadow-sm" 
+                          className="w-4 h-4 rounded-md shadow-md border border-white/20" 
                           style={{ backgroundColor: item.color }}
                         />
-                        <span className="text-sm font-medium text-foreground">{item.name}</span>
+                        <span className="text-sm font-semibold text-foreground">{item.name}</span>
                       </div>
                       <div className="text-right">
-                        <p className="text-sm font-semibold text-foreground">
+                        <p className="text-sm font-bold text-foreground">
                           {formatPercentage(item.percentage)}
                         </p>
-                        <p className="text-xs text-muted-foreground">
+                        <p className="text-xs font-medium text-muted-foreground">
                           {balanceVisible ? formatCurrency(item.value) : '••••••'}
                         </p>
                       </div>
@@ -669,7 +669,7 @@ export function Investments() {
                         <div className="overflow-x-auto">
                           <table className="w-full">
                             <thead>
-                              <tr className="border-b border-border text-xs text-muted-foreground">
+                              <tr className="border-b-2 border-border/60 text-xs font-semibold text-foreground/80 bg-muted/30">
                                 <th className="text-left p-3">Ativo</th>
                                 <th className="text-right p-3">Quant.</th>
                                 <th className="text-right p-3">Preço Médio</th>
@@ -688,41 +688,43 @@ export function Investments() {
                                 const portfolioPercent = totalValue > 0 ? (currentValue / totalValue) * 100 : 0;
 
                                 return (
-                                  <tr key={asset.id} className="border-b border-border/50 hover:bg-accent/30 transition-colors">
+                                  <tr key={asset.id} className="border-b border-border/40 hover:bg-accent/50 transition-colors group">
                                     <td className="p-3">
                                       <div className="flex items-center space-x-3">
-                                        <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
-                                          <span className="text-xs font-semibold text-primary">
+                                        <div className="w-8 h-8 bg-gradient-to-br from-primary/20 to-primary/10 rounded-lg flex items-center justify-center border border-primary/20">
+                                          <span className="text-xs font-bold text-primary">
                                             {asset.symbol.slice(0, 2)}
                                           </span>
                                         </div>
                                         <div>
-                                          <p className="font-medium text-sm">{asset.symbol}</p>
-                                          <p className="text-xs text-muted-foreground">{asset.name}</p>
+                                          <p className="font-semibold text-sm text-foreground group-hover:text-primary transition-colors">{asset.symbol}</p>
+                                          <p className="text-xs text-muted-foreground/80 line-clamp-1">{asset.name}</p>
                                         </div>
                                       </div>
                                     </td>
-                                    <td className="text-right p-3 text-sm">{Number(asset.quantity).toLocaleString('pt-BR')}</td>
-                                    <td className="text-right p-3 text-sm">{formatCurrency(Number(asset.averagePrice))}</td>
-                                    <td className="text-right p-3 text-sm">{formatCurrency(Number(asset.currentPrice || asset.averagePrice))}</td>
+                                    <td className="text-right p-3 text-sm font-medium text-foreground">{Number(asset.quantity).toLocaleString('pt-BR')}</td>
+                                    <td className="text-right p-3 text-sm font-medium text-foreground">{formatCurrency(Number(asset.averagePrice))}</td>
+                                    <td className="text-right p-3 text-sm font-medium text-foreground">{formatCurrency(Number(asset.currentPrice || asset.averagePrice))}</td>
                                     <td className="text-right p-3">
-                                      <div className={`flex items-center justify-end space-x-1 ${
-                                        assetVariationPercent >= 0 ? 'text-success' : 'text-expense'
+                                      <div className={`flex items-center justify-end space-x-1 px-2 py-1 rounded-md font-semibold ${
+                                        assetVariationPercent >= 0 
+                                          ? 'text-green-700 bg-green-50 dark:text-green-400 dark:bg-green-950/50' 
+                                          : 'text-red-700 bg-red-50 dark:text-red-400 dark:bg-red-950/50'
                                       }`}>
                                         {assetVariationPercent >= 0 ? (
                                           <ArrowUpRight className="h-3 w-3" />
                                         ) : (
                                           <ArrowDownRight className="h-3 w-3" />
                                         )}
-                                        <span className="text-sm font-medium">
+                                        <span className="text-sm">
                                           {formatPercentage(assetVariationPercent)}
                                         </span>
                                       </div>
                                     </td>
-                                    <td className="text-right p-3 text-sm font-medium">
+                                    <td className="text-right p-3 text-sm font-bold text-foreground">
                                       {balanceVisible ? formatCurrency(currentValue) : '••••••'}
                                     </td>
-                                    <td className="text-right p-3 text-sm">{formatPercentage(portfolioPercent)}</td>
+                                    <td className="text-right p-3 text-sm font-medium text-muted-foreground">{formatPercentage(portfolioPercent)}</td>
                                   </tr>
                                 );
                               })}

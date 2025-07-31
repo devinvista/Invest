@@ -11,6 +11,13 @@ Visual Identity: Pharos Capital brand guidelines applied.
 
 ## Recent Changes
 
+- **January 31, 2025**: Enhanced investment page visual contrast and accessibility 
+  - Updated chart color scheme using Pharos Capital blue (#195AB4) and high-contrast amber (#D97706) for better visual distinction
+  - Improved table headers with stronger typography and background contrast
+  - Enhanced asset variation indicators with colored badges for positive/negative performance
+  - Upgraded asset distribution legend with better hover states and visual hierarchy
+  - Applied consistent font weights and spacing for improved readability
+  - All asset category colors now meet accessibility contrast standards
 - **January 31, 2025**: Fixed Brazilian stock search in investments page - PETR4 and other B3 stocks now properly found
   - Implemented comprehensive Brazilian stock database with 28+ popular B3 assets (stocks, FIIs, ETFs)
   - Added robust search functionality for PETR4, VALE3, ITUB4, BBDC4, and other major Brazilian stocks
