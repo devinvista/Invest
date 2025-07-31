@@ -311,7 +311,7 @@ export function InvestmentTransactionForm() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Operação</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Selecione a operação" />
@@ -343,7 +343,7 @@ export function InvestmentTransactionForm() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Conta de Investimento</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Selecione a conta" />
@@ -384,7 +384,7 @@ export function InvestmentTransactionForm() {
                     </Select>
                   </div>
 
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Selecione ou pesquise um ativo" />
@@ -679,7 +679,7 @@ export function InvestmentTransactionForm() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Tipo</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Selecione o tipo" />

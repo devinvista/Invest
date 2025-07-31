@@ -14,6 +14,8 @@ Visual Identity: Pharos Capital brand guidelines applied.
 - **January 31, 2025**: Completed migration from Replit Agent to standard Replit environment
   - Fixed duplicate "Transações Pendentes" title in budget component by removing redundant Card wrapper
   - Fixed duplicate "Suas Recorrências" title in budget component by removing redundant Card wrapper
+  - Fixed "texto some" issue in Select components by replacing defaultValue with value prop in react-hook-form
+  - Fixed account/credit card selection in RecurrenceForm dialog where text would disappear after selection
   - Enhanced UI consistency - individual components now manage their own titles and descriptions
   - All dependencies verified working with tsx execution successful
   - Project running cleanly on port 5000 with Express server and Vite frontend operational

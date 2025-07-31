@@ -290,7 +290,11 @@ export default function RecurrenceForm({ onSuccess }: RecurrenceFormProps) {
             <div className="space-y-2">
               <Label htmlFor="account">Conta/Cartão</Label>
               <Select
-                value={form.watch('accountId') || form.watch('creditCardId') || ''}
+                value={
+                  form.watch('accountId') ? `account-${form.watch('accountId')}` :
+                  form.watch('creditCardId') ? `card-${form.watch('creditCardId')}` : 
+                  ''
+                }
                 onValueChange={(value) => {
                   if (value.startsWith('account-')) {
                     form.setValue('accountId', value.replace('account-', ''));

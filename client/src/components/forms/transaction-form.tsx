@@ -164,7 +164,7 @@ export function TransactionForm({ onSuccess }: TransactionFormProps) {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Categoria</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <Select onValueChange={field.onChange} value={field.value}>
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder="Selecionar categoria" />
@@ -213,7 +213,7 @@ export function TransactionForm({ onSuccess }: TransactionFormProps) {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Status</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <Select onValueChange={field.onChange} value={field.value}>
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder="Status da transação" />
@@ -263,7 +263,7 @@ export function TransactionForm({ onSuccess }: TransactionFormProps) {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Conta</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Selecionar conta" />
@@ -289,7 +289,7 @@ export function TransactionForm({ onSuccess }: TransactionFormProps) {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Cartão de Crédito</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="Selecionar cartão" />
