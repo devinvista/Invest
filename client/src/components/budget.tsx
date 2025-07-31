@@ -1078,20 +1078,7 @@ export function Budget() {
                 </TabsList>
 
                 <TabsContent value="pending" className="space-y-6">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <Clock className="h-5 w-5" />
-                        Transações Pendentes
-                      </CardTitle>
-                      <CardDescription>
-                        Confirme ou gerencie lançamentos que estão aguardando sua aprovação
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <PendingTransactions />
-                    </CardContent>
-                  </Card>
+                  <PendingTransactions />
                 </TabsContent>
 
                 <TabsContent value="recurrences" className="space-y-6">

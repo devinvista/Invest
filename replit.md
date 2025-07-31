@@ -11,6 +11,12 @@ Visual Identity: Pharos Capital brand guidelines applied.
 
 ## Recent Changes
 
+- **January 31, 2025**: Completed migration from Replit Agent to standard Replit environment
+  - Fixed duplicate "Transações Pendentes" title in budget component by removing redundant Card wrapper
+  - All dependencies verified working with tsx execution successful
+  - Project running cleanly on port 5000 with Express server and Vite frontend operational
+  - Database connection established and all API endpoints responding correctly
+  - Migration completed successfully with robust client/server separation and security practices
 - **January 30, 2025**: Enhanced planned transactions form with flexible recurrence options
   - Updated form to allow choosing between "Uma única vez" (one-time) or "Recorrente" (recurring) transactions
   - For recurring transactions, added option to choose end condition: number of repetitions or specific end date
