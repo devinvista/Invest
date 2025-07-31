@@ -217,38 +217,40 @@
   
   .btg-header {
     @apply border-b backdrop-blur-md;
-    background: hsl(var(--primary) / 0.95) !important;
-    border-bottom-color: hsl(var(--primary) / 0.3);
+    background: rgba(255, 255, 255, 0.95) !important;
+    border-bottom-color: rgba(0, 0, 0, 0.1);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    color: white !important;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   }
   
-  /* Force white text in header regardless of theme */
+  /* Light theme header - dark text on light background */
   .btg-header,
   .btg-header *,
   .btg-header span,
   .btg-header div,
   .btg-header button,
   .btg-header svg {
-    color: white !important;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    color: rgba(0, 0, 0, 0.8) !important;
+    text-shadow: none;
   }
   
   .btg-header input {
-    color: white !important;
-    border-color: rgba(255, 255, 255, 0.4) !important;
-    background-color: rgba(255, 255, 255, 0.25) !important;
-    text-shadow: none;
+    color: rgba(0, 0, 0, 0.9) !important;
+    border-color: rgba(0, 0, 0, 0.2) !important;
+    background-color: rgba(0, 0, 0, 0.05) !important;
   }
   
   .btg-header input::placeholder {
-    color: rgba(255, 255, 255, 0.8) !important;
-    text-shadow: none;
+    color: rgba(0, 0, 0, 0.5) !important;
   }
   
-  /* Dark theme - same styles to ensure consistency */
+  /* Dark theme header - white text on dark background */
+  .dark .btg-header {
+    background: hsl(var(--primary) / 0.95) !important;
+    border-bottom-color: hsl(var(--primary) / 0.3);
+  }
+  
   .dark .btg-header,
   .dark .btg-header *,
   .dark .btg-header span,
@@ -264,6 +266,10 @@
     background-color: rgba(255, 255, 255, 0.2) !important;
     border-color: rgba(255, 255, 255, 0.3) !important;
     text-shadow: none;
+  }
+  
+  .dark .btg-header input::placeholder {
+    color: rgba(255, 255, 255, 0.7) !important;
   }
   
   .btg-section {
