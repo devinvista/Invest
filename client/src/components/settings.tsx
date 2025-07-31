@@ -339,6 +339,7 @@ export function Settings() {
                         <SelectItem value="all">Todas</SelectItem>
                         <SelectItem value="income">Receitas</SelectItem>
                         <SelectItem value="expense">Despesas</SelectItem>
+                        <SelectItem value="investment">Investimentos</SelectItem>
                       </SelectContent>
                     </Select>
 
@@ -387,6 +388,7 @@ export function Settings() {
                                     <SelectContent>
                                       <SelectItem value="income">Receita</SelectItem>
                                       <SelectItem value="expense">Despesa</SelectItem>
+                                      <SelectItem value="investment">Investimento</SelectItem>
                                     </SelectContent>
                                   </Select>
                                   <FormMessage />

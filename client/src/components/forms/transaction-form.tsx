@@ -12,7 +12,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { useToast } from '@/hooks/use-toast';
 
 const transactionFormSchema = z.object({
-  type: z.enum(['income', 'expense', 'transfer']),
+  type: z.enum(['income', 'expense', 'investment', 'transfer']),
   amount: z.string().min(1, 'Valor é obrigatório'),
   description: z.string().min(1, 'Descrição é obrigatória'),
   categoryId: z.string().min(1, 'Categoria é obrigatória'),
@@ -106,7 +106,7 @@ export function TransactionForm({ onSuccess }: TransactionFormProps) {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Tipo</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <Select onValueChange={field.onChange} value={field.value}>
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder="Selecionar tipo" />
@@ -115,6 +115,7 @@ export function TransactionForm({ onSuccess }: TransactionFormProps) {
                   <SelectContent>
                     <SelectItem value="income">Receita</SelectItem>
                     <SelectItem value="expense">Despesa</SelectItem>
+                    <SelectItem value="investment">Investimento</SelectItem>
                     <SelectItem value="transfer">Transferência</SelectItem>
                   </SelectContent>
                 </Select>
@@ -182,6 +183,7 @@ export function TransactionForm({ onSuccess }: TransactionFormProps) {
                               {category.type === 'wants' && '(Desejos)'}
                               {category.type === 'savings' && '(Poupança)'}
                               {category.transactionType === 'income' && '(Receita)'}
+                              {category.transactionType === 'investment' && '(Investimento)'}
                             </span>
                           </div>
                         </SelectItem>
