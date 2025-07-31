@@ -1795,14 +1795,6 @@ export function Budget() {
                 </p>
               </div>
             </div>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setIsPlannedDialogOpen(false)}
-              className="text-white hover:bg-white/20"
-            >
-              ×
-            </Button>
           </div>
 
           {/* Content */}

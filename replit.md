@@ -30,6 +30,10 @@ Visual Identity: Pharos Capital brand guidelines applied.
   - Added real-time total value preview in form when creating installments
   - Enhanced success messages to show installment summary and total value
   - Automatic creation of individual pending transactions for each installment with proper dates
+- **January 31, 2025**: Fixed duplicate close button in planned transactions dialog
+  - Removed custom close button from dialog header to eliminate duplication
+  - DialogContent component already includes automatic close button functionality
+  - Enhanced user experience with single, consistent close button behavior
 - **January 31, 2025**: Completed migration from Replit Agent to standard Replit environment
   - Fixed duplicate "Transações Pendentes" title in budget component by removing redundant Card wrapper
   - Fixed duplicate "Suas Recorrências" title in budget component by removing redundant Card wrapper
