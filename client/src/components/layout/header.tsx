@@ -39,7 +39,7 @@ export function Header({ onToggleSidebar }: HeaderProps) {
             <Button
               variant="ghost"
               size="sm"
-              className="p-2 lg:hidden hover:bg-white/20 text-white rounded-lg transition-all duration-200"
+              className="p-2 lg:hidden hover:bg-white/20 rounded-lg transition-all duration-200"
               onClick={onToggleSidebar}
             >
               <Menu className="h-5 w-5" />
@@ -59,9 +59,9 @@ export function Header({ onToggleSidebar }: HeaderProps) {
                   placeholder="Buscar transações..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-64 pl-10 bg-white/20 border-white/30 text-white placeholder:text-white/70 rounded-lg focus:bg-white/30 focus:border-white/50 transition-all duration-200"
+                  className="w-64 pl-10 bg-white/20 border-white/30 rounded-lg focus:bg-white/30 focus:border-white/50 transition-all duration-200"
                 />
-                <Search className="absolute left-3 top-3 h-4 w-4 text-white/70" />
+                <Search className="absolute left-3 top-3 h-4 w-4" />
               </div>
             </form>
 
@@ -69,7 +69,7 @@ export function Header({ onToggleSidebar }: HeaderProps) {
             <ThemeToggle />
 
             {/* Notifications */}
-            <Button variant="ghost" size="sm" className="relative hover:bg-white/20 text-white rounded-lg transition-all duration-200">
+            <Button variant="ghost" size="sm" className="relative hover:bg-white/20 rounded-lg transition-all duration-200">
               <Bell className="h-5 w-5" />
               <Badge className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 text-xs bg-orange-500 text-white">
                 3
@@ -79,14 +79,14 @@ export function Header({ onToggleSidebar }: HeaderProps) {
             {/* User menu */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="flex items-center space-x-2 p-2 hover:bg-white/20 text-white rounded-lg transition-all duration-200">
+                <Button variant="ghost" className="flex items-center space-x-2 p-2 hover:bg-white/20 rounded-lg transition-all duration-200">
                   <Avatar className="h-8 w-8 ring-2 ring-white/30">
                     <AvatarImage src="" alt={user?.name} />
                     <AvatarFallback className="bg-white text-primary font-semibold">
                       {user?.name?.charAt(0).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
-                  <span className="hidden md:block text-sm font-medium text-white">
+                  <span className="hidden md:block text-sm font-medium">
                     {user?.name}
                   </span>
                 </Button>
