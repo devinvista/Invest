@@ -209,6 +209,31 @@
     -webkit-backdrop-filter: blur(12px);
   }
   
+  .btg-header .text-foreground {
+    color: white !important;
+  }
+  
+  .btg-header .text-muted-foreground {
+    color: rgba(255, 255, 255, 0.7) !important;
+  }
+  
+  .btg-header input {
+    color: white !important;
+    border-color: rgba(255, 255, 255, 0.3) !important;
+  }
+  
+  .btg-header input::placeholder {
+    color: rgba(255, 255, 255, 0.7) !important;
+  }
+  
+  .btg-header svg {
+    color: white !important;
+  }
+  
+  .btg-header button svg {
+    color: white !important;
+  }
+  
   .btg-section {
     @apply bg-white border border-gray-100 rounded-lg p-4;
     box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
