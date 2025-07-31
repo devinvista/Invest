@@ -31,7 +31,7 @@ export function Header({ onToggleSidebar }: HeaderProps) {
   };
 
   return (
-    <header className="bg-card/80 backdrop-blur-md border-b border-border/40 fixed top-0 w-full z-50 h-16 shadow-sm">
+    <header className="btg-header fixed top-0 w-full z-50 h-16 shadow-sm">
       <div className="px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo and mobile menu */}

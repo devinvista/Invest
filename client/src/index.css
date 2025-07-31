@@ -5,27 +5,27 @@
 @tailwind utilities;
 
 :root {
-  /* Pharos Capital Brand Colors - Light Mode */
-  --background: hsl(210, 20%, 98%); /* F8FAFB - Soft light blue-gray */
-  --foreground: hsl(220, 85%, 8%); /* 05132A - Pharos Dark Blue */
-  --muted: hsl(219, 100%, 97%); /* D2E5FF - Light Blue */
-  --muted-foreground: hsl(218, 62%, 57%); /* 549CFF - Medium Blue */
+  /* BTG/Pharos Capital Inspired Light Theme */
+  --background: hsl(0, 0%, 98%); /* F7F7F7 - Clean light gray background */
+  --foreground: hsl(220, 13%, 13%); /* 1F2937 - Professional dark text */
+  --muted: hsl(210, 40%, 96%); /* F3F4F6 - Subtle light background */
+  --muted-foreground: hsl(220, 9%, 46%); /* 6B7280 - Muted text */
   --popover: hsl(0, 0%, 100%);
-  --popover-foreground: hsl(220, 85%, 8%);
-  --card: hsl(0, 0%, 100%);
-  --card-foreground: hsl(220, 85%, 8%);
-  --border: hsl(219, 100%, 90%); /* B1D2FF */
-  --input: hsl(219, 100%, 95%); /* D2E5FF */
+  --popover-foreground: hsl(220, 13%, 13%);
+  --card: hsl(0, 0%, 100%); /* Pure white cards */
+  --card-foreground: hsl(220, 13%, 13%);
+  --border: hsl(220, 13%, 91%); /* E5E7EB - Clean borders */
+  --input: hsl(0, 0%, 100%); /* White inputs */
   --primary: hsl(218, 78%, 42%); /* 195AB4 - Pharos Primary Blue */
   --primary-foreground: hsl(0, 0%, 100%);
-  --secondary: hsl(219, 100%, 97%); /* D2E5FF */
-  --secondary-foreground: hsl(220, 85%, 8%);
-  --accent: hsl(218, 100%, 90%); /* B1D2FF */
-  --accent-foreground: hsl(220, 85%, 8%);
+  --secondary: hsl(210, 40%, 96%); /* Light background for secondary elements */
+  --secondary-foreground: hsl(220, 13%, 13%);
+  --accent: hsl(210, 40%, 94%); /* Subtle accent background */
+  --accent-foreground: hsl(220, 13%, 13%);
   --destructive: hsl(0, 84.2%, 60.2%);
   --destructive-foreground: hsl(0, 0%, 98%);
   --ring: hsl(218, 78%, 42%);
-  --radius: 0.75rem;
+  --radius: 0.5rem; /* Slightly smaller radius for cleaner look */
   
   /* Pharos Capital Financial Colors */
   --success: hsl(157, 69%, 38%); /* 149A5A - Pharos Green */
@@ -106,6 +106,7 @@
     @apply bg-background text-foreground font-sans antialiased;
     font-family: 'DM Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     transition: background-color 0.3s ease, color 0.3s ease;
+    background-color: hsl(210, 40%, 98%); /* Clean light background like BTG */
   }
 
   /* Dark theme root background */
@@ -121,19 +122,23 @@
 
 @layer components {
   .financial-card {
-    @apply bg-card border border-border rounded-xl p-6 shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1;
+    @apply bg-card border border-border rounded-lg p-6 shadow-sm hover:shadow-md transition-all duration-200;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
   }
   
   .financial-card:hover {
-    border-color: hsl(var(--primary) / 0.2);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    border-color: hsl(var(--primary) / 0.15);
   }
   
   .pharos-card {
-    @apply bg-card border border-border rounded-xl p-6 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1;
+    @apply bg-card border border-border rounded-lg p-6 shadow-sm hover:shadow-md transition-all duration-200;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
   }
   
   .pharos-card:hover {
-    border-color: hsl(var(--primary) / 0.3);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    border-color: hsl(var(--primary) / 0.15);
   }
 
   /* Vibrant card variants for dark theme */
@@ -183,6 +188,48 @@
     border-color: hsl(var(--vibrant-orange) / 0.6);
     background: linear-gradient(135deg, hsl(var(--card)) 0%, hsl(var(--vibrant-orange) / 0.1) 100%);
     box-shadow: 0 10px 25px hsl(var(--vibrant-orange) / 0.2);
+  }
+
+  /* BTG-inspired clean card styling for light theme */
+  .btg-card {
+    @apply bg-white border border-gray-200 rounded-lg p-6 transition-all duration-200;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  }
+  
+  .btg-card:hover {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    border-color: hsl(var(--primary) / 0.2);
+  }
+  
+  .btg-header {
+    @apply bg-primary text-white;
+    background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--primary) / 0.9) 100%);
+  }
+  
+  .btg-section {
+    @apply bg-white border border-gray-100 rounded-lg p-4;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  }
+  
+  .btg-data-card {
+    @apply bg-white border border-gray-100 rounded-lg p-6 hover:shadow-md transition-all duration-200;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  }
+  
+  .btg-metric-value {
+    @apply text-2xl font-semibold text-gray-900;
+  }
+  
+  .btg-metric-label {
+    @apply text-sm font-medium text-gray-600;
+  }
+  
+  .btg-badge-active {
+    @apply bg-primary text-white text-xs font-medium px-3 py-1 rounded-md;
+  }
+  
+  .btg-badge-secondary {
+    @apply bg-gray-100 text-gray-700 text-xs font-medium px-3 py-1 rounded-md;
   }
 
   /* Dark theme specific enhancements */
@@ -246,23 +293,22 @@
   }
   
   .nav-item {
-    @apply flex items-center px-3 sm:px-4 py-2.5 sm:py-3 text-xs sm:text-sm font-medium text-muted-foreground rounded-xl hover:bg-accent hover:text-primary transition-all duration-200 hover:translate-x-1;
+    @apply flex items-center px-3 sm:px-4 py-2.5 sm:py-3 text-xs sm:text-sm font-medium text-muted-foreground rounded-lg hover:bg-accent hover:text-primary transition-all duration-200;
     background-color: transparent;
   }
   
   .nav-item:hover {
-    background-color: hsl(var(--primary) / 0.1);
+    background-color: hsl(var(--primary) / 0.08);
   }
   
   .nav-item.active {
-    @apply bg-primary text-primary-foreground shadow-md border-none;
+    @apply bg-primary text-primary-foreground shadow-sm border-none;
     font-weight: 600;
+    background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--primary) / 0.9) 100%);
   }
   
   .nav-item.active:hover {
-    background-color: hsl(0, 0%, 100%);
-    color: hsl(var(--primary));
-    border: 1px solid hsl(var(--primary) / 0.3);
+    background: linear-gradient(135deg, hsl(var(--primary) / 0.95) 0%, hsl(var(--primary) / 0.85) 100%);
   }
   
   .sidebar-icon {
