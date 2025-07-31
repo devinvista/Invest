@@ -20,6 +20,11 @@ Visual Identity: Pharos Capital brand guidelines applied.
   - Database queries and API endpoints responding correctly
   - User interface fully functional with proper form submissions and data persistence
   - Migration completed successfully with zero data loss and full feature preservation
+- **January 31, 2025**: Simplified recurrences tab interface to show only edit and delete icons per user request
+  - Removed complex dialog-based details view and installment progress tracking
+  - Maintained core functionality: edit button (placeholder) and delete confirmation
+  - Streamlined interface focuses on essential recurrence management actions
+  - Clean, minimal design with improved user experience
 - **January 31, 2025**: Enhanced pending transaction confirmation with account selection capability
   - Added ConfirmTransactionDialog component allowing users to select which account receives pending transactions
   - Updated backend API to accept accountId parameter during transaction confirmation

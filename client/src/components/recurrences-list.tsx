@@ -5,59 +5,16 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Separator } from "@/components/ui/separator";
-import { Progress } from "@/components/ui/progress";
-import { Repeat, Calendar, Trash2, Edit, Play, Pause, Eye, CreditCard, BanknoteIcon, Target, Clock, CheckCircle, AlertCircle } from "lucide-react";
+import { Repeat, Calendar, Trash2, Edit, Target } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
-import { ConfirmTransactionDialog } from "@/components/ui/confirm-transaction-dialog";
-import type { Recurrence, Transaction } from "@shared/schema";
-
-interface RecurrenceDetails {
-  recurrence: Recurrence;
-  pendingTransactions: Transaction[];
-  confirmedTransactions: Transaction[];
-  totalPendingAmount: number;
-  totalConfirmedAmount: number;
-}
+import type { Recurrence } from "@shared/schema";
 
 export default function RecurrencesList() {
-  const [updatingId, setUpdatingId] = useState<string | null>(null);
-  const [selectedRecurrenceId, setSelectedRecurrenceId] = useState<string | null>(null);
-  const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
-  const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
-
   const { data: recurrences = [], isLoading } = useQuery<Recurrence[]>({
     queryKey: ['/api/recurrences'],
   });
 
-  const { data: recurrenceDetails, isLoading: isLoadingDetails } = useQuery<RecurrenceDetails | undefined>({
-    queryKey: ['/api/recurrences', selectedRecurrenceId, 'details'],
-    queryFn: () => selectedRecurrenceId ? apiRequest('GET', `/api/recurrences/${selectedRecurrenceId}/details`) : undefined,
-    enabled: !!selectedRecurrenceId,
-  });
 
-  const updateRecurrenceMutation = useMutation({
-    mutationFn: async ({ id, updates }: { id: string; updates: Partial<Recurrence> }) => {
-      return apiRequest('PUT', `/api/recurrences/${id}`, updates);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/recurrences'] });
-      setUpdatingId(null);
-      toast({
-        title: 'Sucesso',
-        description: 'Recorrência atualizada com sucesso!',
-      });
-    },
-    onError: (error: any) => {
-      toast({
-        title: 'Erro',
-        description: error.message || 'Erro ao atualizar recorrência',
-        variant: 'destructive',
-      });
-      setUpdatingId(null);
-    },
-  });
 
   const deleteRecurrenceMutation = useMutation({
     mutationFn: async (id: string) => {
@@ -107,45 +64,10 @@ export default function RecurrencesList() {
     return labels[frequency as keyof typeof labels] || frequency;
   };
 
-  const handleToggleActive = async (recurrence: Recurrence) => {
-    setUpdatingId(recurrence.id);
-    updateRecurrenceMutation.mutate({
-      id: recurrence.id,
-      updates: { isActive: !recurrence.isActive }
-    });
-  };
-
   const handleDelete = async (id: string) => {
     if (window.confirm('Tem certeza que deseja remover esta recorrência? Todas as transações pendentes relacionadas serão canceladas.')) {
       deleteRecurrenceMutation.mutate(id);
     }
-  };
-
-  const handleConfirmTransaction = (transaction: Transaction) => {
-    setSelectedTransaction(transaction);
-    setIsConfirmDialogOpen(true);
-  };
-
-  const handleViewDetails = (recurrenceId: string) => {
-    setSelectedRecurrenceId(recurrenceId);
-  };
-
-  const getInstallmentProgress = (recurrence: Recurrence, details?: RecurrenceDetails) => {
-    if (!details || !recurrence.installments || recurrence.installments <= 1) return null;
-    
-    const confirmed = details.confirmedTransactions.length;
-    const pending = details.pendingTransactions.length;
-    const total = recurrence.installments;
-    const progress = (confirmed / total) * 100;
-    
-    return {
-      confirmed,
-      pending,
-      total,
-      progress,
-      pendingAmount: details.totalPendingAmount,
-      confirmedAmount: details.totalConfirmedAmount
-    };
   };
 
   if (isLoading) {
@@ -260,229 +182,18 @@ export default function RecurrencesList() {
                       )}
                     </div>
 
-                    {/* Installment Progress Preview */}
-                    {recurrence.installments && recurrence.installments > 1 && (
-                      <div className="mt-3 p-3 bg-muted/30 rounded-lg">
-                        <div className="flex items-center justify-between text-sm mb-2">
-                          <span className="text-muted-foreground">Progresso das Parcelas</span>
-                          <span className="text-xs text-muted-foreground">
-                            Clique no ícone de visualização para detalhes
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-4 text-xs">
-                          <div className="flex items-center gap-1">
-                            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                            <span>Confirmadas: ?</span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
-                            <span>Pendentes: ?</span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <div className="w-2 h-2 bg-muted-foreground rounded-full"></div>
-                            <span>Total: {recurrence.installments}</span>
-                          </div>
-                        </div>
-                      </div>
-                    )}
+
                   </div>
 
                   <div className="flex items-center gap-2 ml-4">
-                    <div className="flex items-center gap-2">
-                      <Dialog>
-                        <DialogTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleViewDetails(recurrence.id)}
-                            data-testid={`view-details-${recurrence.id}`}
-                          >
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                        </DialogTrigger>
-                        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-                          <DialogHeader>
-                            <DialogTitle className="flex items-center gap-2">
-                              <Repeat className="h-5 w-5" />
-                              Detalhes da Recorrência
-                            </DialogTitle>
-                            <DialogDescription>
-                              {recurrence.description} - {getFrequencyLabel(recurrence.frequency)}
-                            </DialogDescription>
-                          </DialogHeader>
-                          
-                          {isLoadingDetails ? (
-                            <div className="space-y-4">
-                              <div className="h-20 bg-muted animate-pulse rounded-lg" />
-                              <div className="h-40 bg-muted animate-pulse rounded-lg" />
-                            </div>
-                          ) : recurrenceDetails ? (
-                            <div className="space-y-6">
-                              {/* General Information */}
-                              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                <div className="space-y-2">
-                                  <p className="text-sm font-medium text-muted-foreground">Valor</p>
-                                  <p className={`text-lg font-bold ${
-                                    recurrence.type === 'income' 
-                                      ? 'text-green-600 dark:text-green-400' 
-                                      : 'text-red-600 dark:text-red-400'
-                                  }`}>
-                                    {recurrence.type === 'income' ? '+' : '-'}{formatCurrency(recurrence.amount)}
-                                  </p>
-                                </div>
-                                <div className="space-y-2">
-                                  <p className="text-sm font-medium text-muted-foreground">Frequência</p>
-                                  <p className="text-lg font-semibold">{getFrequencyLabel(recurrence.frequency)}</p>
-                                </div>
-                                <div className="space-y-2">
-                                  <p className="text-sm font-medium text-muted-foreground">Status</p>
-                                  <Badge variant={recurrence.isActive ? "default" : "destructive"}>
-                                    {recurrence.isActive ? "Ativa" : "Pausada"}
-                                  </Badge>
-                                </div>
-                                <div className="space-y-2">
-                                  <p className="text-sm font-medium text-muted-foreground">Próxima Execução</p>
-                                  <p className="text-sm">{formatDate(recurrence.nextExecutionDate)}</p>
-                                </div>
-                              </div>
-
-                              {/* Installment Progress */}
-                              {(() => {
-                                const progress = getInstallmentProgress(recurrence, recurrenceDetails);
-                                return progress && (
-                                  <div className="space-y-4">
-                                    <Separator />
-                                    <div>
-                                      <h4 className="text-lg font-semibold mb-3 flex items-center gap-2">
-                                        <Target className="h-5 w-5" />
-                                        Progresso das Parcelas
-                                      </h4>
-                                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-                                        <div className="text-center">
-                                          <p className="text-2xl font-bold text-green-600">{progress.confirmed}</p>
-                                          <p className="text-sm text-muted-foreground">Confirmadas</p>
-                                        </div>
-                                        <div className="text-center">
-                                          <p className="text-2xl font-bold text-orange-600">{progress.pending}</p>
-                                          <p className="text-sm text-muted-foreground">Pendentes</p>
-                                        </div>
-                                        <div className="text-center">
-                                          <p className="text-2xl font-bold">{progress.total}</p>
-                                          <p className="text-sm text-muted-foreground">Total</p>
-                                        </div>
-                                        <div className="text-center">
-                                          <p className="text-2xl font-bold text-orange-600">
-                                            {formatCurrency(progress.pendingAmount.toString())}
-                                          </p>
-                                          <p className="text-sm text-muted-foreground">Saldo Pendente</p>
-                                        </div>
-                                      </div>
-                                      <Progress value={progress.progress} className="w-full" />
-                                      <p className="text-sm text-muted-foreground mt-2 text-center">
-                                        {progress.progress.toFixed(1)}% das parcelas confirmadas
-                                      </p>
-                                    </div>
-                                  </div>
-                                );
-                              })()}
-
-                              {/* Pending Transactions */}
-                              {recurrenceDetails.pendingTransactions.length > 0 && (
-                                <div className="space-y-4">
-                                  <Separator />
-                                  <div>
-                                    <h4 className="text-lg font-semibold mb-3 flex items-center gap-2">
-                                      <Clock className="h-5 w-5" />
-                                      Transações Pendentes
-                                      <Badge variant="secondary">{recurrenceDetails.pendingTransactions.length}</Badge>
-                                    </h4>
-                                    <div className="space-y-3">
-                                      {recurrenceDetails.pendingTransactions.map((transaction) => (
-                                        <div
-                                          key={transaction.id}
-                                          className="flex items-center justify-between p-3 border rounded-lg"
-                                        >
-                                          <div className="flex items-center gap-3">
-                                            <AlertCircle className="h-5 w-5 text-orange-500" />
-                                            <div>
-                                              <p className="font-medium">{transaction.description}</p>
-                                              <p className="text-sm text-muted-foreground">
-                                                {formatDate(transaction.date)}
-                                              </p>
-                                            </div>
-                                          </div>
-                                          <div className="flex items-center gap-3">
-                                            <span className="font-bold text-orange-600">
-                                              {formatCurrency(transaction.amount)}
-                                            </span>
-                                            <Button
-                                              size="sm"
-                                              onClick={() => handleConfirmTransaction(transaction)}
-                                            >
-                                              <CheckCircle className="h-4 w-4 mr-2" />
-                                              Confirmar
-                                            </Button>
-                                          </div>
-                                        </div>
-                                      ))}
-                                    </div>
-                                  </div>
-                                </div>
-                              )}
-
-                              {/* Confirmed Transactions */}
-                              {recurrenceDetails.confirmedTransactions.length > 0 && (
-                                <div className="space-y-4">
-                                  <Separator />
-                                  <div>
-                                    <h4 className="text-lg font-semibold mb-3 flex items-center gap-2">
-                                      <CheckCircle className="h-5 w-5" />
-                                      Transações Confirmadas
-                                      <Badge variant="default">{recurrenceDetails.confirmedTransactions.length}</Badge>
-                                    </h4>
-                                    <div className="max-h-60 overflow-y-auto space-y-2">
-                                      {recurrenceDetails.confirmedTransactions.map((transaction) => (
-                                        <div
-                                          key={transaction.id}
-                                          className="flex items-center justify-between p-2 border rounded"
-                                        >
-                                          <div className="flex items-center gap-3">
-                                            <CheckCircle className="h-4 w-4 text-green-500" />
-                                            <div>
-                                              <p className="text-sm font-medium">{transaction.description}</p>
-                                              <p className="text-xs text-muted-foreground">
-                                                {formatDate(transaction.date)}
-                                              </p>
-                                            </div>
-                                          </div>
-                                          <span className="text-sm font-semibold text-green-600">
-                                            {formatCurrency(transaction.amount)}
-                                          </span>
-                                        </div>
-                                      ))}
-                                    </div>
-                                  </div>
-                                </div>
-                              )}
-                            </div>
-                          ) : (
-                            <p className="text-center py-8 text-muted-foreground">
-                              Erro ao carregar detalhes da recorrência
-                            </p>
-                          )}
-                        </DialogContent>
-                      </Dialog>
-                      
-                      <Switch
-                        checked={recurrence.isActive}
-                        onCheckedChange={() => handleToggleActive(recurrence)}
-                        disabled={updatingId === recurrence.id}
-                        data-testid={`toggle-recurrence-${recurrence.id}`}
-                      />
-                      <span className="text-sm text-muted-foreground">
-                        {recurrence.isActive ? <Play className="h-4 w-4" /> : <Pause className="h-4 w-4" />}
-                      </span>
-                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => console.log('Edit recurrence:', recurrence.id)}
+                      data-testid={`edit-recurrence-${recurrence.id}`}
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
                     
                     <Button
                       variant="ghost"
@@ -500,12 +211,6 @@ export default function RecurrencesList() {
           </div>
         )}
       </CardContent>
-      
-      <ConfirmTransactionDialog
-        transaction={selectedTransaction}
-        open={isConfirmDialogOpen}
-        onOpenChange={setIsConfirmDialogOpen}
-      />
     </Card>
   );
 }
