@@ -4,12 +4,16 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Switch } from "@/components/ui/switch";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Repeat, Calendar, Trash2, Edit, Target } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import RecurrenceEditForm from "@/components/recurrence-edit-form";
 import type { Recurrence } from "@shared/schema";
 
 export default function RecurrencesList() {
+  const [editingRecurrence, setEditingRecurrence] = useState<Recurrence | null>(null);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+
   const { data: recurrences = [], isLoading } = useQuery<Recurrence[]>({
     queryKey: ['/api/recurrences'],
   });
@@ -68,6 +72,21 @@ export default function RecurrencesList() {
     if (window.confirm('Tem certeza que deseja remover esta recorrência? Todas as transações pendentes relacionadas serão canceladas.')) {
       deleteRecurrenceMutation.mutate(id);
     }
+  };
+
+  const handleEdit = (recurrence: Recurrence) => {
+    setEditingRecurrence(recurrence);
+    setIsEditDialogOpen(true);
+  };
+
+  const handleEditSuccess = () => {
+    setIsEditDialogOpen(false);
+    setEditingRecurrence(null);
+    queryClient.invalidateQueries({ queryKey: ['/api/recurrences'] });
+    toast({
+      title: 'Sucesso',
+      description: 'Recorrência atualizada com sucesso!',
+    });
   };
 
   if (isLoading) {
@@ -186,14 +205,37 @@ export default function RecurrencesList() {
                   </div>
 
                   <div className="flex items-center gap-2 ml-4">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => console.log('Edit recurrence:', recurrence.id)}
-                      data-testid={`edit-recurrence-${recurrence.id}`}
-                    >
-                      <Edit className="h-4 w-4" />
-                    </Button>
+                    <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+                      <DialogTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleEdit(recurrence)}
+                          data-testid={`edit-recurrence-${recurrence.id}`}
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+                        <DialogHeader>
+                          <DialogTitle className="flex items-center gap-2">
+                            <Edit className="h-5 w-5" />
+                            Editar Recorrência
+                          </DialogTitle>
+                          <DialogDescription>
+                            Altere as informações da recorrência abaixo
+                          </DialogDescription>
+                        </DialogHeader>
+                        
+                        {editingRecurrence && (
+                          <RecurrenceEditForm 
+                            recurrence={editingRecurrence}
+                            onSuccess={handleEditSuccess}
+                            onCancel={() => setIsEditDialogOpen(false)}
+                          />
+                        )}
+                      </DialogContent>
+                    </Dialog>
                     
                     <Button
                       variant="ghost"
