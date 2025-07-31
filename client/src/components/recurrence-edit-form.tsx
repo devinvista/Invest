@@ -72,12 +72,29 @@ export default function RecurrenceEditForm({ recurrence, onSuccess, onCancel }: 
 
   const updateRecurrenceMutation = useMutation({
     mutationFn: async (data: RecurrenceEditData) => {
+      // Clean amount string and convert to number
+      const cleanAmount = data.amount.replace(/[^\d,]/g, '').replace(',', '.');
+      const numericAmount = parseFloat(cleanAmount);
+      
+      if (isNaN(numericAmount)) {
+        throw new Error('Valor inválido');
+      }
+      
       const payload = {
-        ...data,
-        amount: parseFloat(data.amount),
+        type: data.type,
+        amount: numericAmount.toString(),
+        description: data.description,
+        categoryId: data.categoryId,
+        frequency: data.frequency,
+        isActive: data.isActive,
         startDate: startDate.toISOString(),
         endDate: endDate?.toISOString() || null,
+        // Only include one of accountId or creditCardId, set the other to null
+        accountId: data.accountId || null,
+        creditCardId: data.creditCardId || null,
       };
+      
+      console.log('🔄 Sending update payload:', payload);
       return apiRequest('PUT', `/api/recurrences/${recurrence.id}`, payload);
     },
     onSuccess: () => {

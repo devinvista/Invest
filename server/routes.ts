@@ -665,7 +665,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.put("/api/recurrences/:id", authenticateToken, async (req: any, res) => {
     try {
       const recurrenceId = req.params.id;
+      console.log('🔄 Update recurrence request:', {
+        recurrenceId,
+        body: req.body
+      });
+      
       const updates = insertRecurrenceSchema.partial().parse(req.body);
+      console.log('✅ Parsed updates:', updates);
       
       // Process dates if provided
       if (updates.startDate && typeof updates.startDate === 'string') {
@@ -676,8 +682,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       const recurrence = await storage.updateRecurrence(recurrenceId, updates);
+      console.log('✅ Recurrence updated successfully:', recurrence.id);
       res.json(recurrence);
     } catch (error) {
+      console.error('❌ Error updating recurrence:', error);
       res.status(400).json({ message: "Erro ao atualizar recorrência", error: error instanceof Error ? error.message : "Erro desconhecido" });
     }
   });
