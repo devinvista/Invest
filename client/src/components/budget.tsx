@@ -1082,20 +1082,7 @@ export function Budget() {
                 </TabsContent>
 
                 <TabsContent value="recurrences" className="space-y-6">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <Repeat className="h-5 w-5" />
-                        Suas Recorrências
-                      </CardTitle>
-                      <CardDescription>
-                        Visualize e gerencie todas as suas transações recorrentes configuradas
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <RecurrencesList />
-                    </CardContent>
-                  </Card>
+                  <RecurrencesList />
                 </TabsContent>
 
 
