@@ -306,7 +306,12 @@ export class DatabaseStorage implements IStorage {
     try {
       return await db.select()
         .from(recurrences)
-        .where(eq(recurrences.userId, userId))
+        .where(
+          and(
+            eq(recurrences.userId, userId),
+            eq(recurrences.isActive, true)
+          )
+        )
         .orderBy(desc(recurrences.createdAt));
     } catch (error) {
       console.error("getUserRecurrences error:", error);
@@ -350,6 +355,11 @@ export class DatabaseStorage implements IStorage {
   async deactivateRecurrence(recurrenceId: string): Promise<void> {
     await db.update(recurrences)
       .set({ isActive: false })
+      .where(eq(recurrences.id, recurrenceId));
+  }
+
+  async deleteRecurrence(recurrenceId: string): Promise<void> {
+    await db.delete(recurrences)
       .where(eq(recurrences.id, recurrenceId));
   }
 

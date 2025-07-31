@@ -668,10 +668,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.delete("/api/recurrences/:id", authenticateToken, async (req: any, res) => {
     try {
       const recurrenceId = req.params.id;
-      await storage.deactivateRecurrence(recurrenceId);
-      res.json({ message: "Recorrência desativada com sucesso" });
+      console.log(`🗑️ Delete recurrence request for ID: ${recurrenceId}`);
+      
+      // Actually delete the recurrence from database
+      await storage.deleteRecurrence(recurrenceId);
+      console.log(`✅ Recurrence deleted successfully: ${recurrenceId}`);
+      
+      res.json({ message: "Recorrência removida com sucesso" });
     } catch (error) {
-      res.status(500).json({ message: "Erro ao desativar recorrência", error: error instanceof Error ? error.message : "Erro desconhecido" });
+      console.error(`❌ Error deleting recurrence:`, error);
+      res.status(500).json({ message: "Erro ao remover recorrência", error: error instanceof Error ? error.message : "Erro desconhecido" });
     }
   });
 

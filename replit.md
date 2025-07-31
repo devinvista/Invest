@@ -11,6 +11,19 @@ Visual Identity: Pharos Capital brand guidelines applied.
 
 ## Recent Changes
 
+- **January 31, 2025**: Fixed recurrence deletion functionality - Recurrences now properly delete from database instead of just deactivating
+  - Updated getUserRecurrences query to only show active recurrences (isActive: true)
+  - Added proper deleteRecurrence method that removes records from database
+  - Fixed misleading success messages when recurrences weren't actually being removed
+  - Enhanced server-side logging for better deletion tracking and debugging
+- **January 31, 2025**: Fixed transaction deletion API parameter order error
+  - Corrected apiRequest function calls to use proper parameter order (method, url, data)
+  - Transaction deletion now works correctly in transactions table dialog
+  - All CRUD operations for transactions functioning properly
+- **January 31, 2025**: Fixed server-side recurrence creation schema validation error
+  - Resolved "Expected number, received null" error for installments field
+  - Updated schema handling to provide default value (1) for installments when not specified
+  - Form submission for planned transactions now working correctly
 - **January 31, 2025**: Investment Logic Correction - Changed investment handling to follow proper financial logic
   - Removed "investment" as separate transaction type 
   - Investments are now transfers from checking account to investment account
