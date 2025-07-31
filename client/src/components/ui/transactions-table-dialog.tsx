@@ -61,7 +61,7 @@ export function TransactionsTableDialog({
   // Delete transaction mutation
   const deleteTransactionMutation = useMutation({
     mutationFn: async (transactionId: string) => {
-      return apiRequest(`/api/transactions/${transactionId}`, 'DELETE');
+      return apiRequest('DELETE', `/api/transactions/${transactionId}`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/transactions'] });
