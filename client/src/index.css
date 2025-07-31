@@ -217,16 +217,20 @@
   
   .btg-header {
     @apply border-b backdrop-blur-md;
-    background: hsl(var(--primary) / 0.9);
+    background: hsl(var(--primary) / 0.9) !important;
     border-bottom-color: hsl(var(--primary) / 0.2);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    /* Light theme: white text on blue background */
-    color: white;
+    color: white !important;
   }
   
-  /* Light theme header styles */
-  .btg-header * {
+  /* Force white text in header regardless of theme */
+  .btg-header,
+  .btg-header *,
+  .btg-header span,
+  .btg-header div,
+  .btg-header button,
+  .btg-header svg {
     color: white !important;
   }
   
@@ -240,26 +244,20 @@
     color: rgba(255, 255, 255, 0.7) !important;
   }
   
-  .btg-header svg {
-    color: white !important;
-  }
-  
-  .btg-header button {
-    color: white !important;
-  }
-  
-  /* Dark theme header adjustments */
-  .dark .btg-header {
-    color: white;
-  }
-  
-  .dark .btg-header * {
+  /* Dark theme - same styles to ensure consistency */
+  .dark .btg-header,
+  .dark .btg-header *,
+  .dark .btg-header span,
+  .dark .btg-header div,
+  .dark .btg-header button,
+  .dark .btg-header svg {
     color: white !important;
   }
   
   .dark .btg-header input {
-    background-color: rgba(255, 255, 255, 0.1) !important;
-    border-color: rgba(255, 255, 255, 0.2) !important;
+    color: white !important;
+    background-color: rgba(255, 255, 255, 0.15) !important;
+    border-color: rgba(255, 255, 255, 0.25) !important;
   }
   
   .btg-section {
