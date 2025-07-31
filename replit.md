@@ -11,6 +11,13 @@ Visual Identity: Pharos Capital brand guidelines applied.
 
 ## Recent Changes
 
+- **January 30, 2025**: Enhanced planned transactions form with flexible recurrence options
+  - Updated form to allow choosing between "Uma única vez" (one-time) or "Recorrente" (recurring) transactions
+  - For recurring transactions, added option to choose end condition: number of repetitions or specific end date
+  - Installments field now appears only for one-time transactions, with proper conditional validation  
+  - Renamed interface from "Nova Recorrência" to "Novo Lançamento Planejado" for better user understanding
+  - Enhanced form validation to require frequency only for recurring transactions
+  - Improved user experience with dynamic form sections based on transaction type selection
 - **January 30, 2025**: Successfully completed migration from Replit Agent to Replit environment with database schema fixes
   - Fixed critical database schema errors - added missing "status" column to transactions table
   - Resolved "column status does not exist" PostgreSQL errors preventing recurrence creation
