@@ -715,7 +715,7 @@ export function Accounts() {
                         </FormControl>
                         <FormMessage />
                         <div className="text-xs text-muted-foreground mt-1">
-                          ⚠️ Transferências para investimento serão registradas como despesas de categoria "savings" (20%) e excluídas do cálculo de resultado do período.
+                          💡 Transferências para investimento são classificadas como "Poupança (20%)" no método 50/30/20, representando aportes para seu futuro financeiro.
                         </div>
                       </FormItem>
                     )}

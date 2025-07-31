@@ -286,7 +286,6 @@ export function Categories() {
                 <SelectItem value="all">Todas</SelectItem>
                 <SelectItem value="income">Receitas</SelectItem>
                 <SelectItem value="expense">Despesas</SelectItem>
-                <SelectItem value="investment">Investimentos</SelectItem>
               </SelectContent>
             </Select>
 
@@ -335,7 +334,6 @@ export function Categories() {
                             <SelectContent>
                               <SelectItem value="income">Receita</SelectItem>
                               <SelectItem value="expense">Despesa</SelectItem>
-                              <SelectItem value="investment">Investimento</SelectItem>
                             </SelectContent>
                           </Select>
                           <FormMessage />
@@ -368,12 +366,7 @@ export function Categories() {
                       />
                     )}
 
-                    {form.watch('transactionType') === 'investment' && (
-                      <div className="text-sm text-muted-foreground bg-blue-50 dark:bg-blue-950 p-3 rounded-md border border-blue-200 dark:border-blue-800">
-                        <p><strong>Categorias de Investimento:</strong> Usadas para classificar aportes em diferentes tipos de ativos.</p>
-                        <p>Estas transações não são incluídas no cálculo do método 50/30/20, sendo tratadas como movimentações de portfólio.</p>
-                      </div>
-                    )}
+
 
                     <FormField
                       control={form.control}

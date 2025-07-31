@@ -11,6 +11,13 @@ Visual Identity: Pharos Capital brand guidelines applied.
 
 ## Recent Changes
 
+- **January 31, 2025**: Investment Logic Correction - Changed investment handling to follow proper financial logic
+  - Removed "investment" as separate transaction type 
+  - Investments are now transfers from checking account to investment account
+  - Transfer to investment account automatically classified as "Poupança (20%)" category
+  - Converted existing investment categories to savings expense categories
+  - Updated all forms and components to reflect this change
+  - Enhanced transfer functionality with clear messaging about investment classification
 - **January 31, 2025**: Completed migration from Replit Agent to standard Replit environment
   - Fixed duplicate "Transações Pendentes" title in budget component by removing redundant Card wrapper
   - Fixed duplicate "Suas Recorrências" title in budget component by removing redundant Card wrapper

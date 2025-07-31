@@ -170,7 +170,6 @@ export default function RecurrenceForm({ onSuccess }: RecurrenceFormProps) {
                 <SelectContent>
                   <SelectItem value="income">Receita</SelectItem>
                   <SelectItem value="expense">Despesa</SelectItem>
-                  <SelectItem value="investment">Investimento</SelectItem>
                 </SelectContent>
               </Select>
             </div>

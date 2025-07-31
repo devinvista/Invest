@@ -4,7 +4,7 @@ import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
 // Enums
-export const transactionTypeEnum = pgEnum('transaction_type', ['income', 'expense', 'investment', 'transfer']);
+export const transactionTypeEnum = pgEnum('transaction_type', ['income', 'expense', 'transfer']);
 export const categoryTypeEnum = pgEnum('category_type', ['necessities', 'wants', 'savings']);
 export const accountTypeEnum = pgEnum('account_type', ['checking', 'savings', 'investment']);
 export const assetTypeEnum = pgEnum('asset_type', ['stock', 'fii', 'crypto', 'fixed_income', 'etf', 'fund']);

@@ -589,7 +589,6 @@ export function Reports() {
                   <SelectItem value="all">Todos os tipos</SelectItem>
                   <SelectItem value="income">Receitas</SelectItem>
                   <SelectItem value="expense">Despesas</SelectItem>
-                  <SelectItem value="investment">Investimentos</SelectItem>
                   <SelectItem value="transfer">Transferências</SelectItem>
                 </SelectContent>
               </Select>

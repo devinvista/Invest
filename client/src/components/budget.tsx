@@ -62,7 +62,7 @@ export function Budget() {
 
   // Transaction form schema
   const transactionFormSchema = z.object({
-    type: z.enum(['income', 'expense', 'investment']),
+    type: z.enum(['income', 'expense', 'transfer']),
     amount: z.string().min(1, 'Valor é obrigatório'),
     description: z.string().min(1, 'Descrição é obrigatória'),
     categoryId: z.string().min(1, 'Categoria é obrigatória'),
