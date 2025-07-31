@@ -86,11 +86,19 @@ export default function RecurrenceForm({ onSuccess }: RecurrenceFormProps) {
       };
       return apiRequest('POST', '/api/recurrences', payload);
     },
-    onSuccess: () => {
+    onSuccess: (data: any) => {
       queryClient.invalidateQueries({ queryKey: ['/api/recurrences'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/transactions'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/transactions/pending'] });
+      
+      let description = 'Lançamento planejado criado com sucesso!';
+      if (data.installments && data.totalValue) {
+        description = `${data.message || description}\nCriadas ${data.installments} parcelas com valor total de R$ ${data.totalValue.toFixed(2)}`;
+      }
+      
       toast({
         title: 'Sucesso',
-        description: 'Lançamento planejado criado com sucesso!',
+        description,
       });
       form.reset();
       setStartDate(new Date());
@@ -359,7 +367,7 @@ export default function RecurrenceForm({ onSuccess }: RecurrenceFormProps) {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="amount">Valor (R$)</Label>
+            <Label htmlFor="amount">Valor por Parcela (R$)</Label>
             <Input
               id="amount"
               type="number"
@@ -370,6 +378,12 @@ export default function RecurrenceForm({ onSuccess }: RecurrenceFormProps) {
             />
             {form.formState.errors.amount && (
               <p className="text-sm text-destructive">{form.formState.errors.amount.message}</p>
+            )}
+            {isRecurring && endType === 'repetitions' && repetitions >= 2 && form.watch('amount') && (
+              <div className="text-sm text-muted-foreground p-2 bg-muted rounded-md">
+                💰 <strong>Valor total:</strong> R$ {(parseFloat(form.watch('amount')) * repetitions).toFixed(2)} 
+                <span className="text-xs"> ({repetitions} × R$ {parseFloat(form.watch('amount')).toFixed(2)})</span>
+              </div>
             )}
           </div>
 

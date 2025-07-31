@@ -583,7 +583,52 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
       
       const recurrence = await storage.createRecurrence(recurrenceData);
-      res.json(recurrence);
+      
+      // Se há parcelas (installments), criar as transações individuais
+      if (recurrenceData.installments && recurrenceData.installments > 1) {
+        const totalValue = Number(recurrenceData.amount) * recurrenceData.installments;
+        const transactions = [];
+        
+        for (let i = 1; i <= recurrenceData.installments; i++) {
+          const installmentDate = new Date(recurrenceData.startDate);
+          
+          // Calcular data para cada parcela baseado na frequência
+          if (recurrenceData.frequency === 'monthly') {
+            installmentDate.setMonth(installmentDate.getMonth() + (i - 1));
+          } else if (recurrenceData.frequency === 'weekly') {
+            installmentDate.setDate(installmentDate.getDate() + (7 * (i - 1)));
+          } else if (recurrenceData.frequency === 'daily') {
+            installmentDate.setDate(installmentDate.getDate() + (i - 1));
+          } else if (recurrenceData.frequency === 'yearly') {
+            installmentDate.setFullYear(installmentDate.getFullYear() + (i - 1));
+          }
+          
+          const transactionData = {
+            userId: req.userId,
+            accountId: recurrenceData.accountId,
+            creditCardId: recurrenceData.creditCardId,
+            categoryId: recurrenceData.categoryId,
+            type: recurrenceData.type,
+            amount: recurrenceData.amount,
+            description: `${recurrenceData.description} - ${i}/${recurrenceData.installments} parcela`,
+            date: installmentDate,
+            status: 'pending' as const
+          };
+          
+          const transaction = await storage.createTransaction(transactionData);
+          transactions.push(transaction);
+        }
+        
+        res.json({ 
+          recurrence, 
+          transactions,
+          totalValue,
+          installments: recurrenceData.installments,
+          message: `Criadas ${recurrenceData.installments} parcelas. Valor total: R$ ${totalValue.toFixed(2)}` 
+        });
+      } else {
+        res.json(recurrence);
+      }
     } catch (error) {
       res.status(400).json({ message: "Erro ao criar recorrência", error: error instanceof Error ? error.message : "Erro desconhecido" });
     }

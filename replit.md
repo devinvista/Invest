@@ -24,6 +24,12 @@ Visual Identity: Pharos Capital brand guidelines applied.
   - Enhanced form validation: 1 parcela = pagamento único, parcelamento requires 2+ repetitions
   - Added clear validation messages and interface explanations about installment logic
   - Fixed TypeScript errors and form validation to support the corrected logic
+- **January 31, 2025**: Implemented automatic installment description and total value calculation
+  - Backend now automatically adds "1/x parcela", "2/x parcela" etc. to transaction descriptions
+  - Calculates and shows total value when creating installments (individual amount × number of installments)
+  - Added real-time total value preview in form when creating installments
+  - Enhanced success messages to show installment summary and total value
+  - Automatic creation of individual pending transactions for each installment with proper dates
 - **January 31, 2025**: Completed migration from Replit Agent to standard Replit environment
   - Fixed duplicate "Transações Pendentes" title in budget component by removing redundant Card wrapper
   - Fixed duplicate "Suas Recorrências" title in budget component by removing redundant Card wrapper
