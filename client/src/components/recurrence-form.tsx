@@ -49,7 +49,7 @@ export default function RecurrenceForm({ onSuccess }: RecurrenceFormProps) {
   const [endDate, setEndDate] = useState<Date | undefined>();
   const [showEndDate, setShowEndDate] = useState(false);
   const [isRecurring, setIsRecurring] = useState(false);
-  const [endType, setEndType] = useState<'repetitions' | 'date'>('repetitions');
+  const [endType, setEndType] = useState<'repetitions' | 'date' | 'forever'>('repetitions');
 
   const { data: accounts = [] } = useQuery<Account[]>({
     queryKey: ['/api/accounts'],
@@ -83,7 +83,7 @@ export default function RecurrenceForm({ onSuccess }: RecurrenceFormProps) {
         startDate: startDate,
         endDate: (data.isRecurring && endType === 'date') ? endDate : null,
         frequency: data.isRecurring ? data.frequency : 'monthly', // Default for one-time
-        installments: data.isRecurring && endType === 'repetitions' ? data.installments : data.installments,
+        installments: data.isRecurring && endType === 'repetitions' ? data.installments : (!data.isRecurring ? data.installments : null),
       };
       return apiRequest('POST', '/api/recurrences', payload);
     },
@@ -227,7 +227,7 @@ export default function RecurrenceForm({ onSuccess }: RecurrenceFormProps) {
                 <Label>Terminar</Label>
                 <Select 
                   value={endType} 
-                  onValueChange={(value: 'repetitions' | 'date') => setEndType(value)}
+                  onValueChange={(value: 'repetitions' | 'date' | 'forever') => setEndType(value)}
                 >
                   <SelectTrigger data-testid="select-end-type">
                     <SelectValue placeholder="Como terminar a recorrência" />
@@ -235,6 +235,7 @@ export default function RecurrenceForm({ onSuccess }: RecurrenceFormProps) {
                   <SelectContent>
                     <SelectItem value="repetitions">Após X repetições</SelectItem>
                     <SelectItem value="date">Em uma data específica</SelectItem>
+                    <SelectItem value="forever">Para sempre</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -251,7 +252,7 @@ export default function RecurrenceForm({ onSuccess }: RecurrenceFormProps) {
                     data-testid="input-installments"
                   />
                 </div>
-              ) : (
+              ) : endType === 'date' ? (
                 <div className="space-y-2">
                   <Label>Data final</Label>
                   <Popover>
@@ -274,6 +275,12 @@ export default function RecurrenceForm({ onSuccess }: RecurrenceFormProps) {
                       />
                     </PopoverContent>
                   </Popover>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <div className="text-sm text-muted-foreground p-3 bg-muted rounded-md">
+                    ♾️ Esta recorrência continuará para sempre até que você a exclua manualmente.
+                  </div>
                 </div>
               )}
             </div>
