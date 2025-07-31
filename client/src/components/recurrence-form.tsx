@@ -49,6 +49,7 @@ export default function RecurrenceForm({ onSuccess }: RecurrenceFormProps) {
   const [endDate, setEndDate] = useState<Date | undefined>();
   const [showEndDate, setShowEndDate] = useState(false);
   const [isRecurring, setIsRecurring] = useState(false);
+  const [endType, setEndType] = useState<'repetitions' | 'date'>('repetitions');
 
   const { data: accounts = [] } = useQuery<Account[]>({
     queryKey: ['/api/accounts'],
@@ -80,8 +81,9 @@ export default function RecurrenceForm({ onSuccess }: RecurrenceFormProps) {
         ...data,
         amount: parseFloat(data.amount),
         startDate: startDate,
-        endDate: showEndDate ? endDate : null,
+        endDate: (data.isRecurring && endType === 'date') ? endDate : null,
         frequency: data.isRecurring ? data.frequency : 'monthly', // Default for one-time
+        installments: data.isRecurring && endType === 'repetitions' ? data.installments : data.installments,
       };
       return apiRequest('POST', '/api/recurrences', payload);
     },
@@ -96,6 +98,7 @@ export default function RecurrenceForm({ onSuccess }: RecurrenceFormProps) {
       setEndDate(undefined);
       setShowEndDate(false);
       setIsRecurring(false);
+      setEndType('repetitions');
       onSuccess?.();
     },
     onError: (error: any) => {
@@ -218,6 +221,64 @@ export default function RecurrenceForm({ onSuccess }: RecurrenceFormProps) {
             </div>
           )}
 
+          {isRecurring && (
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label>Terminar</Label>
+                <Select 
+                  value={endType} 
+                  onValueChange={(value: 'repetitions' | 'date') => setEndType(value)}
+                >
+                  <SelectTrigger data-testid="select-end-type">
+                    <SelectValue placeholder="Como terminar a recorrência" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="repetitions">Após X repetições</SelectItem>
+                    <SelectItem value="date">Em uma data específica</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {endType === 'repetitions' ? (
+                <div className="space-y-2">
+                  <Label htmlFor="installments">Número de repetições</Label>
+                  <Input
+                    id="installments"
+                    type="number"
+                    min="1"
+                    placeholder="12"
+                    {...form.register('installments', { valueAsNumber: true })}
+                    data-testid="input-installments"
+                  />
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <Label>Data final</Label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className="w-full justify-start text-left font-normal"
+                        data-testid="button-end-date"
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {endDate ? format(endDate, "P", { locale: ptBR }) : "Selecione a data final"}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={endDate}
+                        onSelect={setEndDate}
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
+              )}
+            </div>
+          )}
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="account">Conta/Cartão</Label>
@@ -290,17 +351,19 @@ export default function RecurrenceForm({ onSuccess }: RecurrenceFormProps) {
               )}
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="installments">Parcelas (opcional)</Label>
-              <Input
-                id="installments"
-                type="number"
-                min="1"
-                placeholder="1"
-                {...form.register('installments', { valueAsNumber: true })}
-                data-testid="input-installments"
-              />
-            </div>
+            {!isRecurring && (
+              <div className="space-y-2">
+                <Label htmlFor="installments">Parcelas (opcional)</Label>
+                <Input
+                  id="installments"
+                  type="number"
+                  min="1"
+                  placeholder="1"
+                  {...form.register('installments', { valueAsNumber: true })}
+                  data-testid="input-installments"
+                />
+              </div>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -316,65 +379,28 @@ export default function RecurrenceForm({ onSuccess }: RecurrenceFormProps) {
             )}
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>Data de Início</Label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className="w-full justify-start text-left font-normal"
-                    data-testid="button-start-date"
-                  >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {startDate ? format(startDate, "P", { locale: ptBR }) : "Selecione a data"}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={startDate}
-                    onSelect={setStartDate}
-                    initialFocus
-                  />
-                </PopoverContent>
-              </Popover>
-            </div>
-
-            <div className="space-y-2">
-              <div className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  id="hasEndDate"
-                  checked={showEndDate}
-                  onChange={(e) => setShowEndDate(e.target.checked)}
-                  className="rounded"
+          <div className="space-y-2">
+            <Label>Data de Início</Label>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className="w-full justify-start text-left font-normal"
+                  data-testid="button-start-date"
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {startDate ? format(startDate, "P", { locale: ptBR }) : "Selecione a data"}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={startDate}
+                  onSelect={setStartDate}
+                  initialFocus
                 />
-                <Label htmlFor="hasEndDate">Definir data final</Label>
-              </div>
-              {showEndDate && (
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className="w-full justify-start text-left font-normal"
-                      data-testid="button-end-date"
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {endDate ? format(endDate, "P", { locale: ptBR }) : "Selecione a data"}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={endDate}
-                      onSelect={setEndDate}
-                      initialFocus
-                    />
-                  </PopoverContent>
-                </Popover>
-              )}
-            </div>
+              </PopoverContent>
+            </Popover>
           </div>
 
           <Button 
