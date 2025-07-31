@@ -29,7 +29,6 @@ const recurrenceFormSchema = z.object({
   frequency: z.enum(['daily', 'weekly', 'monthly', 'yearly']).optional(),
   startDate: z.date(),
   endDate: z.date().optional(),
-  installments: z.number().optional(),
 }).refine((data) => data.accountId || data.creditCardId, {
   message: "Conta ou cartão de crédito é obrigatório",
   path: ["accountId"],
@@ -50,6 +49,7 @@ export default function RecurrenceForm({ onSuccess }: RecurrenceFormProps) {
   const [showEndDate, setShowEndDate] = useState(false);
   const [isRecurring, setIsRecurring] = useState(false);
   const [endType, setEndType] = useState<'repetitions' | 'date' | 'forever'>('repetitions');
+  const [repetitions, setRepetitions] = useState<number>(1);
 
   const { data: accounts = [] } = useQuery<Account[]>({
     queryKey: ['/api/accounts'],
@@ -71,7 +71,6 @@ export default function RecurrenceForm({ onSuccess }: RecurrenceFormProps) {
       description: '',
       frequency: 'monthly',
       amount: '',
-      installments: 1,
     },
   });
 
@@ -83,7 +82,7 @@ export default function RecurrenceForm({ onSuccess }: RecurrenceFormProps) {
         startDate: startDate,
         endDate: (data.isRecurring && endType === 'date') ? endDate : null,
         frequency: data.isRecurring ? data.frequency : 'monthly', // Default for one-time
-        installments: data.isRecurring && endType === 'repetitions' ? data.installments : (!data.isRecurring ? data.installments : null),
+        installments: data.isRecurring && endType === 'repetitions' ? repetitions : null,
       };
       return apiRequest('POST', '/api/recurrences', payload);
     },
@@ -99,6 +98,7 @@ export default function RecurrenceForm({ onSuccess }: RecurrenceFormProps) {
       setShowEndDate(false);
       setIsRecurring(false);
       setEndType('repetitions');
+      setRepetitions(1);
       onSuccess?.();
     },
     onError: (error: any) => {
@@ -152,7 +152,10 @@ export default function RecurrenceForm({ onSuccess }: RecurrenceFormProps) {
           Novo Lançamento Planejado
         </CardTitle>
         <CardDescription>
-          Configure um lançamento único ou recorrente para seu orçamento
+          Configure um lançamento único ou recorrente para seu orçamento.<br/>
+          <span className="text-xs text-muted-foreground">
+            💡 Para parcelamentos, use "Recorrente" com número específico de repetições.
+          </span>
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -248,7 +251,8 @@ export default function RecurrenceForm({ onSuccess }: RecurrenceFormProps) {
                     type="number"
                     min="1"
                     placeholder="12"
-                    {...form.register('installments', { valueAsNumber: true })}
+                    value={repetitions}
+                    onChange={(e) => setRepetitions(parseInt(e.target.value) || 1)}
                     data-testid="input-installments"
                   />
                 </div>
@@ -346,34 +350,18 @@ export default function RecurrenceForm({ onSuccess }: RecurrenceFormProps) {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="amount">Valor (R$)</Label>
-              <Input
-                id="amount"
-                type="number"
-                step="0.01"
-                placeholder="0,00"
-                {...form.register('amount')}
-                data-testid="input-amount"
-              />
-              {form.formState.errors.amount && (
-                <p className="text-sm text-destructive">{form.formState.errors.amount.message}</p>
-              )}
-            </div>
-
-            {!isRecurring && (
-              <div className="space-y-2">
-                <Label htmlFor="installments">Parcelas (opcional)</Label>
-                <Input
-                  id="installments"
-                  type="number"
-                  min="1"
-                  placeholder="1"
-                  {...form.register('installments', { valueAsNumber: true })}
-                  data-testid="input-installments"
-                />
-              </div>
+          <div className="space-y-2">
+            <Label htmlFor="amount">Valor (R$)</Label>
+            <Input
+              id="amount"
+              type="number"
+              step="0.01"
+              placeholder="0,00"
+              {...form.register('amount')}
+              data-testid="input-amount"
+            />
+            {form.formState.errors.amount && (
+              <p className="text-sm text-destructive">{form.formState.errors.amount.message}</p>
             )}
           </div>
 
