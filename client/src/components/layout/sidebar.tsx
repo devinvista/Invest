@@ -62,7 +62,7 @@ export function Sidebar({ isOpen, onClose, currentPath, onNavigate }: SidebarPro
       {/* Sidebar */}
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-50 w-64 sm:w-72 bg-white border-r border-gray-200 shadow-sm transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0 pt-16 lg:shadow-none",
+          "fixed inset-y-0 left-0 z-50 w-64 sm:w-72 bg-background border-r border-border shadow-sm transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0 pt-16 lg:shadow-none",
           isOpen ? "translate-x-0" : "-translate-x-full"
         )}
       >
