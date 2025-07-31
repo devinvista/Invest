@@ -202,11 +202,11 @@
   }
   
   .btg-header {
-    @apply bg-primary text-white border-b;
-    background: hsl(var(--primary));
+    @apply text-white border-b backdrop-blur-md;
+    background: hsl(var(--primary) / 0.9);
     border-bottom-color: hsl(var(--primary) / 0.2);
-    backdrop-filter: none;
-    -webkit-backdrop-filter: none;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
   }
   
   .btg-section {
