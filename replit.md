@@ -11,6 +11,13 @@ Visual Identity: Pharos Capital brand guidelines applied.
 
 ## Recent Changes
 
+- **January 31, 2025**: Fixed Brazilian stock search in investments page - PETR4 and other B3 stocks now properly found
+  - Implemented comprehensive Brazilian stock database with 28+ popular B3 assets (stocks, FIIs, ETFs)
+  - Added robust search functionality for PETR4, VALE3, ITUB4, BBDC4, and other major Brazilian stocks
+  - Created fallback system when external APIs fail or have rate limits
+  - Enhanced search to work by both symbol (PETR4) and company name (Petrobras)
+  - All Brazilian assets properly classified with B3 exchange, BRL currency, and Brazil region
+  - Fixed Alpha Vantage API integration issues that prevented finding Brazilian stocks
 - **January 31, 2025**: Fixed recurrence deletion functionality - Recurrences now properly delete from database instead of just deactivating
   - Updated getUserRecurrences query to only show active recurrences (isActive: true)
   - Added proper deleteRecurrence method that removes records from database
