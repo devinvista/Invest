@@ -20,8 +20,9 @@ Visual Identity: Pharos Capital brand guidelines applied.
   - Enhanced transfer functionality with clear messaging about investment classification
 - **January 31, 2025**: Corrected recurrence form logic - Removed illogical "Parcelas" field from one-time transactions
   - Removed "Parcelas (opcional)" field from "Uma única vez" planning option
-  - Parceling/installments now only available in "Recorrente" option with specific number of repetitions
-  - Enhanced form interface with clear explanation about using recurring transactions for installments
+  - Parceling/installments now only available in "Recorrente" option with minimum 2 repetitions
+  - Enhanced form validation: 1 parcela = pagamento único, parcelamento requires 2+ repetitions
+  - Added clear validation messages and interface explanations about installment logic
   - Fixed TypeScript errors and form validation to support the corrected logic
 - **January 31, 2025**: Completed migration from Replit Agent to standard Replit environment
   - Fixed duplicate "Transações Pendentes" title in budget component by removing redundant Card wrapper

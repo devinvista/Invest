@@ -49,7 +49,7 @@ export default function RecurrenceForm({ onSuccess }: RecurrenceFormProps) {
   const [showEndDate, setShowEndDate] = useState(false);
   const [isRecurring, setIsRecurring] = useState(false);
   const [endType, setEndType] = useState<'repetitions' | 'date' | 'forever'>('repetitions');
-  const [repetitions, setRepetitions] = useState<number>(1);
+  const [repetitions, setRepetitions] = useState<number>(2);
 
   const { data: accounts = [] } = useQuery<Account[]>({
     queryKey: ['/api/accounts'],
@@ -82,7 +82,7 @@ export default function RecurrenceForm({ onSuccess }: RecurrenceFormProps) {
         startDate: startDate,
         endDate: (data.isRecurring && endType === 'date') ? endDate : null,
         frequency: data.isRecurring ? data.frequency : 'monthly', // Default for one-time
-        installments: data.isRecurring && endType === 'repetitions' ? repetitions : null,
+        installments: data.isRecurring && endType === 'repetitions' && repetitions >= 2 ? repetitions : null,
       };
       return apiRequest('POST', '/api/recurrences', payload);
     },
@@ -98,7 +98,7 @@ export default function RecurrenceForm({ onSuccess }: RecurrenceFormProps) {
       setShowEndDate(false);
       setIsRecurring(false);
       setEndType('repetitions');
-      setRepetitions(1);
+      setRepetitions(2);
       onSuccess?.();
     },
     onError: (error: any) => {
@@ -154,7 +154,7 @@ export default function RecurrenceForm({ onSuccess }: RecurrenceFormProps) {
         <CardDescription>
           Configure um lançamento único ou recorrente para seu orçamento.<br/>
           <span className="text-xs text-muted-foreground">
-            💡 Para parcelamentos, use "Recorrente" com número específico de repetições.
+            💡 Para parcelamentos, use "Recorrente" com 2+ repetições (1 parcela = pagamento único).
           </span>
         </CardDescription>
       </CardHeader>
@@ -249,12 +249,20 @@ export default function RecurrenceForm({ onSuccess }: RecurrenceFormProps) {
                   <Input
                     id="installments"
                     type="number"
-                    min="1"
+                    min="2"
                     placeholder="12"
                     value={repetitions}
-                    onChange={(e) => setRepetitions(parseInt(e.target.value) || 1)}
+                    onChange={(e) => setRepetitions(parseInt(e.target.value) || 2)}
                     data-testid="input-installments"
                   />
+                  <p className="text-xs text-muted-foreground">
+                    Mínimo 2 repetições (1 parcela = pagamento único)
+                  </p>
+                  {repetitions < 2 && (
+                    <p className="text-sm text-destructive">
+                      Para parcelamento, use no mínimo 2 repetições
+                    </p>
+                  )}
                 </div>
               ) : endType === 'date' ? (
                 <div className="space-y-2">
