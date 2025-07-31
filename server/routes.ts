@@ -575,12 +575,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/recurrences", authenticateToken, async (req: any, res) => {
     try {
-      const recurrenceData = insertRecurrenceSchema.parse({ 
-        ...req.body, 
+      console.log('📝 Creating recurrence with data:', req.body);
+      
+      // Ensure installments has a default value if not provided
+      const bodyWithDefaults = {
+        ...req.body,
+        installments: req.body.installments || 1,
         userId: req.userId,
         startDate: new Date(req.body.startDate),
         endDate: req.body.endDate ? new Date(req.body.endDate) : undefined
-      });
+      };
+      
+      console.log('📝 Data with defaults:', bodyWithDefaults);
+      
+      const recurrenceData = insertRecurrenceSchema.parse(bodyWithDefaults);
+      
+      console.log('✅ Recurrence data parsed successfully:', recurrenceData);
       
       const recurrence = await storage.createRecurrence(recurrenceData);
       
@@ -630,6 +640,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         res.json(recurrence);
       }
     } catch (error) {
+      console.error('❌ Error creating recurrence:', error);
       res.status(400).json({ message: "Erro ao criar recorrência", error: error instanceof Error ? error.message : "Erro desconhecido" });
     }
   });

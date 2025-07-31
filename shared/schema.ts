@@ -283,7 +283,7 @@ export const insertRecurrenceSchema = createInsertSchema(recurrences)
   .omit({ id: true, createdAt: true, nextExecutionDate: true, lastExecutedDate: true })
   .extend({
     amount: z.union([z.string(), z.number()]).transform(val => val.toString()),
-    installments: z.union([z.string(), z.number()]).transform(val => Number(val)).optional(),
+    installments: z.union([z.string(), z.number()]).transform(val => Number(val)).default(1),
     frequency: z.enum(['daily', 'weekly', 'monthly', 'yearly']),
     isActive: z.boolean().optional(),
   });

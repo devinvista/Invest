@@ -27,8 +27,6 @@ const recurrenceFormSchema = z.object({
   description: z.string().min(1, "Descrição é obrigatória"),
   isRecurring: z.boolean(),
   frequency: z.enum(['daily', 'weekly', 'monthly', 'yearly']).optional(),
-  startDate: z.date(),
-  endDate: z.date().optional(),
 }).refine((data) => data.accountId || data.creditCardId, {
   message: "Conta ou cartão de crédito é obrigatório",
   path: ["accountId"],
@@ -119,9 +117,9 @@ export default function RecurrenceForm({ onSuccess }: RecurrenceFormProps) {
   });
 
   const onSubmit = (data: RecurrenceFormData) => {
-    console.log('Form submission data:', data);
+    console.log('Form submission attempt');
+    console.log('Data received:', data);
     console.log('Start date:', startDate);
-    console.log('Form errors:', form.formState.errors);
     
     if (!startDate) {
       toast({
@@ -136,6 +134,7 @@ export default function RecurrenceForm({ onSuccess }: RecurrenceFormProps) {
       ...data,
       startDate,
       endDate: showEndDate ? endDate : undefined,
+      installments: data.isRecurring && endType === 'repetitions' ? repetitions : undefined,
     });
   };
 
@@ -429,17 +428,7 @@ export default function RecurrenceForm({ onSuccess }: RecurrenceFormProps) {
             className="w-full" 
             disabled={createRecurrenceMutation.isPending}
             data-testid="button-create-recurrence"
-            onClick={(e) => {
-              console.log('Button clicked');
-              console.log('Form valid:', form.formState.isValid);
-              console.log('Form errors:', form.formState.errors);
-              console.log('Form values:', form.getValues());
-              // Check if form validation is preventing submission
-              if (!form.formState.isValid) {
-                e.preventDefault();
-                console.log('Form is invalid, preventing submission');
-              }
-            }}
+
           >
             {createRecurrenceMutation.isPending ? (
               <>

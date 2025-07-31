@@ -315,17 +315,28 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createRecurrence(recurrence: InsertRecurrence): Promise<Recurrence> {
-    // Calculate next execution date based on frequency
-    const nextDate = this.calculateNextExecutionDate(recurrence.startDate, recurrence.frequency);
-    
-    const recurrenceData = {
-      ...recurrence,
-      nextExecutionDate: nextDate,
-      isActive: recurrence.isActive ?? true,
-    };
-    
-    const [newRecurrence] = await db.insert(recurrences).values(recurrenceData).returning();
-    return newRecurrence;
+    try {
+      console.log('🚀 Creating recurrence in storage:', recurrence);
+      
+      // Calculate next execution date based on frequency
+      const nextDate = this.calculateNextExecutionDate(recurrence.startDate, recurrence.frequency);
+      console.log('📅 Calculated next execution date:', nextDate);
+      
+      const recurrenceData = {
+        ...recurrence,
+        nextExecutionDate: nextDate,
+        isActive: recurrence.isActive ?? true,
+      };
+      
+      console.log('📝 Final recurrence data:', recurrenceData);
+      
+      const [newRecurrence] = await db.insert(recurrences).values(recurrenceData).returning();
+      console.log('✅ Recurrence created successfully:', newRecurrence);
+      return newRecurrence;
+    } catch (error) {
+      console.error('❌ Error in createRecurrence:', error);
+      throw error;
+    }
   }
 
   async updateRecurrence(recurrenceId: string, updates: Partial<InsertRecurrence>): Promise<Recurrence> {
