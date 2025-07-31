@@ -42,6 +42,7 @@ export interface IStorage {
   getTransactionsByMonth(userId: string, month: number, year: number): Promise<Transaction[]>;
   createTransaction(transaction: InsertTransaction): Promise<Transaction>;
   updateTransactionStatus(transactionId: string, status: 'confirmed' | 'pending'): Promise<void>;
+  confirmTransactionWithAccount(transactionId: string, accountId: string): Promise<void>;
   deleteTransaction(transactionId: string): Promise<void>;
   getPendingTransactions(userId: string): Promise<Transaction[]>;
 
@@ -281,6 +282,15 @@ export class DatabaseStorage implements IStorage {
   async updateTransactionStatus(transactionId: string, status: 'confirmed' | 'pending'): Promise<void> {
     await db.update(transactions)
       .set({ status })
+      .where(eq(transactions.id, transactionId));
+  }
+
+  async confirmTransactionWithAccount(transactionId: string, accountId: string): Promise<void> {
+    await db.update(transactions)
+      .set({ 
+        status: 'confirmed',
+        accountId: accountId 
+      })
       .where(eq(transactions.id, transactionId));
   }
 

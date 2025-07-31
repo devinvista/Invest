@@ -544,6 +544,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.put("/api/transactions/:id/confirm", authenticateToken, async (req: any, res) => {
     try {
       const transactionId = req.params.id;
+      const { accountId } = req.body;
       
       // Check if transaction belongs to user and is pending
       const transaction = await storage.getTransaction(transactionId);
@@ -555,8 +556,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Transação já foi confirmada" });
       }
       
-      await storage.updateTransactionStatus(transactionId, 'confirmed');
-      res.json({ message: "Transação confirmada com sucesso" });
+      // If accountId is provided, update the transaction with the new account and confirm
+      if (accountId) {
+        // Verify that the account belongs to the user
+        const account = await storage.getAccount(accountId);
+        if (!account || account.userId !== req.userId) {
+          return res.status(400).json({ message: "Conta não encontrada ou não pertence ao usuário" });
+        }
+        
+        await storage.confirmTransactionWithAccount(transactionId, accountId);
+        res.json({ 
+          message: "Transação confirmada com sucesso",
+          accountName: account.name
+        });
+      } else {
+        // If no accountId provided, just confirm with existing account
+        await storage.updateTransactionStatus(transactionId, 'confirmed');
+        res.json({ message: "Transação confirmada com sucesso" });
+      }
     } catch (error) {
       res.status(500).json({ message: "Erro ao confirmar transação", error: error instanceof Error ? error.message : "Erro desconhecido" });
     }

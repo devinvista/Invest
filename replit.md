@@ -20,6 +20,13 @@ Visual Identity: Pharos Capital brand guidelines applied.
   - Database queries and API endpoints responding correctly
   - User interface fully functional with proper form submissions and data persistence
   - Migration completed successfully with zero data loss and full feature preservation
+- **January 31, 2025**: Enhanced pending transaction confirmation with account selection capability
+  - Added ConfirmTransactionDialog component allowing users to select which account receives pending transactions
+  - Updated backend API to accept accountId parameter during transaction confirmation
+  - Enhanced confirmTransactionWithAccount storage method to update both status and account
+  - Improved user experience with account balance display in selection dropdown
+  - Server-side validation ensures account belongs to user before confirmation
+  - Clear success messages showing which account received the transaction
 - **January 31, 2025**: Enhanced investment page visual contrast and accessibility 
   - Updated chart color scheme using Pharos Capital blue (#195AB4) and high-contrast amber (#D97706) for better visual distinction
   - Improved table headers with stronger typography and background contrast

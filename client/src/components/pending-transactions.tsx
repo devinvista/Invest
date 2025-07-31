@@ -1,43 +1,18 @@
 import { useState } from "react";
-import { useQuery, useMutation } from "@tanstack/react-query";
-import { apiRequest, queryClient } from "@/lib/queryClient";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, Clock, CheckCircle, AlertCircle } from "lucide-react";
-import { toast } from "@/hooks/use-toast";
+import { ConfirmTransactionDialog } from "@/components/ui/confirm-transaction-dialog";
 import type { Transaction } from "@shared/schema";
 
 export default function PendingTransactions() {
-  const [confirmingId, setConfirmingId] = useState<string | null>(null);
+  const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const { data: pendingTransactions, isLoading } = useQuery<Transaction[]>({
     queryKey: ['/api/transactions/pending'],
-  });
-
-  const confirmTransactionMutation = useMutation({
-    mutationFn: async (transactionId: string) => {
-      return apiRequest('PUT', `/api/transactions/${transactionId}/confirm`);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/transactions/pending'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/transactions'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/dashboard'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/budget'] });
-      setConfirmingId(null);
-      toast({
-        title: 'Sucesso',
-        description: 'Transação confirmada com sucesso!',
-      });
-    },
-    onError: (error: any) => {
-      toast({
-        title: 'Erro',
-        description: error.message || 'Erro ao confirmar transação',
-        variant: 'destructive',
-      });
-      setConfirmingId(null);
-    },
   });
 
   const formatCurrency = (amount: string) => {
@@ -56,9 +31,9 @@ export default function PendingTransactions() {
     });
   };
 
-  const handleConfirmTransaction = (transactionId: string) => {
-    setConfirmingId(transactionId);
-    confirmTransactionMutation.mutate(transactionId);
+  const handleConfirmTransaction = (transaction: Transaction) => {
+    setSelectedTransaction(transaction);
+    setIsDialogOpen(true);
   };
 
   if (isLoading) {
@@ -147,22 +122,12 @@ export default function PendingTransactions() {
                     </Badge>
                   </div>
                   <Button
-                    onClick={() => handleConfirmTransaction(transaction.id)}
-                    disabled={confirmingId === transaction.id}
+                    onClick={() => handleConfirmTransaction(transaction)}
                     size="sm"
                     data-testid={`confirm-transaction-${transaction.id}`}
                   >
-                    {confirmingId === transaction.id ? (
-                      <>
-                        <Clock className="h-4 w-4 mr-2 animate-spin" />
-                        Confirmando...
-                      </>
-                    ) : (
-                      <>
-                        <CheckCircle className="h-4 w-4 mr-2" />
-                        Confirmar
-                      </>
-                    )}
+                    <CheckCircle className="h-4 w-4 mr-2" />
+                    Confirmar
                   </Button>
                 </div>
               </div>
@@ -170,6 +135,12 @@ export default function PendingTransactions() {
           </div>
         )}
       </CardContent>
+      
+      <ConfirmTransactionDialog
+        transaction={selectedTransaction}
+        open={isDialogOpen}
+        onOpenChange={setIsDialogOpen}
+      />
     </Card>
   );
 }
