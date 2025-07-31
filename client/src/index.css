@@ -217,35 +217,37 @@
   
   .btg-header {
     @apply border-b backdrop-blur-md;
-    background: rgba(255, 255, 255, 0.95) !important;
-    border-bottom-color: rgba(0, 0, 0, 0.1);
+    background: hsl(var(--primary) / 0.95) !important;
+    border-bottom-color: hsl(var(--primary) / 0.3);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   }
   
-  /* Light theme header - dark text on light background */
+  /* Light theme header - white text on blue background */
   .btg-header,
   .btg-header *,
   .btg-header span,
   .btg-header div,
   .btg-header button,
   .btg-header svg {
-    color: rgba(0, 0, 0, 0.8) !important;
-    text-shadow: none;
+    color: white !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
   }
   
   .btg-header input {
-    color: rgba(0, 0, 0, 0.9) !important;
-    border-color: rgba(0, 0, 0, 0.2) !important;
-    background-color: rgba(0, 0, 0, 0.05) !important;
+    color: white !important;
+    border-color: rgba(255, 255, 255, 0.4) !important;
+    background-color: rgba(255, 255, 255, 0.25) !important;
+    text-shadow: none;
   }
   
   .btg-header input::placeholder {
-    color: rgba(0, 0, 0, 0.5) !important;
+    color: rgba(255, 255, 255, 0.8) !important;
+    text-shadow: none;
   }
   
-  /* Dark theme header - white text on dark background */
+  /* Dark theme header - same blue background with white text */
   .dark .btg-header {
     background: hsl(var(--primary) / 0.95) !important;
     border-bottom-color: hsl(var(--primary) / 0.3);
