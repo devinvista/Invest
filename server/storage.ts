@@ -51,8 +51,17 @@ export interface IStorage {
   createRecurrence(recurrence: InsertRecurrence): Promise<Recurrence>;
   updateRecurrence(recurrenceId: string, updates: Partial<InsertRecurrence>): Promise<Recurrence>;
   deactivateRecurrence(recurrenceId: string): Promise<void>;
+  deleteRecurrence(recurrenceId: string): Promise<void>;
   getActiveRecurrencesToExecute(): Promise<Recurrence[]>;
   updateRecurrenceNextExecution(recurrenceId: string, nextDate: Date, lastDate?: Date): Promise<void>;
+  getRecurrencePendingTransactions(recurrenceId: string): Promise<Transaction[]>;
+  getRecurrenceWithDetails(recurrenceId: string): Promise<{
+    recurrence: Recurrence;
+    pendingTransactions: Transaction[];
+    confirmedTransactions: Transaction[];
+    totalPendingAmount: number;
+    totalConfirmedAmount: number;
+  } | undefined>;
 
   // Assets
   getUserAssets(userId: string): Promise<Asset[]>;
@@ -369,8 +378,85 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteRecurrence(recurrenceId: string): Promise<void> {
-    await db.delete(recurrences)
-      .where(eq(recurrences.id, recurrenceId));
+    await db.delete(recurrences).where(eq(recurrences.id, recurrenceId));
+  }
+
+  async getRecurrencePendingTransactions(recurrenceId: string): Promise<Transaction[]> {
+    try {
+      return await db.select()
+        .from(transactions)
+        .where(
+          and(
+            eq(transactions.recurrenceId, recurrenceId),
+            eq(transactions.status, 'pending')
+          )
+        )
+        .orderBy(transactions.date);
+    } catch (error) {
+      console.error("getRecurrencePendingTransactions error:", error);
+      return [];
+    }
+  }
+
+  async getRecurrenceWithDetails(recurrenceId: string): Promise<{
+    recurrence: Recurrence;
+    pendingTransactions: Transaction[];
+    confirmedTransactions: Transaction[];
+    totalPendingAmount: number;
+    totalConfirmedAmount: number;
+  } | undefined> {
+    try {
+      // Get recurrence
+      const [recurrence] = await db.select()
+        .from(recurrences)
+        .where(eq(recurrences.id, recurrenceId));
+
+      if (!recurrence) return undefined;
+
+      // Get pending transactions
+      const pendingTransactions = await db.select()
+        .from(transactions)
+        .where(
+          and(
+            eq(transactions.recurrenceId, recurrenceId),
+            eq(transactions.status, 'pending')
+          )
+        )
+        .orderBy(transactions.date);
+
+      // Get confirmed transactions  
+      const confirmedTransactions = await db.select()
+        .from(transactions)
+        .where(
+          and(
+            eq(transactions.recurrenceId, recurrenceId),
+            eq(transactions.status, 'confirmed')
+          )
+        )
+        .orderBy(transactions.date);
+
+      // Calculate totals
+      const totalPendingAmount = pendingTransactions.reduce(
+        (sum, transaction) => sum + parseFloat(transaction.amount), 
+        0
+      );
+      
+      const totalConfirmedAmount = confirmedTransactions.reduce(
+        (sum, transaction) => sum + parseFloat(transaction.amount), 
+        0
+      );
+
+      return {
+        recurrence,
+        pendingTransactions,
+        confirmedTransactions,
+        totalPendingAmount,
+        totalConfirmedAmount
+      };
+    } catch (error) {
+      console.error("getRecurrenceWithDetails error:", error);
+      return undefined;
+    }
   }
 
   async getActiveRecurrencesToExecute(): Promise<Recurrence[]> {

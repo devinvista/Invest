@@ -698,6 +698,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get recurrence details with pending/confirmed transactions
+  app.get("/api/recurrences/:id/details", authenticateToken, async (req: any, res) => {
+    try {
+      const recurrenceId = req.params.id;
+      
+      // Check if recurrence belongs to user
+      const recurrences = await storage.getUserRecurrences(req.userId);
+      const userRecurrence = recurrences.find(r => r.id === recurrenceId);
+      
+      if (!userRecurrence) {
+        return res.status(404).json({ message: "Recorrência não encontrada" });
+      }
+      
+      const details = await storage.getRecurrenceWithDetails(recurrenceId);
+      res.json(details);
+    } catch (error) {
+      console.error("Get recurrence details API error:", error);
+      res.status(500).json({ message: "Erro ao buscar detalhes da recorrência", error: error instanceof Error ? error.message : "Erro desconhecido" });
+    }
+  });
+
   // Assets routes
   app.get("/api/assets", async (req: any, res) => {
     try {
