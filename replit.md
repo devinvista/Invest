@@ -11,6 +11,11 @@ Visual Identity: Pharos Capital brand guidelines applied.
 
 ## Recent Changes
 
+- **August 1, 2025**: Enhanced sidebar navigation styling for light theme
+  - Active menu items now display with blue background (hsl(218, 78%, 42%)) and white text in light theme
+  - Improved visual contrast and user experience for current page identification
+  - Applied !important declarations to ensure consistent styling across different states
+
 - **August 1, 2025**: Added edit and delete functionality for pending transactions
   - Users can now edit pending transactions through a comprehensive dialog interface
   - Delete functionality with confirmation for pending transactions
