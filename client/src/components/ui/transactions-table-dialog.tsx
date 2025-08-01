@@ -21,6 +21,7 @@ interface TransactionsTableDialogProps {
     categoryIds?: string[];
     period?: string;
     creditCardId?: string;
+    accountId?: string;
   };
 }
 
@@ -109,6 +110,11 @@ export function TransactionsTableDialog({
 
       // Credit card filter
       if (initialFilters.creditCardId && transaction.creditCardId !== initialFilters.creditCardId) {
+        return false;
+      }
+
+      // Account filter
+      if (initialFilters.accountId && transaction.accountId !== initialFilters.accountId) {
         return false;
       }
       

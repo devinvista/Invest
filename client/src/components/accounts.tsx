@@ -14,7 +14,8 @@ import { useToast } from '@/hooks/use-toast';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Building2, Plus, Wallet, CreditCard, PiggyBank, ArrowUpRight, ArrowDownRight, MoreHorizontal, Edit, Send, Trash2 } from 'lucide-react';
+import { Building2, Plus, Wallet, CreditCard, PiggyBank, ArrowUpRight, ArrowDownRight, MoreHorizontal, Edit, Send, Trash2, FileText } from 'lucide-react';
+import { TransactionsTableDialog } from '@/components/ui/transactions-table-dialog';
 
 const accountFormSchema = z.object({
   name: z.string().min(1, 'Nome é obrigatório'),
@@ -49,6 +50,11 @@ export function Accounts() {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [editingAccount, setEditingAccount] = useState<any>(null);
   const [deletingAccount, setDeletingAccount] = useState<any>(null);
+
+  // Transactions dialog state
+  const [isTransactionsDialogOpen, setIsTransactionsDialogOpen] = useState(false);
+  const [transactionsDialogTitle, setTransactionsDialogTitle] = useState('');
+  const [transactionsDialogFilters, setTransactionsDialogFilters] = useState<any>({});
 
   const { data: accounts = [], isLoading } = useQuery<any[]>({
     queryKey: ['/api/accounts'],
@@ -392,14 +398,32 @@ export function Accounts() {
                       </Badge>
                     </div>
                     
-                    <div className="flex space-x-2">
-                      <Button variant="outline" size="sm" className="flex-1" onClick={() => handleEditAccount(account)}>
-                        <Edit className="w-4 h-4 mr-1" />
-                        Editar
-                      </Button>
-                      <Button variant="outline" size="sm" className="flex-1" onClick={() => setShowTransferDialog(true)} disabled={accounts.length < 2}>
-                        <Send className="w-4 h-4 mr-1" />
-                        Transferir
+                    <div className="space-y-2">
+                      <div className="flex space-x-2">
+                        <Button variant="outline" size="sm" className="flex-1" onClick={() => handleEditAccount(account)}>
+                          <Edit className="w-4 h-4 mr-1" />
+                          Editar
+                        </Button>
+                        <Button variant="outline" size="sm" className="flex-1" onClick={() => setShowTransferDialog(true)} disabled={accounts.length < 2}>
+                          <Send className="w-4 h-4 mr-1" />
+                          Transferir
+                        </Button>
+                      </div>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="w-full"
+                        onClick={() => {
+                          setTransactionsDialogTitle(`Lançamentos - ${account.name}`);
+                          setTransactionsDialogFilters({
+                            accountId: account.id,
+                            type: 'all' as const
+                          });
+                          setIsTransactionsDialogOpen(true);
+                        }}
+                      >
+                        <FileText className="w-4 h-4 mr-1" />
+                        Ver Lançamentos
                       </Button>
                     </div>
                   </div>
@@ -770,6 +794,14 @@ export function Accounts() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Transactions Dialog */}
+      <TransactionsTableDialog
+        isOpen={isTransactionsDialogOpen}
+        onOpenChange={setIsTransactionsDialogOpen}
+        title={transactionsDialogTitle}
+        initialFilters={transactionsDialogFilters}
+      />
       </div>
     </div>
   );
