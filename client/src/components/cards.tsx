@@ -14,7 +14,8 @@ import { useToast } from '@/hooks/use-toast';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { CreditCard, Plus, AlertTriangle, Calendar, DollarSign, MoreHorizontal, Wallet, ShoppingCart, Banknote } from 'lucide-react';
+import { CreditCard, Plus, AlertTriangle, Calendar, DollarSign, MoreHorizontal, Wallet, ShoppingCart, Banknote, FileText } from 'lucide-react';
+import { TransactionsTableDialog } from '@/components/ui/transactions-table-dialog';
 
 const cardFormSchema = z.object({
   name: z.string().min(1, 'Nome é obrigatório'),
@@ -46,6 +47,11 @@ export function Cards() {
   const [showExpenseDialog, setShowExpenseDialog] = useState(false);
   const [showPaymentDialog, setShowPaymentDialog] = useState(false);
   const [selectedCard, setSelectedCard] = useState<any>(null);
+  
+  // Transactions dialog state
+  const [isTransactionsDialogOpen, setIsTransactionsDialogOpen] = useState(false);
+  const [transactionsDialogTitle, setTransactionsDialogTitle] = useState('');
+  const [transactionsDialogFilters, setTransactionsDialogFilters] = useState<any>({});
 
   const { data: creditCards = [], isLoading } = useQuery<any[]>({
     queryKey: ['/api/credit-cards'],
@@ -390,30 +396,48 @@ export function Cards() {
                     )}
 
                     {/* Action buttons */}
-                    <div className="flex gap-2 pt-2">
-                      <Button 
-                        size="sm" 
-                        variant="outline" 
-                        onClick={() => {
-                          setSelectedCard(card);
-                          setShowExpenseDialog(true);
-                        }}
-                        className="flex-1"
-                      >
-                        <ShoppingCart className="w-4 h-4 mr-1" />
-                        Despesa
-                      </Button>
+                    <div className="space-y-2 pt-2">
+                      <div className="flex gap-2">
+                        <Button 
+                          size="sm" 
+                          variant="outline" 
+                          onClick={() => {
+                            setSelectedCard(card);
+                            setShowExpenseDialog(true);
+                          }}
+                          className="flex-1"
+                        >
+                          <ShoppingCart className="w-4 h-4 mr-1" />
+                          Despesa
+                        </Button>
+                        <Button 
+                          size="sm" 
+                          variant="outline"
+                          onClick={() => {
+                            setSelectedCard(card);
+                            setShowPaymentDialog(true);
+                          }}
+                          className="flex-1"
+                        >
+                          <Banknote className="w-4 h-4 mr-1" />
+                          Pagar Fatura
+                        </Button>
+                      </div>
                       <Button 
                         size="sm" 
                         variant="outline"
                         onClick={() => {
-                          setSelectedCard(card);
-                          setShowPaymentDialog(true);
+                          setTransactionsDialogTitle(`Lançamentos - ${card.name}`);
+                          setTransactionsDialogFilters({
+                            creditCardId: card.id,
+                            type: 'all' as const
+                          });
+                          setIsTransactionsDialogOpen(true);
                         }}
-                        className="flex-1"
+                        className="w-full"
                       >
-                        <Banknote className="w-4 h-4 mr-1" />
-                        Pagar Fatura
+                        <FileText className="w-4 h-4 mr-1" />
+                        Ver Lançamentos
                       </Button>
                     </div>
                   </CardContent>
@@ -727,6 +751,14 @@ export function Cards() {
           </Form>
         </DialogContent>
       </Dialog>
+
+      {/* Transactions Dialog */}
+      <TransactionsTableDialog
+        isOpen={isTransactionsDialogOpen}
+        onOpenChange={setIsTransactionsDialogOpen}
+        title={transactionsDialogTitle}
+        initialFilters={transactionsDialogFilters}
+      />
       </div>
     </div>
   );

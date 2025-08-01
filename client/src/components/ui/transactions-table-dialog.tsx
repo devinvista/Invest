@@ -20,6 +20,7 @@ interface TransactionsTableDialogProps {
     type?: 'income' | 'expense' | 'all';
     categoryIds?: string[];
     period?: string;
+    creditCardId?: string;
   };
 }
 
@@ -103,6 +104,11 @@ export function TransactionsTableDialog({
       if (initialFilters.categoryIds && 
           initialFilters.categoryIds.length > 0 && 
           !initialFilters.categoryIds.includes(transaction.categoryId)) {
+        return false;
+      }
+
+      // Credit card filter
+      if (initialFilters.creditCardId && transaction.creditCardId !== initialFilters.creditCardId) {
         return false;
       }
       
