@@ -404,14 +404,17 @@
     background-color: hsl(var(--primary) / 0.08);
   }
   
+  /* Light theme active nav item - blue background */
   .nav-item.active {
-    @apply bg-primary text-primary-foreground shadow-sm border-none;
+    @apply text-white shadow-sm border-none;
     font-weight: 600;
     background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--primary) / 0.9) 100%);
+    color: white;
   }
   
   .nav-item.active:hover {
     background: linear-gradient(135deg, hsl(var(--primary) / 0.95) 0%, hsl(var(--primary) / 0.85) 100%);
+    color: white;
   }
   
   .sidebar-icon {
