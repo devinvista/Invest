@@ -494,7 +494,18 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteRecurrence(recurrenceId: string): Promise<void> {
+    console.log('🗑️ Starting recurrence deletion:', recurrenceId);
+    
+    // First, delete all transactions associated with this recurrence
+    const deletedTransactions = await db.delete(transactions)
+      .where(eq(transactions.recurrenceId, recurrenceId))
+      .returning();
+    
+    console.log('🗑️ Deleted associated transactions:', deletedTransactions.length);
+    
+    // Then delete the recurrence itself
     await db.delete(recurrences).where(eq(recurrences.id, recurrenceId));
+    console.log('✅ Recurrence deleted successfully');
   }
 
   async getRecurrencePendingTransactions(recurrenceId: string): Promise<Transaction[]> {
