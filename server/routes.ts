@@ -466,11 +466,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Transação não encontrada" });
       }
       
+      // Check if this is a pending transaction from a forever recurrence
+      let nextTransaction = null;
+      let message = "Transação excluída com sucesso";
+      
+      if (transaction.recurrenceId && transaction.status === 'pending') {
+        console.log('🔄 Pending transaction from recurrence deleted, creating next pending transaction...');
+        nextTransaction = await storage.createNextPendingTransactionForRecurrence(transaction.recurrenceId);
+        if (nextTransaction) {
+          console.log('✅ Next pending transaction created:', nextTransaction.id);
+          message += " - Próxima transação recorrente criada automaticamente!";
+        }
+      }
+      
       console.log(`✅ Transaction found, proceeding with deletion`);
       await storage.deleteTransaction(transactionId);
       console.log(`✅ Transaction deleted successfully: ${transactionId}`);
       
-      res.json({ message: "Transação excluída com sucesso" });
+      res.json({ 
+        message,
+        nextTransaction
+      });
     } catch (error) {
       console.error(`❌ Error deleting transaction:`, error);
       res.status(500).json({ message: "Erro ao excluir transação", error: error instanceof Error ? error.message : "Erro desconhecido" });
