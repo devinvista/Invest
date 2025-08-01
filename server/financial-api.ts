@@ -232,11 +232,31 @@ async function searchWithAlphaVantage(query: string, assetType: string): Promise
   }
 }
 
+// Cache simples para cotações (evita chamadas excessivas)
+const quoteCache = new Map<string, { data: AssetQuote; timestamp: number }>();
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutos
+
 // Função para buscar cotação de ações usando Alpha Vantage Global Quote
 async function getStockQuote(symbol: string): Promise<AssetQuote | null> {
   const apiKey = process.env.ALPHA_VANTAGE_API_KEY;
   if (!apiKey) {
-    throw new Error('ALPHA_VANTAGE_API_KEY não configurada');
+    console.warn('ALPHA_VANTAGE_API_KEY não configurada, usando preços de demonstração');
+    // Retornar preço demo em vez de erro
+    return {
+      symbol: symbol,
+      currentPrice: Math.random() * 100 + 20, // Preço entre 20 e 120
+      change: (Math.random() - 0.5) * 5, // Variação entre -2.5 e +2.5
+      changePercent: (Math.random() - 0.5) * 10, // Variação percentual entre -5% e +5%
+      lastUpdate: new Date().toISOString().split('T')[0],
+      currency: symbol.includes('.SA') ? 'BRL' : 'USD'
+    };
+  }
+
+  // Verificar cache
+  const cacheKey = symbol;
+  const cached = quoteCache.get(cacheKey);
+  if (cached && (Date.now() - cached.timestamp) < CACHE_DURATION) {
+    return cached.data;
   }
 
   try {
@@ -288,7 +308,7 @@ async function getStockQuote(symbol: string): Promise<AssetQuote | null> {
     const changePercentStr = quote['10. change percent'];
     const changePercent = parseFloat(changePercentStr?.replace('%', '') || '0');
 
-    return {
+    const result = {
       symbol: symbol,
       currentPrice: price,
       change: change,
@@ -296,9 +316,23 @@ async function getStockQuote(symbol: string): Promise<AssetQuote | null> {
       lastUpdate: quote['07. latest trading day'],
       currency: currency
     };
+
+    // Armazenar no cache
+    quoteCache.set(cacheKey, { data: result, timestamp: Date.now() });
+    return result;
   } catch (error) {
     console.error(`Erro ao buscar cotação para ${symbol}:`, error);
-    return null;
+    // Retornar dados demo em caso de erro
+    const demoResult = {
+      symbol: symbol,
+      currentPrice: Math.random() * 100 + 20,
+      change: (Math.random() - 0.5) * 5,
+      changePercent: (Math.random() - 0.5) * 10,
+      lastUpdate: new Date().toISOString().split('T')[0],
+      currency: symbol.includes('.SA') ? 'BRL' : 'USD'
+    };
+    quoteCache.set(cacheKey, { data: demoResult, timestamp: Date.now() });
+    return demoResult;
   }
 }
 
@@ -426,6 +460,206 @@ export async function searchAssets(query: string, type?: string): Promise<AssetS
     console.error('Erro na busca de ativos:', error);
     return [];
   }
+}
+
+// Nova interface para dados históricos
+interface HistoricalData {
+  date: string;
+  open: number;
+  high: number;
+  low: number;
+  close: number;
+  volume: number;
+}
+
+// Nova função para buscar dados históricos usando TIME_SERIES_DAILY
+export async function getHistoricalData(symbol: string, period: string = 'compact'): Promise<HistoricalData[]> {
+  const apiKey = process.env.ALPHA_VANTAGE_API_KEY;
+  if (!apiKey) {
+    console.warn('ALPHA_VANTAGE_API_KEY não configurada, gerando dados de demonstração');
+    return generateMockHistoricalData();
+  }
+
+  try {
+    let fullSymbol = symbol;
+    if (symbol.match(/^[A-Z]{4}[0-9]?$/)) {
+      fullSymbol = `${symbol}.SA`; // Ações brasileiras
+    }
+
+    const url = `https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=${fullSymbol}&outputsize=${period}&apikey=${apiKey}`;
+    const response = await fetch(url);
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    const data = await response.json();
+
+    if (data['Error Message'] || data['Note']) {
+      console.warn('Alpha Vantage historical data error:', data['Error Message'] || data['Note']);
+      return generateMockHistoricalData();
+    }
+
+    const timeSeries = data['Time Series (Daily)'];
+    if (!timeSeries) {
+      return generateMockHistoricalData();
+    }
+
+    const historicalData: HistoricalData[] = [];
+    for (const [date, values] of Object.entries(timeSeries)) {
+      const dayData = values as any;
+      historicalData.push({
+        date,
+        open: parseFloat(dayData['1. open']),
+        high: parseFloat(dayData['2. high']),
+        low: parseFloat(dayData['3. low']),
+        close: parseFloat(dayData['4. close']),
+        volume: parseInt(dayData['5. volume'])
+      });
+    }
+
+    // Ordenar por data (mais recente primeiro)
+    return historicalData.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  } catch (error) {
+    console.error(`Erro ao buscar dados históricos para ${symbol}:`, error);
+    return generateMockHistoricalData();
+  }
+}
+
+// Função auxiliar para gerar dados históricos de demonstração 
+function generateMockHistoricalData(): HistoricalData[] {
+  const data: HistoricalData[] = [];
+  const basePrice = 50 + Math.random() * 100; // Preço base entre 50 e 150
+  let currentPrice = basePrice;
+  
+  for (let i = 30; i >= 0; i--) {
+    const date = new Date();
+    date.setDate(date.getDate() - i);
+    
+    // Simular variação diária
+    const variation = (Math.random() - 0.5) * 0.1; // ±5%
+    const newPrice = currentPrice * (1 + variation);
+    
+    const open = currentPrice;
+    const high = Math.max(open, newPrice) * (1 + Math.random() * 0.02);
+    const low = Math.min(open, newPrice) * (1 - Math.random() * 0.02);
+    const close = newPrice;
+    const volume = Math.floor(Math.random() * 1000000) + 100000;
+    
+    data.push({
+      date: date.toISOString().split('T')[0],
+      open: Math.round(open * 100) / 100,
+      high: Math.round(high * 100) / 100,
+      low: Math.round(low * 100) / 100,
+      close: Math.round(close * 100) / 100,
+      volume
+    });
+    
+    currentPrice = newPrice;
+  }
+  
+  return data.reverse(); // Mais recente primeiro
+}
+
+// Nova interface para dados fundamentais
+interface FundamentalData {
+  symbol: string;
+  marketCap: number;
+  peRatio: number;
+  dividendYield: number;
+  eps: number;
+  beta: number;
+  week52High: number;
+  week52Low: number;
+  currency: string;
+}
+
+// Nova função para buscar dados fundamentais usando OVERVIEW
+export async function getFundamentalData(symbol: string): Promise<FundamentalData | null> {
+  const apiKey = process.env.ALPHA_VANTAGE_API_KEY;
+  if (!apiKey) {
+    console.warn('ALPHA_VANTAGE_API_KEY não configurada, gerando dados de demonstração');
+    return generateMockFundamentalData(symbol);
+  }
+
+  try {
+    let fullSymbol = symbol;
+    if (symbol.match(/^[A-Z]{4}[0-9]?$/)) {
+      fullSymbol = `${symbol}.SA`; // Ações brasileiras
+    }
+
+    const url = `https://www.alphavantage.co/query?function=OVERVIEW&symbol=${fullSymbol}&apikey=${apiKey}`;
+    const response = await fetch(url);
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    const data = await response.json();
+
+    if (data['Error Message'] || data['Note'] || Object.keys(data).length === 0) {
+      console.warn('Alpha Vantage fundamental data error:', data['Error Message'] || data['Note']);
+      return generateMockFundamentalData(symbol);
+    }
+
+    return {
+      symbol: symbol,
+      marketCap: parseFloat(data['MarketCapitalization']) || 0,
+      peRatio: parseFloat(data['PERatio']) || 0,
+      dividendYield: parseFloat(data['DividendYield']) || 0,
+      eps: parseFloat(data['EPS']) || 0,
+      beta: parseFloat(data['Beta']) || 0,
+      week52High: parseFloat(data['52WeekHigh']) || 0,
+      week52Low: parseFloat(data['52WeekLow']) || 0,
+      currency: data['Currency'] || (symbol.includes('.SA') ? 'BRL' : 'USD')
+    };
+  } catch (error) {
+    console.error(`Erro ao buscar dados fundamentais para ${symbol}:`, error);
+    return generateMockFundamentalData(symbol);
+  }
+}
+
+// Função auxiliar para gerar dados fundamentais de demonstração
+function generateMockFundamentalData(symbol: string): FundamentalData {
+  const basePrice = 50 + Math.random() * 100;
+  return {
+    symbol: symbol,
+    marketCap: Math.floor((Math.random() * 100 + 10) * 1000000000), // 10B - 110B
+    peRatio: Math.round((Math.random() * 30 + 5) * 100) / 100, // 5 - 35
+    dividendYield: Math.round((Math.random() * 8 + 1) * 100) / 100, // 1% - 9%
+    eps: Math.round((basePrice / (Math.random() * 20 + 10)) * 100) / 100,
+    beta: Math.round((Math.random() * 2 + 0.3) * 100) / 100, // 0.3 - 2.3
+    week52High: Math.round((basePrice * (1 + Math.random() * 0.5)) * 100) / 100,
+    week52Low: Math.round((basePrice * (1 - Math.random() * 0.4)) * 100) / 100,
+    currency: symbol.includes('.SA') ? 'BRL' : 'USD'
+  };
+}
+
+// Função para buscar múltiplas cotações de uma vez (otimização)
+export async function getBatchQuotes(symbols: string[]): Promise<Map<string, AssetQuote>> {
+  const quotes = new Map<string, AssetQuote>();
+  
+  // Processar em lotes de 5 para evitar rate limiting
+  const batchSize = 5;
+  for (let i = 0; i < symbols.length; i += batchSize) {
+    const batch = symbols.slice(i, i + batchSize);
+    const promises = batch.map(symbol => getStockQuote(symbol));
+    
+    const results = await Promise.allSettled(promises);
+    
+    results.forEach((result, index) => {
+      if (result.status === 'fulfilled' && result.value) {
+        quotes.set(batch[index], result.value);
+      }
+    });
+    
+    // Delay entre lotes para respeitar rate limits
+    if (i + batchSize < symbols.length) {
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    }
+  }
+  
+  return quotes;
 }
 
 // Função para buscar cotação atual

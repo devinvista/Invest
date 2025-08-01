@@ -981,6 +981,62 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Historical data endpoint
+  app.get("/api/assets/:symbol/historical", async (req: any, res) => {
+    try {
+      const { symbol } = req.params;
+      const { period = 'compact' } = req.query;
+      
+      const { getHistoricalData } = await import('./financial-api');
+      const historicalData = await getHistoricalData(symbol, period);
+      
+      res.json(historicalData);
+    } catch (error) {
+      console.error('❌ Erro ao buscar dados históricos:', error);
+      res.status(500).json({ message: "Erro ao buscar dados históricos", error: error instanceof Error ? error.message : "Erro desconhecido" });
+    }
+  });
+
+  // Fundamental data endpoint
+  app.get("/api/assets/:symbol/fundamentals", async (req: any, res) => {
+    try {
+      const { symbol } = req.params;
+      
+      const { getFundamentalData } = await import('./financial-api');
+      const fundamentalData = await getFundamentalData(symbol);
+      
+      if (!fundamentalData) {
+        return res.status(404).json({ message: "Dados fundamentais não encontrados" });
+      }
+      
+      res.json(fundamentalData);
+    } catch (error) {
+      console.error('❌ Erro ao buscar dados fundamentais:', error);
+      res.status(500).json({ message: "Erro ao buscar dados fundamentais", error: error instanceof Error ? error.message : "Erro desconhecido" });
+    }
+  });
+
+  // Enhanced batch quotes endpoint
+  app.post("/api/assets/batch-quotes", async (req: any, res) => {
+    try {
+      const { symbols } = req.body;
+      
+      if (!Array.isArray(symbols) || symbols.length === 0) {
+        return res.status(400).json({ message: "Lista de símbolos é obrigatória" });
+      }
+      
+      const { getBatchQuotes } = await import('./financial-api');
+      const quotes = await getBatchQuotes(symbols);
+      
+      // Converter Map para objeto para JSON
+      const quotesObject = Object.fromEntries(quotes);
+      res.json(quotesObject);
+    } catch (error) {
+      console.error('❌ Erro ao buscar cotações em lote:', error);
+      res.status(500).json({ message: "Erro ao buscar cotações", error: error instanceof Error ? error.message : "Erro desconhecido" });
+    }
+  });
+
   // Single asset quote endpoint
   app.get("/api/assets/quote", async (req: any, res) => {
     try {

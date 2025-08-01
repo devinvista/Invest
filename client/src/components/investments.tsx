@@ -29,6 +29,7 @@ import { useState } from 'react';
 import { InvestmentTransactionForm } from './investment-transaction-form';
 import { AssetForm } from './asset-form';
 import { QuoteUpdater } from './quote-updater';
+import { AssetDetailsDialog } from './asset-details-dialog';
 
 const ASSET_COLORS = {
   stocks: '#195AB4',      // Pharos Capital primary blue
@@ -71,6 +72,8 @@ export function Investments() {
   const [selectedPeriod, setSelectedPeriod] = useState('12m');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedEvolutionType, setSelectedEvolutionType] = useState('all');
+  const [selectedAsset, setSelectedAsset] = useState<Asset | null>(null);
+  const [assetDetailsOpen, setAssetDetailsOpen] = useState(false);
   
   // Check if dark mode is active
   const isDarkMode = document.documentElement.classList.contains('dark');
@@ -688,7 +691,14 @@ export function Investments() {
                                 const portfolioPercent = totalValue > 0 ? (currentValue / totalValue) * 100 : 0;
 
                                 return (
-                                  <tr key={asset.id} className="border-b border-border/40 hover:bg-accent/50 transition-colors group">
+                                  <tr 
+                                    key={asset.id} 
+                                    className="border-b border-border/40 hover:bg-accent/50 transition-colors group cursor-pointer"
+                                    onClick={() => {
+                                      setSelectedAsset(asset);
+                                      setAssetDetailsOpen(true);
+                                    }}
+                                  >
                                     <td className="p-3">
                                       <div className="flex items-center space-x-3">
                                         <div className="w-8 h-8 bg-gradient-to-br from-primary/20 to-primary/10 rounded-lg flex items-center justify-center border border-primary/20">
@@ -697,7 +707,10 @@ export function Investments() {
                                           </span>
                                         </div>
                                         <div>
-                                          <p className="font-semibold text-sm text-foreground group-hover:text-primary transition-colors">{asset.symbol}</p>
+                                          <p className="font-semibold text-sm text-foreground group-hover:text-primary transition-colors flex items-center gap-2">
+                                            {asset.symbol}
+                                            <Activity className="h-3 w-3 opacity-60" />
+                                          </p>
                                           <p className="text-xs text-muted-foreground/80 line-clamp-1">{asset.name}</p>
                                         </div>
                                       </div>
@@ -788,6 +801,20 @@ export function Investments() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Asset Details Dialog */}
+        {selectedAsset && (
+          <AssetDetailsDialog
+            isOpen={assetDetailsOpen}
+            onClose={() => {
+              setAssetDetailsOpen(false);
+              setSelectedAsset(null);
+            }}
+            symbol={selectedAsset.symbol}
+            name={selectedAsset.name}
+            type={selectedAsset.type}
+          />
+        )}
       </div>
     </div>
   );
