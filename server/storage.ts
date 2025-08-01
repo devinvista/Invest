@@ -751,33 +751,17 @@ export class DatabaseStorage implements IStorage {
         .where(eq(transactions.recurrenceId, recurrenceId))
         .orderBy(transactions.date);
 
-      // Calculate which periods are already occupied
-      // Only count pending transactions (they maintain original planned dates)
-      // Confirmed transactions may have changed dates and no longer represent their original period
-      const occupiedPeriods = new Set<number>();
-      
-      for (const transaction of allTransactions) {
-        if (transaction.status === 'pending') {
-          // Only pending transactions maintain their planned dates
-          const transactionDate = new Date(transaction.date);
-          const period = this.calculatePeriodNumber(recurrence.startDate, transactionDate, recurrence.frequency);
-          if (period > 0) {
-            occupiedPeriods.add(period);
-          }
-        }
-      }
-
-      // Find the next available period
-      let nextPeriod = 1;
-      while (occupiedPeriods.has(nextPeriod)) {
-        nextPeriod++;
-      }
+      // Simple approach: count total transactions created for this recurrence
+      // Each transaction (confirmed or pending) represents a period that has been "used"
+      // The next transaction should be for period (total transactions + 1)
+      const totalTransactions = allTransactions.length;
+      const nextPeriod = totalTransactions + 1;
 
       const nextDate = this.calculateRecurrenceDate(recurrence.startDate, recurrence.frequency, nextPeriod);
       
       console.log(`📅 Creating transaction for period #${nextPeriod} of recurrence`);
       console.log(`📅 Start date: ${recurrence.startDate.toISOString()}`);
-      console.log(`📅 Occupied periods: [${Array.from(occupiedPeriods).sort().join(', ')}]`);
+      console.log(`📅 Total existing transactions: ${totalTransactions}`);
       console.log(`📅 Next transaction date calculated: ${nextDate.toISOString()}`);
 
       // Create the next pending transaction
