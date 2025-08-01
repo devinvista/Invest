@@ -703,6 +703,27 @@ export class DatabaseStorage implements IStorage {
     return result;
   }
 
+  private calculatePeriodNumber(startDate: Date, targetDate: Date, frequency: string): number {
+    const start = new Date(startDate);
+    const target = new Date(targetDate);
+    
+    switch (frequency) {
+      case 'daily':
+        const dayDiff = Math.floor((target.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
+        return dayDiff + 1;
+      case 'weekly':
+        const weekDiff = Math.floor((target.getTime() - start.getTime()) / (1000 * 60 * 60 * 24 * 7));
+        return weekDiff + 1;
+      case 'monthly':
+        const monthDiff = (target.getFullYear() - start.getFullYear()) * 12 + (target.getMonth() - start.getMonth());
+        return monthDiff + 1;
+      case 'yearly':
+        const yearDiff = target.getFullYear() - start.getFullYear();
+        return yearDiff + 1;
+    }
+    return 1;
+  }
+
   async createNextPendingTransactionForRecurrence(recurrenceId: string): Promise<Transaction | null> {
     try {
       console.log('🔄 Creating next pending transaction for recurrence:', recurrenceId);
@@ -724,18 +745,35 @@ export class DatabaseStorage implements IStorage {
       }
 
       // Calculate next transaction date based on the original recurrence planning
-      // Count how many periods have passed since start date to determine next occurrence
+      // We need to find the next "empty" slot in the sequence
       const allTransactions = await db.select()
         .from(transactions)
         .where(eq(transactions.recurrenceId, recurrenceId))
         .orderBy(transactions.date);
 
-      // The next transaction should be at start date + (number of existing transactions + 1) * frequency
-      const periodsToAdd = allTransactions.length + 1;
-      const nextDate = this.calculateRecurrenceDate(recurrence.startDate, recurrence.frequency, periodsToAdd);
+      // Calculate which periods are already occupied (confirmed transactions)
+      const occupiedPeriods = new Set<number>();
       
-      console.log(`📅 Creating transaction #${periodsToAdd} for recurrence`);
+      for (const transaction of allTransactions) {
+        // Calculate which period this transaction represents based on its original planned date
+        const transactionDate = new Date(transaction.date);
+        const period = this.calculatePeriodNumber(recurrence.startDate, transactionDate, recurrence.frequency);
+        if (period > 0) {
+          occupiedPeriods.add(period);
+        }
+      }
+
+      // Find the next available period
+      let nextPeriod = 1;
+      while (occupiedPeriods.has(nextPeriod)) {
+        nextPeriod++;
+      }
+
+      const nextDate = this.calculateRecurrenceDate(recurrence.startDate, recurrence.frequency, nextPeriod);
+      
+      console.log(`📅 Creating transaction for period #${nextPeriod} of recurrence`);
       console.log(`📅 Start date: ${recurrence.startDate.toISOString()}`);
+      console.log(`📅 Occupied periods: [${Array.from(occupiedPeriods).sort().join(', ')}]`);
       console.log(`📅 Next transaction date calculated: ${nextDate.toISOString()}`);
 
       // Create the next pending transaction
