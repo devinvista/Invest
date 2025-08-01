@@ -289,16 +289,30 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateTransactionStatus(transactionId: string, status: 'confirmed' | 'pending'): Promise<void> {
+    const updateData: any = { status };
+    
+    // If confirming a transaction, update the date to current date
+    if (status === 'confirmed') {
+      const confirmationDate = new Date();
+      updateData.date = confirmationDate;
+      console.log(`📅 Updating transaction ${transactionId} status to confirmed with date: ${confirmationDate.toISOString()}`);
+    }
+    
     await db.update(transactions)
-      .set({ status })
+      .set(updateData)
       .where(eq(transactions.id, transactionId));
   }
 
   async confirmTransactionWithAccount(transactionId: string, accountId: string): Promise<void> {
+    const confirmationDate = new Date();
+    console.log(`📅 Updating transaction ${transactionId} date to confirmation date: ${confirmationDate.toISOString()}`);
+    
+    // Update transaction status, account, and date to confirmation date
     await db.update(transactions)
       .set({ 
         status: 'confirmed',
-        accountId: accountId 
+        accountId: accountId,
+        date: confirmationDate // Set to current date when confirmed
       })
       .where(eq(transactions.id, transactionId));
   }

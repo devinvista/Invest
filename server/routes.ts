@@ -569,11 +569,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
           return res.status(400).json({ message: "Conta não encontrada ou não pertence ao usuário" });
         }
         
+        // Get original transaction data before confirmation
+        console.log(`📅 Original transaction date: ${transaction.date}`);
+        
         await storage.confirmTransactionWithAccount(transactionId, accountId);
+        
+        // Get updated transaction data after confirmation
+        const updatedTransaction = await storage.getTransaction(transactionId);
+        console.log(`📅 Updated transaction date: ${updatedTransaction?.date}`);
+        
         message = `Transação confirmada com sucesso na conta ${account.name}`;
       } else {
         // If no accountId provided, just confirm with existing account
+        console.log(`📅 Original transaction date: ${transaction.date}`);
+        
         await storage.updateTransactionStatus(transactionId, 'confirmed');
+        
+        // Get updated transaction data after confirmation
+        const updatedTransaction = await storage.getTransaction(transactionId);
+        console.log(`📅 Updated transaction date: ${updatedTransaction?.date}`);
       }
       
       // If this transaction belongs to a recurrence, create the next pending transaction

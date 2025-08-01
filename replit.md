@@ -11,6 +11,12 @@ Visual Identity: Pharos Capital brand guidelines applied.
 
 ## Recent Changes
 
+- **August 1, 2025**: Implemented confirmation date logic for pending transactions
+  - When a pending transaction is confirmed, its date is automatically updated to the confirmation date (current date/time)
+  - Applies to both `confirmTransactionWithAccount` and `updateTransactionStatus` methods
+  - Ensures accurate financial records showing when transactions actually occurred
+  - Added detailed logging for date changes during confirmation process
+
 - **January 31, 2025**: Implemented automatic pending transaction management for "forever" recurrences
   - "Forever" recurrences (no end date) automatically create the first pending transaction when created
   - When a recurrence transaction is confirmed, the next pending transaction is automatically created
