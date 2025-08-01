@@ -20,7 +20,7 @@ Visual Identity: Pharos Capital brand guidelines applied.
   - Backend API endpoints: PUT `/api/transactions/:id` and enhanced DELETE validation
   - Fixed recurrence creation: first pending transaction now uses start date instead of next execution date
   - Enhanced delete logic: when deleting pending transactions from "forever" recurrences, automatically creates next pending transaction
-  - Fixed sequential date calculation: next transactions now properly calculate from the most recent transaction date + frequency period
+  - Fixed recurrence date calculation: all transactions calculated from original start date + period number, maintaining original planning regardless of confirmations/deletions
 
 - **August 1, 2025**: Implemented confirmation date logic for pending transactions
   - When a pending transaction is confirmed, its date is automatically updated to the confirmation date (current date/time)
