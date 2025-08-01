@@ -673,9 +673,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const updates = updateRecurrenceSchema.parse(req.body);
       console.log('✅ Parsed updates:', updates);
       
-      const recurrence = await storage.updateRecurrence(recurrenceId, updates);
-      console.log('✅ Recurrence updated successfully:', recurrence.id);
-      res.json(recurrence);
+      const result = await storage.updateRecurrenceAndPendingTransactions(recurrenceId, updates);
+      console.log('✅ Recurrence updated successfully:', result.recurrence.id);
+      console.log('📋 Updated pending transactions:', result.updatedTransactions.length);
+      
+      res.json({
+        recurrence: result.recurrence,
+        updatedTransactions: result.updatedTransactions,
+        message: `Recorrência atualizada com sucesso. ${result.updatedTransactions.length} transações pendentes foram atualizadas.`
+      });
     } catch (error) {
       console.error('❌ Error updating recurrence:', error);
       res.status(400).json({ message: "Erro ao atualizar recorrência", error: error instanceof Error ? error.message : "Erro desconhecido" });

@@ -371,6 +371,60 @@ export class DatabaseStorage implements IStorage {
     return updatedRecurrence;
   }
 
+  async updateRecurrenceAndPendingTransactions(recurrenceId: string, updates: Partial<InsertRecurrence>): Promise<{
+    recurrence: Recurrence;
+    updatedTransactions: Transaction[];
+  }> {
+    // First update the recurrence
+    const [updatedRecurrence] = await db.update(recurrences)
+      .set(updates)
+      .where(eq(recurrences.id, recurrenceId))
+      .returning();
+
+    // Then update only pending transactions related to this recurrence
+    const transactionUpdates: any = {};
+    
+    // Map recurrence fields to transaction fields
+    if (updates.amount !== undefined) {
+      transactionUpdates.amount = updates.amount;
+    }
+    if (updates.description !== undefined) {
+      transactionUpdates.description = updates.description;
+    }
+    if (updates.categoryId !== undefined) {
+      transactionUpdates.categoryId = updates.categoryId;
+    }
+    if (updates.accountId !== undefined) {
+      transactionUpdates.accountId = updates.accountId;
+    }
+    if (updates.creditCardId !== undefined) {
+      transactionUpdates.creditCardId = updates.creditCardId;
+    }
+    if (updates.type !== undefined) {
+      transactionUpdates.type = updates.type;
+    }
+
+    let updatedTransactions: Transaction[] = [];
+    
+    // Only update transactions if there are transaction-related changes
+    if (Object.keys(transactionUpdates).length > 0) {
+      updatedTransactions = await db.update(transactions)
+        .set(transactionUpdates)
+        .where(
+          and(
+            eq(transactions.recurrenceId, recurrenceId),
+            eq(transactions.status, 'pending')
+          )
+        )
+        .returning();
+    }
+
+    return {
+      recurrence: updatedRecurrence,
+      updatedTransactions
+    };
+  }
+
   async deactivateRecurrence(recurrenceId: string): Promise<void> {
     await db.update(recurrences)
       .set({ isActive: false })

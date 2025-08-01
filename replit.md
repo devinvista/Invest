@@ -9,6 +9,15 @@ OrçaFácil is a comprehensive personal finance management application designed 
 Preferred communication style: Simple, everyday language.
 Visual Identity: Pharos Capital brand guidelines applied.
 
+## Recent Changes
+
+- **January 31, 2025**: Implemented intelligent recurrence update logic - When recurrences are updated, only pending transactions are modified while confirmed transactions remain unchanged
+  - Created specialized `updateRecurrenceAndPendingTransactions` method that maps recurrence changes to related pending transactions
+  - Fixed date validation issues in recurrence updates by creating dedicated `updateRecurrenceSchema` with proper ISO string to Date transformation
+  - Enhanced backend response to show how many pending transactions were updated along with the recurrence
+  - Preserves financial integrity by keeping confirmed transaction history intact
+  - Provides clear feedback to users about which transactions were affected by the update
+
 ## System Architecture
 
 ### Frontend Architecture
