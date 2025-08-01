@@ -132,10 +132,10 @@ export default function RecurrenceForm({ onSuccess }: RecurrenceFormProps) {
 
     createRecurrenceMutation.mutate({
       ...data,
-      startDate,
-      endDate: showEndDate ? endDate : undefined,
+      startDate: startDate!,
+      endDate: showEndDate ? endDate : null,
       installments: data.isRecurring && endType === 'repetitions' ? repetitions : undefined,
-    });
+    } as any);
   };
 
   const frequencyOptions = [
