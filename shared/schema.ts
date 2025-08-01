@@ -286,6 +286,12 @@ export const insertRecurrenceSchema = createInsertSchema(recurrences)
     installments: z.union([z.string(), z.number()]).transform(val => Number(val)).default(1),
     frequency: z.enum(['daily', 'weekly', 'monthly', 'yearly']),
     isActive: z.boolean().optional(),
+    startDate: z.union([z.string(), z.date()]).transform(val => 
+      typeof val === 'string' ? new Date(val) : val
+    ),
+    endDate: z.union([z.string(), z.date(), z.null()]).transform(val => 
+      val === null ? null : (typeof val === 'string' ? new Date(val) : val)
+    ).optional(),
   });
 export const insertAssetSchema = createInsertSchema(assets)
   .omit({ id: true, createdAt: true })

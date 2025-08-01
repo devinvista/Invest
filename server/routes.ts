@@ -673,14 +673,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const updates = insertRecurrenceSchema.partial().parse(req.body);
       console.log('✅ Parsed updates:', updates);
       
-      // Process dates if provided
-      if (updates.startDate && typeof updates.startDate === 'string') {
-        updates.startDate = new Date(updates.startDate);
-      }
-      if (updates.endDate && typeof updates.endDate === 'string') {
-        updates.endDate = new Date(updates.endDate);
-      }
-      
       const recurrence = await storage.updateRecurrence(recurrenceId, updates);
       console.log('✅ Recurrence updated successfully:', recurrence.id);
       res.json(recurrence);
