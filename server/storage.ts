@@ -413,7 +413,7 @@ export class DatabaseStorage implements IStorage {
       if (newRecurrence.isActive && (newRecurrence.endDate === null || newRecurrence.endDate === undefined)) {
         console.log('🔄 Creating initial pending transaction for forever recurrence...');
         
-        // Create the first pending transaction immediately
+        // Create the first pending transaction with the start date (not next execution date)
         const firstTransactionData: InsertTransaction = {
           userId: newRecurrence.userId,
           accountId: newRecurrence.accountId,
@@ -422,7 +422,7 @@ export class DatabaseStorage implements IStorage {
           type: newRecurrence.type,
           amount: newRecurrence.amount,
           description: newRecurrence.description,
-          date: newRecurrence.nextExecutionDate,
+          date: newRecurrence.startDate, // Use start date, not next execution date
           status: 'pending',
           recurrenceId: newRecurrence.id,
           installments: 1,
