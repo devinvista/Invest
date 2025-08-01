@@ -546,6 +546,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const transactionId = req.params.id;
       const { accountId } = req.body;
       
+      console.log(`✅ Confirming transaction ${transactionId} with account ${accountId}`);
+      
       // Check if transaction belongs to user and is pending
       const transaction = await storage.getTransaction(transactionId);
       if (!transaction || transaction.userId !== req.userId) {
@@ -556,6 +558,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Transação já foi confirmada" });
       }
       
+      let nextTransaction = null;
+      let message = "Transação confirmada com sucesso";
+      
       // If accountId is provided, update the transaction with the new account and confirm
       if (accountId) {
         // Verify that the account belongs to the user
@@ -565,16 +570,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
         
         await storage.confirmTransactionWithAccount(transactionId, accountId);
-        res.json({ 
-          message: "Transação confirmada com sucesso",
-          accountName: account.name
-        });
+        message = `Transação confirmada com sucesso na conta ${account.name}`;
       } else {
         // If no accountId provided, just confirm with existing account
         await storage.updateTransactionStatus(transactionId, 'confirmed');
-        res.json({ message: "Transação confirmada com sucesso" });
       }
+      
+      // If this transaction belongs to a recurrence, create the next pending transaction
+      if (transaction.recurrenceId) {
+        console.log('🔄 Transaction belongs to recurrence, creating next pending transaction...');
+        nextTransaction = await storage.createNextPendingTransactionForRecurrence(transaction.recurrenceId);
+        if (nextTransaction) {
+          console.log('✅ Next pending transaction created:', nextTransaction.id);
+          message += " - Próxima transação recorrente criada automaticamente!";
+        }
+      }
+      
+      console.log(`✅ Transaction confirmed successfully: ${transactionId}`);
+      res.json({ 
+        message,
+        nextTransaction,
+        accountName: accountId ? (await storage.getAccount(accountId))?.name : undefined
+      });
     } catch (error) {
+      console.error('❌ Error confirming transaction:', error);
       res.status(500).json({ message: "Erro ao confirmar transação", error: error instanceof Error ? error.message : "Erro desconhecido" });
     }
   });

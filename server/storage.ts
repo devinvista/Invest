@@ -356,6 +356,32 @@ export class DatabaseStorage implements IStorage {
       
       const [newRecurrence] = await db.insert(recurrences).values(recurrenceData).returning();
       console.log('✅ Recurrence created successfully:', newRecurrence);
+      
+      // For "forever" recurrences (no end date), create the first pending transaction
+      if (newRecurrence.isActive && (newRecurrence.endDate === null || newRecurrence.endDate === undefined)) {
+        console.log('🔄 Creating initial pending transaction for forever recurrence...');
+        
+        // Create the first pending transaction immediately
+        const firstTransactionData: InsertTransaction = {
+          userId: newRecurrence.userId,
+          accountId: newRecurrence.accountId,
+          creditCardId: newRecurrence.creditCardId,
+          categoryId: newRecurrence.categoryId,
+          type: newRecurrence.type,
+          amount: newRecurrence.amount,
+          description: newRecurrence.description,
+          date: newRecurrence.nextExecutionDate,
+          status: 'pending',
+          recurrenceId: newRecurrence.id,
+          installments: 1,
+          currentInstallment: 1
+        };
+
+        console.log('📝 Creating first pending transaction:', firstTransactionData);
+        const [firstTransaction] = await db.insert(transactions).values(firstTransactionData).returning();
+        console.log('✅ First pending transaction created:', firstTransaction.id);
+      }
+      
       return newRecurrence;
     } catch (error) {
       console.error('❌ Error in createRecurrence:', error);
@@ -591,6 +617,60 @@ export class DatabaseStorage implements IStorage {
     }
     
     return next;
+  }
+
+  async createNextPendingTransactionForRecurrence(recurrenceId: string): Promise<Transaction | null> {
+    try {
+      console.log('🔄 Creating next pending transaction for recurrence:', recurrenceId);
+      
+      // Get the recurrence details
+      const [recurrence] = await db.select()
+        .from(recurrences)
+        .where(eq(recurrences.id, recurrenceId));
+      
+      if (!recurrence) {
+        console.log('❌ Recurrence not found:', recurrenceId);
+        return null;
+      }
+
+      // Only create next transaction for active recurrences without end date (forever)
+      if (!recurrence.isActive || recurrence.endDate) {
+        console.log('⚠️ Recurrence is not active or has end date, skipping next transaction creation');
+        return null;
+      }
+
+      // Calculate next transaction date
+      const nextDate = this.calculateNextExecutionDate(recurrence.nextExecutionDate, recurrence.frequency);
+      console.log('📅 Next transaction date calculated:', nextDate);
+
+      // Create the next pending transaction
+      const nextTransactionData: InsertTransaction = {
+        userId: recurrence.userId,
+        accountId: recurrence.accountId,
+        creditCardId: recurrence.creditCardId,
+        categoryId: recurrence.categoryId,
+        type: recurrence.type,
+        amount: recurrence.amount,
+        description: recurrence.description,
+        date: nextDate,
+        status: 'pending',
+        recurrenceId: recurrence.id,
+        installments: 1,
+        currentInstallment: 1
+      };
+
+      console.log('📝 Creating next pending transaction:', nextTransactionData);
+      const [nextTransaction] = await db.insert(transactions).values(nextTransactionData).returning();
+      
+      // Update recurrence next execution date
+      await this.updateRecurrenceNextExecution(recurrence.id, nextDate);
+      
+      console.log('✅ Next pending transaction created:', nextTransaction.id);
+      return nextTransaction;
+    } catch (error) {
+      console.error('❌ Error creating next pending transaction:', error);
+      return null;
+    }
   }
 
   // Assets

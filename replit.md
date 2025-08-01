@@ -11,12 +11,15 @@ Visual Identity: Pharos Capital brand guidelines applied.
 
 ## Recent Changes
 
-- **January 31, 2025**: Implemented intelligent recurrence update logic - When recurrences are updated, only pending transactions are modified while confirmed transactions remain unchanged
+- **January 31, 2025**: Implemented automatic pending transaction management for "forever" recurrences
+  - "Forever" recurrences (no end date) automatically create the first pending transaction when created
+  - When a recurrence transaction is confirmed, the next pending transaction is automatically created
+  - System maintains exactly one pending transaction visible for each active forever recurrence
+  - Intelligent recurrence update logic: only pending transactions are modified while confirmed transactions remain unchanged
   - Created specialized `updateRecurrenceAndPendingTransactions` method that maps recurrence changes to related pending transactions
-  - Fixed date validation issues in recurrence updates by creating dedicated `updateRecurrenceSchema` with proper ISO string to Date transformation
-  - Enhanced backend response to show how many pending transactions were updated along with the recurrence
+  - Fixed date validation issues in recurrence updates with dedicated `updateRecurrenceSchema` and proper ISO string to Date transformation
+  - Enhanced backend response to show how many pending transactions were updated and provides clear user feedback
   - Preserves financial integrity by keeping confirmed transaction history intact
-  - Provides clear feedback to users about which transactions were affected by the update
 
 ## System Architecture
 
