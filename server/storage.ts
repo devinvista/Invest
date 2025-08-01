@@ -375,11 +375,34 @@ export class DatabaseStorage implements IStorage {
     recurrence: Recurrence;
     updatedTransactions: Transaction[];
   }> {
+    console.log('🔄 Starting recurrence and pending transactions update for:', recurrenceId);
+    console.log('📝 Updates received:', updates);
+
+    // First, check if there are any pending transactions for this recurrence
+    const pendingTransactions = await db.select()
+      .from(transactions)
+      .where(
+        and(
+          eq(transactions.recurrenceId, recurrenceId),
+          eq(transactions.status, 'pending')
+        )
+      );
+    
+    console.log('🔍 Found pending transactions:', pendingTransactions.length);
+    console.log('📋 Pending transactions details:', pendingTransactions.map(t => ({
+      id: t.id,
+      description: t.description,
+      amount: t.amount,
+      status: t.status
+    })));
+
     // First update the recurrence
     const [updatedRecurrence] = await db.update(recurrences)
       .set(updates)
       .where(eq(recurrences.id, recurrenceId))
       .returning();
+
+    console.log('✅ Recurrence updated successfully');
 
     // Then update only pending transactions related to this recurrence
     const transactionUpdates: any = {};
@@ -404,10 +427,13 @@ export class DatabaseStorage implements IStorage {
       transactionUpdates.type = updates.type;
     }
 
+    console.log('🔧 Transaction updates to apply:', transactionUpdates);
+
     let updatedTransactions: Transaction[] = [];
     
     // Only update transactions if there are transaction-related changes
     if (Object.keys(transactionUpdates).length > 0) {
+      console.log('🔄 Updating pending transactions...');
       updatedTransactions = await db.update(transactions)
         .set(transactionUpdates)
         .where(
@@ -417,6 +443,16 @@ export class DatabaseStorage implements IStorage {
           )
         )
         .returning();
+      
+      console.log('✅ Updated transactions:', updatedTransactions.length);
+      console.log('📋 Updated transaction details:', updatedTransactions.map(t => ({
+        id: t.id,
+        description: t.description,
+        amount: t.amount,
+        status: t.status
+      })));
+    } else {
+      console.log('⚠️ No transaction-related updates to apply');
     }
 
     return {
