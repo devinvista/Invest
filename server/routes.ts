@@ -5,7 +5,7 @@ import {
   insertUserSchema, insertAccountSchema, insertCreditCardSchema, 
   insertCategorySchema, insertTransactionSchema, insertAssetSchema,
   insertGoalSchema, insertBudgetSchema, insertInvestmentTransactionSchema,
-  insertRecurrenceSchema
+  insertRecurrenceSchema, updateRecurrenceSchema
 } from "@shared/schema";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
@@ -670,7 +670,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         body: req.body
       });
       
-      const updates = insertRecurrenceSchema.partial().parse(req.body);
+      const updates = updateRecurrenceSchema.parse(req.body);
       console.log('✅ Parsed updates:', updates);
       
       const recurrence = await storage.updateRecurrence(recurrenceId, updates);

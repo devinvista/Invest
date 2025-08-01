@@ -293,6 +293,24 @@ export const insertRecurrenceSchema = createInsertSchema(recurrences)
       val === null ? null : (typeof val === 'string' ? new Date(val) : val)
     ).optional(),
   });
+
+export const updateRecurrenceSchema = z.object({
+  type: z.enum(['income', 'expense', 'transfer']).optional(),
+  amount: z.union([z.string(), z.number()]).transform(val => val.toString()).optional(),
+  description: z.string().optional(),
+  categoryId: z.string().optional(),
+  accountId: z.string().optional(),
+  creditCardId: z.string().nullish(),
+  frequency: z.enum(['daily', 'weekly', 'monthly', 'yearly']).optional(),
+  installments: z.union([z.string(), z.number()]).transform(val => Number(val)).optional(),
+  isActive: z.boolean().optional(),
+  startDate: z.union([z.string(), z.date()]).transform(val => 
+    typeof val === 'string' ? new Date(val) : val
+  ).optional(),
+  endDate: z.union([z.string(), z.date(), z.null()]).transform(val => 
+    val === null ? null : (typeof val === 'string' ? new Date(val) : val)
+  ).optional(),
+});
 export const insertAssetSchema = createInsertSchema(assets)
   .omit({ id: true, createdAt: true })
   .extend({
