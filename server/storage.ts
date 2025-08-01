@@ -751,15 +751,19 @@ export class DatabaseStorage implements IStorage {
         .where(eq(transactions.recurrenceId, recurrenceId))
         .orderBy(transactions.date);
 
-      // Calculate which periods are already occupied (confirmed transactions)
+      // Calculate which periods are already occupied
+      // Only count pending transactions (they maintain original planned dates)
+      // Confirmed transactions may have changed dates and no longer represent their original period
       const occupiedPeriods = new Set<number>();
       
       for (const transaction of allTransactions) {
-        // Calculate which period this transaction represents based on its original planned date
-        const transactionDate = new Date(transaction.date);
-        const period = this.calculatePeriodNumber(recurrence.startDate, transactionDate, recurrence.frequency);
-        if (period > 0) {
-          occupiedPeriods.add(period);
+        if (transaction.status === 'pending') {
+          // Only pending transactions maintain their planned dates
+          const transactionDate = new Date(transaction.date);
+          const period = this.calculatePeriodNumber(recurrence.startDate, transactionDate, recurrence.frequency);
+          if (period > 0) {
+            occupiedPeriods.add(period);
+          }
         }
       }
 
