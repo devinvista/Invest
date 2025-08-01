@@ -336,6 +336,67 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Payment of credit card invoice
+  app.post("/api/credit-cards/:cardId/payment", authenticateToken, async (req: any, res) => {
+    try {
+      const { cardId } = req.params;
+      const { accountId, amount, categoryId } = req.body;
+
+      if (!accountId || !amount) {
+        return res.status(400).json({ message: "Dados de pagamento incompletos" });
+      }
+
+      if (parseFloat(amount) <= 0) {
+        return res.status(400).json({ message: "Valor deve ser maior que zero" });
+      }
+
+      // Verify card belongs to user
+      const card = await storage.getCreditCard(cardId);
+      if (!card || card.userId !== req.userId) {
+        return res.status(404).json({ message: "Cartão não encontrado" });
+      }
+
+      // Verify account belongs to user and has sufficient balance
+      const account = await storage.getAccount(accountId);
+      if (!account || account.userId !== req.userId) {
+        return res.status(404).json({ message: "Conta não encontrada" });
+      }
+
+      if (parseFloat(account.balance) < parseFloat(amount)) {
+        return res.status(400).json({ message: "Saldo insuficiente na conta" });
+      }
+
+      // Update account balance (subtract payment amount)
+      const newAccountBalance = (parseFloat(account.balance) - parseFloat(amount)).toFixed(2);
+      await storage.updateAccountBalance(accountId, newAccountBalance);
+
+      // Update credit card used amount (reduce by payment amount)
+      const currentUsed = parseFloat(card.usedAmount || '0');
+      const newUsedAmount = Math.max(0, currentUsed - parseFloat(amount)).toFixed(2);
+      await storage.updateCreditCardUsage(cardId, newUsedAmount);
+
+      // Create transaction record for the payment
+      const transaction = await storage.createTransaction({
+        userId: req.userId,
+        accountId,
+        categoryId: categoryId || null,
+        type: 'expense',
+        amount: amount,
+        description: `Pagamento fatura ${card.name}`,
+        date: new Date(),
+      });
+
+      res.json({ 
+        message: "Pagamento realizado com sucesso",
+        transaction,
+        newAccountBalance,
+        newCardUsedAmount: newUsedAmount
+      });
+    } catch (error) {
+      res.status(500).json({ message: "Erro ao processar pagamento", error: error instanceof Error ? error.message : "Erro desconhecido" });
+    }
+  });
+
   // Categories routes
   app.get("/api/categories", async (req: any, res) => {
     try {

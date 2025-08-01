@@ -158,13 +158,10 @@ export function Cards() {
         cat.transactionType === 'expense' && cat.name.toLowerCase().includes('pagamento')
       ) || categories.find((cat: any) => cat.transactionType === 'expense');
       
-      const response = await apiRequest('POST', '/api/transactions', {
-        type: 'expense',
-        amount: parseFloat(data.amount),
-        description: `Pagamento fatura ${selectedCard.name}`,
+      const response = await apiRequest('POST', `/api/credit-cards/${selectedCard.id}/payment`, {
         accountId: data.accountId,
+        amount: parseFloat(data.amount),
         categoryId: paymentCategory?.id || categories[0]?.id,
-        date: new Date().toISOString(),
       });
       return response.json();
     },

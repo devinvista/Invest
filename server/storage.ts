@@ -176,6 +176,11 @@ export class DatabaseStorage implements IStorage {
     return newCard;
   }
 
+  async getCreditCard(cardId: string): Promise<CreditCard | undefined> {
+    const [card] = await db.select().from(creditCards).where(eq(creditCards.id, cardId));
+    return card;
+  }
+
   async updateCreditCardUsage(cardId: string, usedAmount: string): Promise<void> {
     await db.update(creditCards).set({ usedAmount }).where(eq(creditCards.id, cardId));
   }
