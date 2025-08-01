@@ -410,7 +410,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/transactions/:id", async (req: any, res) => {
+  app.put("/api/transactions/:id", authenticateToken, async (req: any, res) => {
+    try {
+      const transactionId = req.params.id;
+      console.log(`✏️ Update transaction request for ID: ${transactionId}`);
+      
+      // Check if transaction belongs to user
+      const transaction = await storage.getTransaction(transactionId);
+      if (!transaction || transaction.userId !== req.userId) {
+        return res.status(404).json({ message: "Transação não encontrada" });
+      }
+      
+      // Only allow updating pending transactions
+      if (transaction.status !== 'pending') {
+        return res.status(400).json({ message: "Apenas transações pendentes podem ser editadas" });
+      }
+      
+      // Parse and validate update data
+      const updates = insertTransactionSchema.partial().parse({
+        ...req.body,
+        date: req.body.date ? new Date(req.body.date) : undefined
+      });
+      
+      // Remove userId from updates to prevent changing ownership
+      delete updates.userId;
+      
+      const updatedTransaction = await storage.updateTransaction(transactionId, updates);
+      console.log(`✅ Transaction updated successfully: ${transactionId}`);
+      
+      res.json({ 
+        message: "Transação atualizada com sucesso",
+        transaction: updatedTransaction
+      });
+    } catch (error) {
+      console.error(`❌ Error updating transaction:`, error);
+      res.status(500).json({ message: "Erro ao atualizar transação", error: error instanceof Error ? error.message : "Erro desconhecido" });
+    }
+  });
+
+  app.delete("/api/transactions/:id", authenticateToken, async (req: any, res) => {
     try {
       const transactionId = req.params.id;
       console.log(`🗑️ Delete transaction request for ID: ${transactionId}`);

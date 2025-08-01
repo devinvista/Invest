@@ -1,15 +1,22 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Clock, CheckCircle, AlertCircle } from "lucide-react";
+import { Calendar, Clock, CheckCircle, AlertCircle, Edit, Trash2 } from "lucide-react";
 import { ConfirmTransactionDialog } from "@/components/ui/confirm-transaction-dialog";
+import { EditPendingTransactionDialog } from "@/components/ui/edit-pending-transaction-dialog";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
 import type { Transaction } from "@shared/schema";
 
 export default function PendingTransactions() {
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [editTransaction, setEditTransaction] = useState<Transaction | null>(null);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const { data: pendingTransactions, isLoading } = useQuery<Transaction[]>({
     queryKey: ['/api/transactions/pending'],
@@ -34,6 +41,38 @@ export default function PendingTransactions() {
   const handleConfirmTransaction = (transaction: Transaction) => {
     setSelectedTransaction(transaction);
     setIsDialogOpen(true);
+  };
+
+  const handleEditTransaction = (transaction: Transaction) => {
+    setEditTransaction(transaction);
+    setIsEditDialogOpen(true);
+  };
+
+  const deleteMutation = useMutation({
+    mutationFn: async (transactionId: string) => {
+      return apiRequest(`/api/transactions/${transactionId}`, 'DELETE');
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/transactions/pending'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/transactions'] });
+      toast({
+        title: "Sucesso",
+        description: "Transação excluída com sucesso",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Erro",
+        description: error.message || "Erro ao excluir transação",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleDeleteTransaction = (transaction: Transaction) => {
+    if (confirm("Tem certeza que deseja excluir esta transação pendente?")) {
+      deleteMutation.mutate(transaction.id);
+    }
   };
 
   if (isLoading) {
@@ -121,14 +160,35 @@ export default function PendingTransactions() {
                       Pendente
                     </Badge>
                   </div>
-                  <Button
-                    onClick={() => handleConfirmTransaction(transaction)}
-                    size="sm"
-                    data-testid={`confirm-transaction-${transaction.id}`}
-                  >
-                    <CheckCircle className="h-4 w-4 mr-2" />
-                    Confirmar
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      onClick={() => handleEditTransaction(transaction)}
+                      size="sm"
+                      variant="outline"
+                      data-testid={`edit-transaction-${transaction.id}`}
+                    >
+                      <Edit className="h-4 w-4 mr-2" />
+                      Editar
+                    </Button>
+                    <Button
+                      onClick={() => handleDeleteTransaction(transaction)}
+                      size="sm"
+                      variant="outline"
+                      disabled={deleteMutation.isPending}
+                      data-testid={`delete-transaction-${transaction.id}`}
+                    >
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Excluir
+                    </Button>
+                    <Button
+                      onClick={() => handleConfirmTransaction(transaction)}
+                      size="sm"
+                      data-testid={`confirm-transaction-${transaction.id}`}
+                    >
+                      <CheckCircle className="h-4 w-4 mr-2" />
+                      Confirmar
+                    </Button>
+                  </div>
                 </div>
               </div>
             ))}
@@ -141,6 +201,14 @@ export default function PendingTransactions() {
         open={isDialogOpen}
         onOpenChange={setIsDialogOpen}
       />
+      
+      {editTransaction && (
+        <EditPendingTransactionDialog
+          transaction={editTransaction}
+          open={isEditDialogOpen}
+          onOpenChange={setIsEditDialogOpen}
+        />
+      )}
     </Card>
   );
 }

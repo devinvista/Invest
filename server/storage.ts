@@ -41,6 +41,7 @@ export interface IStorage {
   getUserTransactions(userId: string, limit?: number): Promise<Transaction[]>;
   getTransactionsByMonth(userId: string, month: number, year: number): Promise<Transaction[]>;
   createTransaction(transaction: InsertTransaction): Promise<Transaction>;
+  updateTransaction(transactionId: string, updates: Partial<InsertTransaction>): Promise<Transaction>;
   updateTransactionStatus(transactionId: string, status: 'confirmed' | 'pending'): Promise<void>;
   confirmTransactionWithAccount(transactionId: string, accountId: string): Promise<void>;
   deleteTransaction(transactionId: string): Promise<void>;
@@ -262,6 +263,43 @@ export class DatabaseStorage implements IStorage {
   async getTransaction(transactionId: string): Promise<Transaction | undefined> {
     const [transaction] = await db.select().from(transactions).where(eq(transactions.id, transactionId));
     return transaction;
+  }
+
+  async updateTransaction(transactionId: string, updates: Partial<InsertTransaction>): Promise<Transaction> {
+    // Get the original transaction before updating
+    const originalTransaction = await this.getTransaction(transactionId);
+    if (!originalTransaction) {
+      throw new Error("Transaction not found");
+    }
+    
+    // Ensure date is converted to Date object if provided as string
+    if (updates.date && typeof updates.date === 'string') {
+      updates.date = new Date(updates.date);
+    }
+    
+    const [updatedTransaction] = await db.update(transactions)
+      .set(updates)
+      .where(eq(transactions.id, transactionId))
+      .returning();
+    
+    // Handle credit card balance adjustments if amount changed
+    if (originalTransaction.creditCardId && originalTransaction.type === 'expense' && updates.amount) {
+      const [currentCard] = await db.select()
+        .from(creditCards)
+        .where(eq(creditCards.id, originalTransaction.creditCardId));
+      
+      if (currentCard) {
+        const currentUsed = parseFloat(currentCard.usedAmount || '0');
+        const originalAmount = parseFloat(originalTransaction.amount);
+        const newAmount = parseFloat(updates.amount);
+        const difference = newAmount - originalAmount;
+        const newUsedAmount = Math.max(0, currentUsed + difference).toFixed(2);
+        
+        await this.updateCreditCardUsage(originalTransaction.creditCardId, newUsedAmount);
+      }
+    }
+    
+    return updatedTransaction;
   }
 
   async deleteTransaction(transactionId: string): Promise<void> {
