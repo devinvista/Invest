@@ -11,6 +11,15 @@ Visual Identity: Pharos Capital brand guidelines applied.
 
 ## Recent Changes
 
+- **August 1, 2025**: Major architectural improvement - Fixed credit card payment logic
+  - **BREAKING CHANGE**: Credit cards now work as virtual accounts for proper financial tracking
+  - **Credit card expenses**: Registered directly on the credit card (increases debt/usedAmount)
+  - **Credit card payments**: Created as transfers from bank account to credit card (reduces debt)
+  - **Eliminated duplicate expenses**: No longer creating expense when paying invoice + expense when purchasing
+  - **New endpoint**: `/api/credit-cards/:cardId/payment` for proper invoice payments
+  - **Enhanced transaction logic**: Distinguishes between purchases (expense on card) and payments (transfer)
+  - **Accurate debt tracking**: Credit card usedAmount properly reflects actual debt balance
+
 - **August 1, 2025**: Enhanced sidebar navigation styling for light theme
   - Active menu items now display with blue background (hsl(218, 78%, 42%)) and white text in light theme
   - Improved visual contrast and user experience for current page identification

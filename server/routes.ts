@@ -336,7 +336,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Payment of credit card invoice
+  // Payment of credit card invoice - creates a transfer from bank account to credit card
   app.post("/api/credit-cards/:cardId/payment", authenticateToken, async (req: any, res) => {
     try {
       const { cardId } = req.params;
@@ -366,29 +366,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Saldo insuficiente na conta" });
       }
 
+      // Find transfer category
+      const categories = await storage.getUserCategories(req.userId);
+      const transferCategory = categories.find(cat => 
+        cat.transactionType === 'transfer' || cat.name.toLowerCase().includes('transferência')
+      ) || categories.find(cat => cat.transactionType === 'expense');
+
       // Update account balance (subtract payment amount)
       const newAccountBalance = (parseFloat(account.balance) - parseFloat(amount)).toFixed(2);
       await storage.updateAccountBalance(accountId, newAccountBalance);
 
-      // Update credit card used amount (reduce by payment amount)
+      // Update credit card used amount (reduce by payment amount - reducing debt)
       const currentUsed = parseFloat(card.usedAmount || '0');
       const newUsedAmount = Math.max(0, currentUsed - parseFloat(amount)).toFixed(2);
       await storage.updateCreditCardUsage(cardId, newUsedAmount);
 
-      // Create transaction record for the payment
-      const transaction = await storage.createTransaction({
+      // Create transfer transaction from bank account (expense)
+      const fromTransaction = await storage.createTransaction({
         userId: req.userId,
         accountId,
-        categoryId: categoryId || null,
+        categoryId: transferCategory?.id || categoryId,
         type: 'expense',
         amount: amount,
         description: `Pagamento fatura ${card.name}`,
         date: new Date(),
+        creditCardId: cardId, // Reference to the target credit card
+      });
+
+      // Create transfer transaction to credit card (income/payment)
+      const toTransaction = await storage.createTransaction({
+        userId: req.userId,
+        creditCardId: cardId,
+        categoryId: transferCategory?.id || categoryId,
+        type: 'income',
+        amount: amount,
+        description: `Recebimento pagamento - ${account.name}`,
+        date: new Date(),
+        accountId, // Reference to the source account
       });
 
       res.json({ 
         message: "Pagamento realizado com sucesso",
-        transaction,
+        fromTransaction,
+        toTransaction,
         newAccountBalance,
         newCardUsedAmount: newUsedAmount
       });
