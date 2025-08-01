@@ -86,7 +86,7 @@ export function EditPendingTransactionDialog({
 
   const updateMutation = useMutation({
     mutationFn: async (data: EditTransactionData) => {
-      return apiRequest(`/api/transactions/${transaction.id}`, 'PUT', {
+      return apiRequest('PUT', `/api/transactions/${transaction.id}`, {
         ...data,
         amount: data.amount.toString(),
         date: data.date.toISOString(),

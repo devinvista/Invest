@@ -11,6 +11,14 @@ Visual Identity: Pharos Capital brand guidelines applied.
 
 ## Recent Changes
 
+- **August 1, 2025**: Added edit and delete functionality for pending transactions
+  - Users can now edit pending transactions through a comprehensive dialog interface
+  - Delete functionality with confirmation for pending transactions
+  - Only pending transactions can be edited/deleted, confirmed transactions remain protected
+  - Added proper error handling and user feedback for all operations
+  - New `EditPendingTransactionDialog` component with full form validation
+  - Backend API endpoints: PUT `/api/transactions/:id` and enhanced DELETE validation
+
 - **August 1, 2025**: Implemented confirmation date logic for pending transactions
   - When a pending transaction is confirmed, its date is automatically updated to the confirmation date (current date/time)
   - Applies to both `confirmTransactionWithAccount` and `updateTransactionStatus` methods

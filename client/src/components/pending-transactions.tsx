@@ -50,7 +50,7 @@ export default function PendingTransactions() {
 
   const deleteMutation = useMutation({
     mutationFn: async (transactionId: string) => {
-      return apiRequest(`/api/transactions/${transactionId}`, 'DELETE');
+      return apiRequest('DELETE', `/api/transactions/${transactionId}`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/transactions/pending'] });
