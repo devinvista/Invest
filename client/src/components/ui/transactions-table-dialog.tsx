@@ -284,7 +284,12 @@ export function TransactionsTableDialog({
                         variant="outline" 
                         className={`text-xs ${getTypeColor(transaction.type)}`}
                       >
-                        {transaction.type === 'income' ? 'Receita' : 'Despesa'}
+                        {(() => {
+                          if (transaction.type === 'income' && transaction.creditCardId && initialFilters?.creditCardId) {
+                            return 'Pagamento';
+                          }
+                          return transaction.type === 'income' ? 'Receita' : 'Despesa';
+                        })()}
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right font-medium">
