@@ -786,25 +786,19 @@ export class DatabaseStorage implements IStorage {
           return null;
         }
 
-        // For deletion replacement, always calculate the next chronological date
-        // Find the latest existing transaction date and add one period
-        const existingTransactions = await db.select()
+        // Always use the planned recurrence dates, not actual transaction dates
+        // Count all existing transactions to determine the next period number
+        const allTransactions = await db.select()
           .from(transactions)
-          .where(eq(transactions.recurrenceId, recurrenceId))
-          .orderBy(desc(transactions.date));
+          .where(eq(transactions.recurrenceId, recurrenceId));
         
-        if (existingTransactions.length > 0) {
-          // Get the latest transaction date and calculate next period from it
-          const latestDate = existingTransactions[0].date;
-          nextDate = this.addPeriodToDate(latestDate, recurrence.frequency);
-        } else {
-          // No existing transactions, use start date + 1 period
-          nextDate = this.addPeriodToDate(recurrence.startDate, recurrence.frequency);
-        }
+        const nextPeriod = allTransactions.length + 1;
+        nextDate = this.calculateRecurrenceDate(recurrence.startDate, recurrence.frequency, nextPeriod);
         
-        console.log(`📅 Creating next pending transaction after deletion (chronological next)`);
-        console.log(`📅 Latest existing transaction date: ${existingTransactions[0]?.date?.toISOString() || 'none'}`);
-        console.log(`📅 Next transaction date: ${nextDate.toISOString()}`);
+        console.log(`📅 Creating next pending transaction using planned recurrence dates`);
+        console.log(`📅 Total existing transactions: ${allTransactions.length}`);
+        console.log(`📅 Next period: ${nextPeriod}`);
+        console.log(`📅 Next transaction date (planned): ${nextDate.toISOString()}`);
       }
 
       // Create the next pending transaction
