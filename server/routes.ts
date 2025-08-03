@@ -381,28 +381,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const newUsedAmount = Math.max(0, currentUsed - parseFloat(amount)).toFixed(2);
       await storage.updateCreditCardUsage(cardId, newUsedAmount);
 
-      // Create transfer transaction from bank account (expense)
+      // Create transfer transaction from bank account (transfer type)
       const fromTransaction = await storage.createTransaction({
         userId: req.userId,
         accountId,
         categoryId: transferCategory?.id || categoryId,
-        type: 'expense',
+        type: 'transfer',
         amount: amount,
         description: `Pagamento fatura ${card.name}`,
         date: new Date(),
-        creditCardId: cardId, // Reference to the target credit card
+        transferToAccountId: cardId, // Reference to the target credit card
       });
 
-      // Create transfer transaction to credit card (income/payment)
+      // Create transfer transaction to credit card (transfer type)
       const toTransaction = await storage.createTransaction({
         userId: req.userId,
         creditCardId: cardId,
         categoryId: transferCategory?.id || categoryId,
-        type: 'income',
+        type: 'transfer',
         amount: amount,
         description: `Recebimento pagamento - ${account.name}`,
         date: new Date(),
-        accountId, // Reference to the source account
+        transferToAccountId: accountId, // Reference to the source account
       });
 
       res.json({ 
