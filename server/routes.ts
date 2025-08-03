@@ -547,13 +547,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Transação não encontrada" });
       }
       
-      // When user manually deletes a pending transaction, respect their choice
-      // Do not automatically recreate transactions from recurrences
+      // For pending transactions from active recurrences, create next transaction
+      let nextTransaction = null;
       let message = "Transação excluída com sucesso";
       
       if (transaction.recurrenceId && transaction.status === 'pending') {
-        console.log('🔄 Pending transaction from recurrence deleted - user requested deletion, not recreating');
-        message += " - Transação recorrente removida conforme solicitado";
+        console.log('🔄 Pending transaction from active recurrence deleted, creating replacement with same date...');
+        // Pass the original date to maintain the same due date
+        nextTransaction = await storage.createNextPendingTransactionForRecurrence(transaction.recurrenceId, transaction.date);
+        if (nextTransaction) {
+          console.log('✅ Replacement pending transaction created:', nextTransaction.id);
+          message += " - Próxima parcela criada automaticamente (mesma data de vencimento)";
+        }
       }
       
       console.log(`✅ Transaction found, proceeding with deletion`);
@@ -561,7 +566,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log(`✅ Transaction deleted successfully: ${transactionId}`);
       
       res.json({ 
-        message
+        message,
+        nextTransaction
       });
     } catch (error) {
       console.error(`❌ Error deleting transaction:`, error);

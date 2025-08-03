@@ -17,6 +17,7 @@ Visual Identity: Pharos Capital brand guidelines applied.
   - Verified all features working correctly including the 50/30/20 budget methodology, transaction tracking, and investment portfolio management
   - Client/server architecture properly separated with Express.js backend and React frontend
   - PostgreSQL database connection secured with Neon serverless integration
+  - **UPDATED**: Revised deletion logic for pending transactions with active recurrences - when deleting a pending transaction from an active recurrence (forever or installments), it's deleted and the next installment is created automatically maintaining the original due date
 
 - **August 1, 2025**: Major architectural improvement - Fixed credit card payment logic
   - **BREAKING CHANGE**: Credit cards now work as virtual accounts for proper financial tracking

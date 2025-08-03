@@ -40,6 +40,7 @@ export interface IStorage {
   // Transactions
   getUserTransactions(userId: string, limit?: number): Promise<Transaction[]>;
   getTransactionsByMonth(userId: string, month: number, year: number): Promise<Transaction[]>;
+  getTransaction(transactionId: string): Promise<Transaction | undefined>;
   createTransaction(transaction: InsertTransaction): Promise<Transaction>;
   updateTransaction(transactionId: string, updates: Partial<InsertTransaction>): Promise<Transaction>;
   updateTransactionStatus(transactionId: string, status: 'confirmed' | 'pending'): Promise<void>;
@@ -56,6 +57,7 @@ export interface IStorage {
   getActiveRecurrencesToExecute(): Promise<Recurrence[]>;
   updateRecurrenceNextExecution(recurrenceId: string, nextDate: Date, lastDate?: Date): Promise<void>;
   getRecurrencePendingTransactions(recurrenceId: string): Promise<Transaction[]>;
+  createNextPendingTransactionForRecurrence(recurrenceId: string, originalDate?: Date): Promise<Transaction | null>;
   getRecurrenceWithDetails(recurrenceId: string): Promise<{
     recurrence: Recurrence;
     pendingTransactions: Transaction[];
@@ -730,7 +732,7 @@ export class DatabaseStorage implements IStorage {
     return 1;
   }
 
-  async createNextPendingTransactionForRecurrence(recurrenceId: string): Promise<Transaction | null> {
+  async createNextPendingTransactionForRecurrence(recurrenceId: string, originalDate?: Date): Promise<Transaction | null> {
     try {
       console.log('🔄 Creating next pending transaction for recurrence:', recurrenceId);
       
@@ -744,31 +746,40 @@ export class DatabaseStorage implements IStorage {
         return null;
       }
 
-      // Only create next transaction for active recurrences without end date (forever)
-      if (!recurrence.isActive || recurrence.endDate) {
-        console.log('⚠️ Recurrence is not active or has end date, skipping next transaction creation');
+      // Check if recurrence is active
+      if (!recurrence.isActive) {
+        console.log('⚠️ Recurrence is not active, skipping next transaction creation');
         return null;
       }
 
-      // Calculate next transaction date based on the original recurrence planning
-      // We need to find the next "empty" slot in the sequence
-      const allTransactions = await db.select()
-        .from(transactions)
-        .where(eq(transactions.recurrenceId, recurrenceId))
-        .orderBy(transactions.date);
+      let nextDate: Date;
 
-      // Simple approach: count total transactions created for this recurrence
-      // Each transaction (confirmed or pending) represents a period that has been "used"
-      // The next transaction should be for period (total transactions + 1)
-      const totalTransactions = allTransactions.length;
-      const nextPeriod = totalTransactions + 1;
+      if (originalDate) {
+        // If originalDate is provided (from deleted transaction), keep the same date
+        nextDate = new Date(originalDate);
+        console.log('📅 Using original date from deleted transaction:', nextDate.toISOString());
+      } else {
+        // For recurrences without end date (forever), calculate next date normally
+        if (recurrence.endDate) {
+          console.log('⚠️ Recurrence has end date, skipping next transaction creation');
+          return null;
+        }
 
-      const nextDate = this.calculateRecurrenceDate(recurrence.startDate, recurrence.frequency, nextPeriod);
-      
-      console.log(`📅 Creating transaction for period #${nextPeriod} of recurrence`);
-      console.log(`📅 Start date: ${recurrence.startDate.toISOString()}`);
-      console.log(`📅 Total existing transactions: ${totalTransactions}`);
-      console.log(`📅 Next transaction date calculated: ${nextDate.toISOString()}`);
+        // Calculate next transaction date based on the original recurrence planning
+        const allTransactions = await db.select()
+          .from(transactions)
+          .where(eq(transactions.recurrenceId, recurrenceId))
+          .orderBy(transactions.date);
+
+        const totalTransactions = allTransactions.length;
+        const nextPeriod = totalTransactions + 1;
+        nextDate = this.calculateRecurrenceDate(recurrence.startDate, recurrence.frequency, nextPeriod);
+        
+        console.log(`📅 Creating transaction for period #${nextPeriod} of recurrence`);
+        console.log(`📅 Start date: ${recurrence.startDate.toISOString()}`);
+        console.log(`📅 Total existing transactions: ${totalTransactions}`);
+        console.log(`📅 Next transaction date calculated: ${nextDate.toISOString()}`);
+      }
 
       // Create the next pending transaction
       const nextTransactionData: InsertTransaction = {
@@ -789,8 +800,10 @@ export class DatabaseStorage implements IStorage {
       console.log('📝 Creating next pending transaction:', nextTransactionData);
       const [nextTransaction] = await db.insert(transactions).values(nextTransactionData).returning();
       
-      // Update recurrence next execution date to match the planning
-      await this.updateRecurrenceNextExecution(recurrence.id, nextDate);
+      // Update recurrence next execution date to match the planning (only if not using original date)
+      if (!originalDate) {
+        await this.updateRecurrenceNextExecution(recurrence.id, nextDate);
+      }
       
       console.log('✅ Next pending transaction created:', nextTransaction.id);
       return nextTransaction;
