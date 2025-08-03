@@ -765,17 +765,23 @@ export class DatabaseStorage implements IStorage {
           return null;
         }
 
-        // For deletion replacement, create transaction for the immediate next period
-        // Calculate next date from the recurrence's nextExecutionDate
-        if (recurrence.nextExecutionDate) {
-          nextDate = new Date(recurrence.nextExecutionDate);
-        } else {
-          // Fallback: calculate from start date + 1 period
-          nextDate = this.calculateRecurrenceDate(recurrence.startDate, recurrence.frequency, 2);
-        }
+        // For deletion replacement, calculate the correct next date
+        // Count confirmed transactions only to determine the next period
+        const confirmedTransactions = await db.select()
+          .from(transactions)
+          .where(
+            and(
+              eq(transactions.recurrenceId, recurrenceId),
+              eq(transactions.status, 'confirmed')
+            )
+          );
         
-        console.log(`📅 Creating next pending transaction after deletion`);
-        console.log(`📅 Next execution date from recurrence: ${recurrence.nextExecutionDate?.toISOString()}`);
+        const nextPeriod = confirmedTransactions.length + 2; // +2 because we want the next period after the current pending one
+        nextDate = this.calculateRecurrenceDate(recurrence.startDate, recurrence.frequency, nextPeriod);
+        
+        console.log(`📅 Creating next pending transaction after deletion (based on confirmed transactions)`);
+        console.log(`📅 Confirmed transactions count: ${confirmedTransactions.length}`);
+        console.log(`📅 Next period: ${nextPeriod}`);
         console.log(`📅 Next transaction date: ${nextDate.toISOString()}`);
       }
 
