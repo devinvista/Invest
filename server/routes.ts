@@ -552,12 +552,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let message = "Transação excluída com sucesso";
       
       if (transaction.recurrenceId && transaction.status === 'pending') {
-        console.log('🔄 Pending transaction from active recurrence deleted, creating replacement with same date...');
-        // Pass the original date to maintain the same due date
-        nextTransaction = await storage.createNextPendingTransactionForRecurrence(transaction.recurrenceId, transaction.date);
+        console.log('🔄 Pending transaction from active recurrence deleted, creating next installment...');
+        // Create next transaction without passing originalDate to use the default next execution date
+        nextTransaction = await storage.createNextPendingTransactionForRecurrence(transaction.recurrenceId);
         if (nextTransaction) {
-          console.log('✅ Replacement pending transaction created:', nextTransaction.id);
-          message += " - Próxima parcela criada automaticamente (mesma data de vencimento)";
+          console.log('✅ Next pending transaction created:', nextTransaction.id);
+          message += " - Próxima parcela criada automaticamente";
         }
       }
       
