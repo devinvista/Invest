@@ -732,6 +732,27 @@ export class DatabaseStorage implements IStorage {
     return 1;
   }
 
+  private addPeriodToDate(date: Date, frequency: string): Date {
+    const newDate = new Date(date);
+    
+    switch (frequency) {
+      case 'daily':
+        newDate.setDate(newDate.getDate() + 1);
+        break;
+      case 'weekly':
+        newDate.setDate(newDate.getDate() + 7);
+        break;
+      case 'monthly':
+        newDate.setMonth(newDate.getMonth() + 1);
+        break;
+      case 'yearly':
+        newDate.setFullYear(newDate.getFullYear() + 1);
+        break;
+    }
+    
+    return newDate;
+  }
+
   async createNextPendingTransactionForRecurrence(recurrenceId: string, originalDate?: Date): Promise<Transaction | null> {
     try {
       console.log('🔄 Creating next pending transaction for recurrence:', recurrenceId);
@@ -765,23 +786,24 @@ export class DatabaseStorage implements IStorage {
           return null;
         }
 
-        // For deletion replacement, calculate the correct next date
-        // Count confirmed transactions only to determine the next period
-        const confirmedTransactions = await db.select()
+        // For deletion replacement, always calculate the next chronological date
+        // Find the latest existing transaction date and add one period
+        const existingTransactions = await db.select()
           .from(transactions)
-          .where(
-            and(
-              eq(transactions.recurrenceId, recurrenceId),
-              eq(transactions.status, 'confirmed')
-            )
-          );
+          .where(eq(transactions.recurrenceId, recurrenceId))
+          .orderBy(desc(transactions.date));
         
-        const nextPeriod = confirmedTransactions.length + 1; // Next period after confirmed transactions
-        nextDate = this.calculateRecurrenceDate(recurrence.startDate, recurrence.frequency, nextPeriod);
+        if (existingTransactions.length > 0) {
+          // Get the latest transaction date and calculate next period from it
+          const latestDate = existingTransactions[0].date;
+          nextDate = this.addPeriodToDate(latestDate, recurrence.frequency);
+        } else {
+          // No existing transactions, use start date + 1 period
+          nextDate = this.addPeriodToDate(recurrence.startDate, recurrence.frequency);
+        }
         
-        console.log(`📅 Creating next pending transaction after deletion (based on confirmed transactions)`);
-        console.log(`📅 Confirmed transactions count: ${confirmedTransactions.length}`);
-        console.log(`📅 Next period: ${nextPeriod}`);
+        console.log(`📅 Creating next pending transaction after deletion (chronological next)`);
+        console.log(`📅 Latest existing transaction date: ${existingTransactions[0]?.date?.toISOString() || 'none'}`);
         console.log(`📅 Next transaction date: ${nextDate.toISOString()}`);
       }
 
