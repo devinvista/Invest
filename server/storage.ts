@@ -776,7 +776,7 @@ export class DatabaseStorage implements IStorage {
             )
           );
         
-        const nextPeriod = confirmedTransactions.length + 2; // +2 because we want the next period after the current pending one
+        const nextPeriod = confirmedTransactions.length + 1; // Next period after confirmed transactions
         nextDate = this.calculateRecurrenceDate(recurrence.startDate, recurrence.frequency, nextPeriod);
         
         console.log(`📅 Creating next pending transaction after deletion (based on confirmed transactions)`);
