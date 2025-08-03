@@ -786,19 +786,22 @@ export class DatabaseStorage implements IStorage {
           return null;
         }
 
-        // Always use the planned recurrence dates, not actual transaction dates
-        // Count all existing transactions to determine the next period number
-        const allTransactions = await db.select()
-          .from(transactions)
-          .where(eq(transactions.recurrenceId, recurrenceId));
+        // Simple logic: use the recurrence's nextExecutionDate and increment it
+        if (recurrence.nextExecutionDate) {
+          nextDate = new Date(recurrence.nextExecutionDate);
+        } else {
+          // Fallback: calculate next date from start date
+          nextDate = this.addPeriodToDate(recurrence.startDate, recurrence.frequency);
+        }
         
-        const nextPeriod = allTransactions.length + 1;
-        nextDate = this.calculateRecurrenceDate(recurrence.startDate, recurrence.frequency, nextPeriod);
+        // After creating the new transaction, update the recurrence's nextExecutionDate
+        const newNextExecutionDate = this.addPeriodToDate(nextDate, recurrence.frequency);
+        await this.updateRecurrenceNextExecution(recurrence.id, newNextExecutionDate);
         
-        console.log(`📅 Creating next pending transaction using planned recurrence dates`);
-        console.log(`📅 Total existing transactions: ${allTransactions.length}`);
-        console.log(`📅 Next period: ${nextPeriod}`);
-        console.log(`📅 Next transaction date (planned): ${nextDate.toISOString()}`);
+        console.log(`📅 Creating next pending transaction using recurrence schedule`);
+        console.log(`📅 Current nextExecutionDate: ${recurrence.nextExecutionDate?.toISOString()}`);
+        console.log(`📅 Next transaction date: ${nextDate.toISOString()}`);
+        console.log(`📅 Updated nextExecutionDate to: ${newNextExecutionDate.toISOString()}`);
       }
 
       // Create the next pending transaction
@@ -819,11 +822,6 @@ export class DatabaseStorage implements IStorage {
 
       console.log('📝 Creating next pending transaction:', nextTransactionData);
       const [nextTransaction] = await db.insert(transactions).values(nextTransactionData).returning();
-      
-      // Update recurrence next execution date to match the planning (only if not using original date)
-      if (!originalDate) {
-        await this.updateRecurrenceNextExecution(recurrence.id, nextDate);
-      }
       
       console.log('✅ Next pending transaction created:', nextTransaction.id);
       return nextTransaction;
