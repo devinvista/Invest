@@ -62,7 +62,7 @@ export function Dashboard() {
   });
 
   if (error) {
-    console.error('Dashboard error:', error);
+    console.error('Erro no dashboard:', error);
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center p-6">

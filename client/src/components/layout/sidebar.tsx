@@ -41,7 +41,7 @@ interface SidebarProps {
 export function Sidebar({ isOpen, onClose, currentPath, onNavigate }: SidebarProps) {
   const { user } = useAuth();
 
-  // TODO: Fetch user's actual net worth from API
+  // TODO: Buscar patrimônio líquido real do usuário via API
   const netWorth = 125450;
 
   const handleNavigation = (path: string) => {
@@ -126,7 +126,7 @@ export function Sidebar({ isOpen, onClose, currentPath, onNavigate }: SidebarPro
           <div className="p-3 sm:p-4 lg:p-3 xl:p-4 border-t border-border/40">
             <Button 
               className="w-full rounded-xl pharos-gradient text-sm font-medium h-10 lg:h-11" 
-              onClick={() => {/* TODO: Open transaction modal */}}
+              onClick={() => {/* TODO: Abrir modal de transação */}}
               data-testid="button-new-transaction"
             >
               <Plus className="w-4 h-4 mr-2 shrink-0" />

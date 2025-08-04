@@ -117,9 +117,9 @@ export default function RecurrenceForm({ onSuccess }: RecurrenceFormProps) {
   });
 
   const onSubmit = (data: RecurrenceFormData) => {
-    console.log('Form submission attempt');
-    console.log('Data received:', data);
-    console.log('Start date:', startDate);
+    console.log('Tentativa de envio do formulário');
+    console.log('Dados recebidos:', data);
+    console.log('Data de início:', startDate);
     
     if (!startDate) {
       toast({
