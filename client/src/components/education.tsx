@@ -584,12 +584,20 @@ export function Education() {
                                   label={{ value: 'Anos', position: 'insideBottom', offset: -5 }}
                                 />
                                 <YAxis 
-                                  tickFormatter={(value) => formatCurrency(value)}
+                                  tickFormatter={(value) => {
+                                    if (value >= 1000000) {
+                                      return `R$ ${(value / 1000000).toFixed(1)}M`;
+                                    } else if (value >= 1000) {
+                                      return `R$ ${(value / 1000).toFixed(0)}k`;
+                                    }
+                                    return formatCurrency(value);
+                                  }}
+                                  tick={{ fontSize: 12 }}
                                   label={{ 
                                     value: 'Valor (R$)', 
                                     angle: -90, 
                                     position: 'insideLeft',
-                                    style: { textAnchor: 'middle', fontSize: '12px' }
+                                    style: { textAnchor: 'middle', fontSize: '14px', fontWeight: '500' }
                                   }}
                                 />
                                 <Tooltip 
