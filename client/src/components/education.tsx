@@ -570,145 +570,62 @@ export function Education() {
                   {/* Charts Section */}
                   <div className="lg:col-span-2 space-y-6">
                     {chartData.length > 0 && (
-                      <>
-                        {/* Evolution Chart */}
-                        <Card>
-                          <CardHeader>
-                            <CardTitle className="text-lg">Evolução do Investimento</CardTitle>
-                          </CardHeader>
-                          <CardContent>
-                            <div className="h-80">
-                              <ResponsiveContainer width="100%" height="100%">
-                                <AreaChart data={chartData}>
-                                  <CartesianGrid strokeDasharray="3 3" />
-                                  <XAxis 
-                                    dataKey="year" 
-                                    label={{ value: 'Anos', position: 'insideBottom', offset: -5 }}
-                                  />
-                                  <YAxis 
-                                    tickFormatter={(value) => formatCurrency(value)}
-                                    label={{ value: 'Valor (R$)', angle: -90, position: 'insideLeft' }}
-                                  />
-                                  <Tooltip 
-                                    formatter={(value, name) => [formatCurrency(Number(value)), name]}
-                                    labelFormatter={(label) => `Ano ${label}`}
-                                  />
-                                  <Area 
-                                    type="monotone" 
-                                    dataKey="totalContributed" 
-                                    stackId="1"
-                                    stroke="#3b82f6" 
-                                    fill="#3b82f6" 
-                                    fillOpacity={0.6}
-                                    name="Total Investido"
-                                  />
-                                  <Area 
-                                    type="monotone" 
-                                    dataKey="interestEarned" 
-                                    stackId="1"
-                                    stroke="#10b981" 
-                                    fill="#10b981" 
-                                    fillOpacity={0.8}
-                                    name="Juros Compostos"
-                                  />
-                                </AreaChart>
-                              </ResponsiveContainer>
+                      <Card>
+                        <CardHeader>
+                          <CardTitle className="text-lg">Evolução do Investimento</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="h-80">
+                            <ResponsiveContainer width="100%" height="100%">
+                              <AreaChart data={chartData}>
+                                <CartesianGrid strokeDasharray="3 3" />
+                                <XAxis 
+                                  dataKey="year" 
+                                  label={{ value: 'Anos', position: 'insideBottom', offset: -5 }}
+                                />
+                                <YAxis 
+                                  tickFormatter={(value) => formatCurrency(value)}
+                                  label={{ value: 'Valor (R$)', angle: -90, position: 'insideLeft' }}
+                                />
+                                <Tooltip 
+                                  formatter={(value, name) => [formatCurrency(Number(value)), name]}
+                                  labelFormatter={(label) => `Ano ${label}`}
+                                />
+                                <Area 
+                                  type="monotone" 
+                                  dataKey="totalContributed" 
+                                  stackId="1"
+                                  stroke="#3b82f6" 
+                                  fill="#3b82f6" 
+                                  fillOpacity={0.6}
+                                  name="Total Investido"
+                                />
+                                <Area 
+                                  type="monotone" 
+                                  dataKey="interestEarned" 
+                                  stackId="1"
+                                  stroke="#10b981" 
+                                  fill="#10b981" 
+                                  fillOpacity={0.8}
+                                  name="Juros Compostos"
+                                />
+                              </AreaChart>
+                            </ResponsiveContainer>
+                          </div>
+                          
+                          {/* Legend */}
+                          <div className="mt-4 flex justify-center space-x-6">
+                            <div className="flex items-center space-x-2">
+                              <div className="w-4 h-4 rounded-full bg-blue-500"></div>
+                              <span className="text-sm text-muted-foreground">Total Investido</span>
                             </div>
-                          </CardContent>
-                        </Card>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                          {/* Composition Pie Chart */}
-                          <Card>
-                            <CardHeader>
-                              <CardTitle className="text-lg">Composição Final</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                              <div className="h-64">
-                                <ResponsiveContainer width="100%" height="100%">
-                                  <PieChart>
-                                    <Pie
-                                      data={pieChartData}
-                                      cx="50%"
-                                      cy="50%"
-                                      innerRadius={60}
-                                      outerRadius={100}
-                                      paddingAngle={5}
-                                      dataKey="value"
-                                    >
-                                      {pieChartData.map((entry, index) => (
-                                        <Cell key={`cell-${index}`} fill={entry.color} />
-                                      ))}
-                                    </Pie>
-                                    <Tooltip formatter={(value) => formatCurrency(Number(value))} />
-                                  </PieChart>
-                                </ResponsiveContainer>
-                              </div>
-                              <div className="mt-4 space-y-2">
-                                {pieChartData.map((entry, index) => (
-                                  <div key={index} className="flex items-center justify-between">
-                                    <div className="flex items-center space-x-2">
-                                      <div 
-                                        className="w-3 h-3 rounded-full"
-                                        style={{ backgroundColor: entry.color }}
-                                      />
-                                      <span className="text-sm text-muted-foreground">{entry.name}</span>
-                                    </div>
-                                    <span className="text-sm font-medium">
-                                      {formatCurrency(entry.value)}
-                                    </span>
-                                  </div>
-                                ))}
-                              </div>
-                            </CardContent>
-                          </Card>
-
-                          {/* Growth Comparison */}
-                          <Card>
-                            <CardHeader>
-                              <CardTitle className="text-lg">Crescimento Anual</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                              <div className="h-64">
-                                <ResponsiveContainer width="100%" height="100%">
-                                  <LineChart data={chartData}>
-                                    <CartesianGrid strokeDasharray="3 3" />
-                                    <XAxis 
-                                      dataKey="year"
-                                      label={{ value: 'Anos', position: 'insideBottom', offset: -5 }}
-                                    />
-                                    <YAxis 
-                                      tickFormatter={(value) => formatCurrency(value)}
-                                      label={{ value: 'Valor (R$)', angle: -90, position: 'insideLeft' }}
-                                    />
-                                    <Tooltip 
-                                      formatter={(value, name) => [formatCurrency(Number(value)), name]}
-                                      labelFormatter={(label) => `Ano ${label}`}
-                                    />
-                                    <Line 
-                                      type="monotone" 
-                                      dataKey="totalAmount" 
-                                      stroke="#8b5cf6" 
-                                      strokeWidth={3}
-                                      dot={{ fill: '#8b5cf6', strokeWidth: 2, r: 4 }}
-                                      name="Valor Total"
-                                    />
-                                    <Line 
-                                      type="monotone" 
-                                      dataKey="totalContributed" 
-                                      stroke="#3b82f6" 
-                                      strokeWidth={2}
-                                      strokeDasharray="5 5"
-                                      dot={{ fill: '#3b82f6', strokeWidth: 2, r: 3 }}
-                                      name="Total Investido"
-                                    />
-                                  </LineChart>
-                                </ResponsiveContainer>
-                              </div>
-                            </CardContent>
-                          </Card>
-                        </div>
-                      </>
+                            <div className="flex items-center space-x-2">
+                              <div className="w-4 h-4 rounded-full bg-green-500"></div>
+                              <span className="text-sm text-muted-foreground">Juros Compostos</span>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
                     )}
 
                     {chartData.length === 0 && (
@@ -720,7 +637,7 @@ export function Education() {
                               Preencha os dados
                             </h3>
                             <p className="text-sm text-muted-foreground">
-                              Insira os valores nos campos ao lado para visualizar os gráficos de evolução do seu investimento
+                              Insira os valores nos campos ao lado para visualizar o gráfico de evolução do seu investimento
                             </p>
                           </div>
                         </CardContent>

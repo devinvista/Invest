@@ -11,6 +11,13 @@ Visual Identity: Pharos Capital brand guidelines applied.
 
 ## Recent Changes
 
+- **August 4, 2025**: Enhanced compound interest simulator with interactive charts
+  - Added comprehensive "Evolução do Investimento" area chart showing investment growth over time
+  - Implemented stacked area visualization distinguishing between total invested amount and compound interest earnings
+  - Included professional legend with color-coded indicators for "Total Investido" and "Juros Compostos"
+  - Chart features interactive tooltips with proper currency formatting and responsive design
+  - Removed redundant pie and line charts per user preference, focusing on single comprehensive visualization
+
 - **August 3, 2025**: Migration to Replit environment completed successfully
   - Fixed pending transaction deletion behavior - users can now delete pending transactions without automatic recreation
   - Maintained robust security practices with environment protection for database connections
