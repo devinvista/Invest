@@ -614,14 +614,24 @@ export function Education() {
                           </div>
                           
                           {/* Legend */}
-                          <div className="mt-4 flex justify-center space-x-6">
-                            <div className="flex items-center space-x-2">
-                              <div className="w-4 h-4 rounded-full bg-blue-500"></div>
-                              <span className="text-sm text-muted-foreground">Total Investido</span>
+                          <div className="mt-4 space-y-3">
+                            <div className="flex justify-center space-x-6">
+                              <div className="flex items-center space-x-2">
+                                <div className="w-4 h-4 rounded-full bg-blue-500"></div>
+                                <span className="text-sm text-muted-foreground">Total Investido</span>
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                <div className="w-4 h-4 rounded-full bg-green-500"></div>
+                                <span className="text-sm text-muted-foreground">Juros Compostos</span>
+                              </div>
                             </div>
-                            <div className="flex items-center space-x-2">
-                              <div className="w-4 h-4 rounded-full bg-green-500"></div>
-                              <span className="text-sm text-muted-foreground">Juros Compostos</span>
+                            <div className="text-center">
+                              <div className="inline-flex items-center space-x-2 px-4 py-2 bg-muted rounded-lg">
+                                <span className="text-sm font-medium text-foreground">Valor Final:</span>
+                                <span className="text-sm font-bold text-primary">
+                                  {formatCurrency(compoundResult.finalAmount)}
+                                </span>
+                              </div>
                             </div>
                           </div>
                         </CardContent>
