@@ -17,7 +17,7 @@ import {
   ExternalLink,
   Search
 } from 'lucide-react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area, PieChart, Pie, Cell } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area, PieChart, Pie, Cell, Legend } from 'recharts';
 
 const educationalContent = {
   articles: [
@@ -588,8 +588,32 @@ export function Education() {
                                   label={{ value: 'Valor (R$)', angle: -90, position: 'insideLeft' }}
                                 />
                                 <Tooltip 
-                                  formatter={(value, name) => [formatCurrency(Number(value)), name]}
-                                  labelFormatter={(label) => `Ano ${label}`}
+                                  content={(props) => {
+                                    if (props.active && props.payload && props.payload.length > 0) {
+                                      const data = props.payload[0].payload;
+                                      return (
+                                        <div className="bg-background border border-border rounded-lg p-4 shadow-lg">
+                                          <p className="font-medium mb-2">{`Ano ${data.year}`}</p>
+                                          <div className="space-y-1">
+                                            <p className="text-sm">
+                                              <span className="inline-block w-3 h-3 rounded-full bg-blue-500 mr-2"></span>
+                                              Total Investido: <span className="font-medium">{formatCurrency(data.totalContributed)}</span>
+                                            </p>
+                                            <p className="text-sm">
+                                              <span className="inline-block w-3 h-3 rounded-full bg-green-500 mr-2"></span>
+                                              Juros Compostos: <span className="font-medium">{formatCurrency(data.interestEarned)}</span>
+                                            </p>
+                                            <div className="border-t pt-2 mt-2">
+                                              <p className="text-sm font-bold">
+                                                Valor Total: <span className="text-primary">{formatCurrency(data.totalAmount)}</span>
+                                              </p>
+                                            </div>
+                                          </div>
+                                        </div>
+                                      );
+                                    }
+                                    return null;
+                                  }}
                                 />
                                 <Area 
                                   type="monotone" 
@@ -609,31 +633,35 @@ export function Education() {
                                   fillOpacity={0.8}
                                   name="Juros Compostos"
                                 />
+                                <Legend 
+                                  content={(props) => {
+                                    const finalValue = compoundResult.finalAmount;
+                                    return (
+                                      <div className="flex flex-col items-center space-y-2 mt-4">
+                                        <div className="flex justify-center space-x-6">
+                                          <div className="flex items-center space-x-2">
+                                            <div className="w-4 h-4 rounded-full bg-blue-500"></div>
+                                            <span className="text-sm text-muted-foreground">Total Investido</span>
+                                          </div>
+                                          <div className="flex items-center space-x-2">
+                                            <div className="w-4 h-4 rounded-full bg-green-500"></div>
+                                            <span className="text-sm text-muted-foreground">Juros Compostos</span>
+                                          </div>
+                                        </div>
+                                        <div className="inline-flex items-center space-x-2 px-4 py-2 bg-muted rounded-lg">
+                                          <span className="text-sm font-medium text-foreground">Valor Final:</span>
+                                          <span className="text-sm font-bold text-primary">
+                                            {formatCurrency(finalValue)}
+                                          </span>
+                                        </div>
+                                      </div>
+                                    );
+                                  }}
+                                />
                               </AreaChart>
                             </ResponsiveContainer>
                           </div>
-                          
-                          {/* Legend */}
-                          <div className="mt-4 space-y-3">
-                            <div className="flex justify-center space-x-6">
-                              <div className="flex items-center space-x-2">
-                                <div className="w-4 h-4 rounded-full bg-blue-500"></div>
-                                <span className="text-sm text-muted-foreground">Total Investido</span>
-                              </div>
-                              <div className="flex items-center space-x-2">
-                                <div className="w-4 h-4 rounded-full bg-green-500"></div>
-                                <span className="text-sm text-muted-foreground">Juros Compostos</span>
-                              </div>
-                            </div>
-                            <div className="text-center">
-                              <div className="inline-flex items-center space-x-2 px-4 py-2 bg-muted rounded-lg">
-                                <span className="text-sm font-medium text-foreground">Valor Final:</span>
-                                <span className="text-sm font-bold text-primary">
-                                  {formatCurrency(compoundResult.finalAmount)}
-                                </span>
-                              </div>
-                            </div>
-                          </div>
+
                         </CardContent>
                       </Card>
                     )}
