@@ -134,45 +134,46 @@ export function Dashboard() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
+      <div className="padding-responsive space-y-4 sm:space-y-6 lg:space-y-8">
         {/* Hero Section */}
-        <div className="relative overflow-hidden rounded-xl sm:rounded-2xl bg-gradient-to-br from-primary via-primary to-chart-2 p-4 sm:p-6 lg:p-8 text-white">
+        <div className="relative overflow-hidden rounded-xl sm:rounded-2xl bg-gradient-to-br from-primary via-primary to-chart-2 padding-responsive-sm text-white">
           <div className="absolute inset-0 bg-gradient-to-br from-primary/90 via-primary/80 to-chart-2/70" />
           <div className="relative">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0 mb-6">
-              <div>
-                <h1 className="text-2xl sm:text-3xl font-bold mb-2">Olá, Tom! 👋</h1>
-                <p className="text-white/80 text-sm sm:text-base">Aqui está um resumo das suas finanças hoje</p>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0 mb-4 sm:mb-6">
+              <div className="min-w-0 flex-1">
+                <h1 className="text-responsive-lg font-bold mb-2">Olá, Tom! 👋</h1>
+                <p className="text-white/80 text-responsive-sm">Aqui está um resumo das suas finanças hoje</p>
               </div>
-              <div className="flex items-center space-x-2 sm:space-x-3">
+              <div className="flex items-center space-x-2 shrink-0">
                 <Button 
                   variant="ghost" 
                   size="sm"
                   className="text-white hover:bg-white/10 p-2"
                   onClick={() => setBalanceVisible(!balanceVisible)}
+                  data-testid="button-toggle-balance"
                 >
                   {balanceVisible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </Button>
-                <Button variant="secondary" size="sm" className="text-xs sm:text-sm">
+                <Button variant="secondary" size="sm" className="text-responsive-xs" data-testid="button-export">
                   <Download className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-                  <span className="hidden sm:inline">Exportar</span>
+                  <span className="hidden xs:inline">Exportar</span>
                 </Button>
               </div>
             </div>
             
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-              <div className="bg-white/10 rounded-lg sm:rounded-xl p-3 sm:p-4 backdrop-blur-sm">
-                <p className="text-white/80 text-xs sm:text-sm mb-1">Patrimônio Total</p>
-                <p className="text-xl sm:text-2xl font-bold chart-number-vibrant">
+            <div className="responsive-grid responsive-grid-3 gap-3 sm:gap-4 lg:gap-6">
+              <div className="bg-white/10 rounded-lg sm:rounded-xl p-3 sm:p-4 backdrop-blur-sm" data-testid="card-total-balance">
+                <p className="text-white/80 text-responsive-xs mb-1">Patrimônio Total</p>
+                <p className="text-responsive-lg font-bold chart-number-vibrant">
                   {balanceVisible ? formatCurrency(totalBalance) : '••••••'}
                 </p>
-                <div className="flex items-center mt-2 text-xs sm:text-sm">
-                  <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+                <div className="flex items-center mt-2 text-responsive-xs">
+                  <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4 mr-1 shrink-0" />
                   <span>+2.1% este mês</span>
                 </div>
               </div>
               
-              <div className="bg-white/10 rounded-lg sm:rounded-xl p-3 sm:p-4 backdrop-blur-sm">
+              <div className="bg-white/10 rounded-lg sm:rounded-xl p-3 sm:p-4 backdrop-blur-sm" data-testid="card-monthly-income">
                 <p className="text-white/80 text-xs sm:text-sm mb-1">Receitas</p>
                 <p className="text-xl sm:text-2xl font-bold text-vibrant-lime">
                   {balanceVisible ? formatCurrency(monthlyIncome) : '••••••'}
@@ -192,7 +193,7 @@ export function Dashboard() {
         </div>
 
         {/* Quick Stats */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        <div className="responsive-grid responsive-grid-4" data-testid="stats-grid">
           <ModernCard
             title="Taxa de Poupança"
             value={`${savingsRate.toFixed(1)}%`}
@@ -224,14 +225,14 @@ export function Dashboard() {
         </div>
 
         {/* Charts and Data */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+        <div className="responsive-grid responsive-grid-2 gap-4 sm:gap-6 lg:gap-8">
           {/* Portfolio Evolution Chart */}
-          <Card className="vibrant-card-purple">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle>Evolução do Patrimônio</CardTitle>
+          <Card className="vibrant-card-purple" data-testid="chart-portfolio-evolution">
+            <CardHeader className="pb-2 sm:pb-4">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0">
+                <CardTitle className="text-responsive-md">Evolução do Patrimônio</CardTitle>
                 <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
-                  <SelectTrigger className="w-32">
+                  <SelectTrigger className="w-28 sm:w-32 text-sm" data-testid="select-period">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -243,10 +244,10 @@ export function Dashboard() {
                 </Select>
               </div>
             </CardHeader>
-            <CardContent>
-              <div className="h-72">
+            <CardContent className="pt-0">
+              <div className="chart-container">
                 <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={evolutionData}>
+                  <AreaChart data={evolutionData} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
                     <defs>
                       <linearGradient id="appliedGradient" x1="0" y1="0" x2="0" y2="1">
                         <stop offset="5%" stopColor={isDarkMode ? "#60a5fa" : "hsl(var(--success))"} stopOpacity={isDarkMode ? 0.4 : 0.3}/>
@@ -261,18 +262,20 @@ export function Dashboard() {
                         <stop offset="95%" stopColor="#1e3a8a" stopOpacity={0}/>
                       </linearGradient>
                     </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
                     <XAxis 
                       dataKey="month" 
                       axisLine={false}
                       tickLine={false}
-                      tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }}
+                      tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }}
+                      interval="preserveStartEnd"
                     />
                     <YAxis 
                       axisLine={false}
                       tickLine={false}
-                      tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }}
-                      tickFormatter={(value) => formatCurrency(value)}
+                      tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }}
+                      tickFormatter={(value) => formatCurrency(value).replace('R$ ', 'R$')}
+                      width={60}
                     />
                     <Tooltip 
                       formatter={(value, name) => [
@@ -280,11 +283,12 @@ export function Dashboard() {
                         name === 'applied' ? 'Valor Aplicado' : 
                         name === 'profit' ? 'Ganho de Capital' : 'Valor Total'
                       ]}
-                      labelStyle={{ color: 'hsl(var(--foreground))' }}
+                      labelStyle={{ color: 'hsl(var(--foreground))', fontSize: '12px' }}
                       contentStyle={{ 
                         backgroundColor: 'hsl(var(--card))', 
                         border: '1px solid hsl(var(--border))',
-                        borderRadius: '8px'
+                        borderRadius: '8px',
+                        fontSize: '12px'
                       }}
                     />
                     <Area 
@@ -315,22 +319,22 @@ export function Dashboard() {
           </Card>
 
           {/* Budget Distribution */}
-          <Card className="vibrant-card-teal">
-            <CardHeader>
-              <CardTitle>Regra 50/30/20</CardTitle>
+          <Card className="vibrant-card-teal" data-testid="chart-budget-distribution">
+            <CardHeader className="pb-2 sm:pb-4">
+              <CardTitle className="text-responsive-md">Regra 50/30/20</CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="pt-0">
               {budgetData.length > 0 ? (
-                <div className="space-y-6">
-                  <div className="h-48">
+                <div className="space-y-4 sm:space-y-6">
+                  <div className="chart-container-small">
                     <ResponsiveContainer width="100%" height="100%">
-                      <RechartsPieChart>
+                      <RechartsPieChart margin={{ top: 5, right: 5, left: 5, bottom: 5 }}>
                         <Pie
                           data={budgetData}
                           cx="50%"
                           cy="50%"
-                          innerRadius={40}
-                          outerRadius={80}
+                          innerRadius={30}
+                          outerRadius={70}
                           paddingAngle={2}
                           dataKey="value"
                         >
@@ -343,34 +347,35 @@ export function Dashboard() {
                           labelStyle={{ 
                             color: 'hsl(var(--vibrant-teal))', 
                             fontWeight: 'bold',
-                            fontSize: '14px'
+                            fontSize: '12px'
                           }}
                           contentStyle={{ 
                             backgroundColor: 'hsl(var(--card))', 
                             border: '2px solid hsl(var(--vibrant-teal))',
                             borderRadius: '12px',
-                            boxShadow: '0 8px 25px hsl(var(--vibrant-teal) / 0.2)'
+                            boxShadow: '0 8px 25px hsl(var(--vibrant-teal) / 0.2)',
+                            fontSize: '12px'
                           }}
                           itemStyle={{
                             color: 'hsl(var(--vibrant-lime))',
                             fontWeight: 'bold',
-                            fontSize: '15px'
+                            fontSize: '12px'
                           }}
                         />
                       </RechartsPieChart>
                     </ResponsiveContainer>
                   </div>
-                  <div className="space-y-3">
+                  <div className="space-y-2 sm:space-y-3">
                     {budgetData.map((item, index) => (
                       <div key={index} className="flex items-center justify-between">
-                        <div className="flex items-center space-x-2">
+                        <div className="flex items-center space-x-2 min-w-0 flex-1">
                           <div 
-                            className="w-4 h-4 rounded-full shadow-lg border-2 border-white dark:border-gray-800" 
+                            className="w-3 h-3 sm:w-4 sm:h-4 rounded-full shadow-lg border-2 border-white dark:border-gray-800 shrink-0" 
                             style={{ backgroundColor: item.color }}
                           />
-                          <span className="text-sm font-semibold text-foreground">{item.name}</span>
+                          <span className="text-responsive-xs font-semibold text-foreground truncate">{item.name}</span>
                         </div>
-                        <span className="text-sm font-bold" style={{ color: item.color }}>
+                        <span className="text-responsive-xs font-bold shrink-0 ml-2" style={{ color: item.color }}>
                           {formatCurrency(item.value)}
                         </span>
                       </div>
@@ -378,13 +383,13 @@ export function Dashboard() {
                   </div>
                 </div>
               ) : (
-                <div className="h-48 flex items-center justify-center text-muted-foreground">
+                <div className="chart-container-small flex items-center justify-center text-muted-foreground">
                   <div className="text-center">
-                    <BarChart3 className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                    <p>Nenhum orçamento configurado</p>
-                    <Button className="mt-4" size="sm">
-                      <Plus className="h-4 w-4 mr-2" />
-                      Criar Orçamento
+                    <BarChart3 className="h-8 w-8 sm:h-12 sm:w-12 mx-auto mb-2 sm:mb-4 opacity-50" />
+                    <p className="text-responsive-xs">Nenhum orçamento configurado</p>
+                    <Button className="mt-2 sm:mt-4" size="sm" data-testid="button-create-budget">
+                      <Plus className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                      <span className="text-xs sm:text-sm">Criar Orçamento</span>
                     </Button>
                   </div>
                 </div>
@@ -394,48 +399,48 @@ export function Dashboard() {
         </div>
 
         {/* Recent Transactions & Goals */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="responsive-grid responsive-grid-2 gap-4 sm:gap-6 lg:gap-8">
           {/* Recent Transactions */}
-          <Card className="vibrant-card-pink">
-            <CardHeader>
-              <CardTitle className="flex items-center justify-between">
-                <span>Transações Recentes</span>
-                <Button variant="ghost" size="sm">
-                  Ver todas
-                  <ArrowRight className="h-4 w-4 ml-1" />
+          <Card className="vibrant-card-pink" data-testid="card-recent-transactions">
+            <CardHeader className="pb-2 sm:pb-4">
+              <CardTitle className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0">
+                <span className="text-responsive-md">Transações Recentes</span>
+                <Button variant="ghost" size="sm" className="self-start sm:self-center" data-testid="button-view-all-transactions">
+                  <span className="text-xs sm:text-sm">Ver todas</span>
+                  <ArrowRight className="h-3 w-3 sm:h-4 sm:w-4 ml-1" />
                 </Button>
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
+            <CardContent className="pt-0">
+              <div className="space-y-3 sm:space-y-4">
                 {recentTransactions.length > 0 ? (
                   recentTransactions.slice(0, 5).map((transaction, index) => (
-                    <div key={index} className="flex items-center justify-between p-3 rounded-lg hover:bg-accent transition-colors">
-                      <div className="flex items-center space-x-3">
-                        <div className={`p-2 rounded-lg ${transaction.type === 'income' ? 'bg-vibrant-lime/20' : 'bg-vibrant-pink/20'}`}>
+                    <div key={index} className="flex items-center justify-between p-2 sm:p-3 rounded-lg hover:bg-accent transition-colors" data-testid={`transaction-${index}`}>
+                      <div className="flex items-center space-x-2 sm:space-x-3 min-w-0 flex-1">
+                        <div className={`p-1.5 sm:p-2 rounded-lg shrink-0 ${transaction.type === 'income' ? 'bg-vibrant-lime/20' : 'bg-vibrant-pink/20'}`}>
                           {transaction.type === 'income' ? (
-                            <ArrowUpCircle className="h-4 w-4 text-vibrant-lime" />
+                            <ArrowUpCircle className="h-3 w-3 sm:h-4 sm:w-4 text-vibrant-lime" />
                           ) : (
-                            <ArrowDownCircle className="h-4 w-4 text-vibrant-pink" />
+                            <ArrowDownCircle className="h-3 w-3 sm:h-4 sm:w-4 text-vibrant-pink" />
                           )}
                         </div>
-                        <div>
-                          <p className="font-semibold text-sm text-foreground">{transaction.description}</p>
+                        <div className="min-w-0 flex-1">
+                          <p className="font-semibold text-xs sm:text-sm text-foreground truncate">{transaction.description}</p>
                           <p className="text-xs font-medium text-vibrant-teal">{formatDate(transaction.date)}</p>
                         </div>
                       </div>
-                      <div className={`font-bold text-lg ${transaction.type === 'income' ? 'text-vibrant-lime' : 'text-vibrant-pink'}`}>
+                      <div className={`font-bold text-sm sm:text-lg shrink-0 ml-2 ${transaction.type === 'income' ? 'text-vibrant-lime' : 'text-vibrant-pink'}`}>
                         {transaction.type === 'income' ? '+' : '-'}{formatCurrency(Math.abs(transaction.amount))}
                       </div>
                     </div>
                   ))
                 ) : (
-                  <div className="text-center py-8 text-muted-foreground">
-                    <ArrowUpCircle className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                    <p>Nenhuma transação recente</p>
-                    <Button className="mt-4" size="sm">
-                      <Plus className="h-4 w-4 mr-2" />
-                      Nova Transação
+                  <div className="text-center py-6 sm:py-8 text-muted-foreground">
+                    <ArrowUpCircle className="h-8 w-8 sm:h-12 sm:w-12 mx-auto mb-2 sm:mb-4 opacity-50" />
+                    <p className="text-responsive-xs">Nenhuma transação recente</p>
+                    <Button className="mt-2 sm:mt-4" size="sm" data-testid="button-new-transaction">
+                      <Plus className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                      <span className="text-xs sm:text-sm">Nova Transação</span>
                     </Button>
                   </div>
                 )}
@@ -444,37 +449,37 @@ export function Dashboard() {
           </Card>
 
           {/* Financial Goals */}
-          <Card className="vibrant-card-orange">
-            <CardHeader>
-              <CardTitle className="flex items-center justify-between">
-                <span>Metas Financeiras</span>
-                <Button variant="ghost" size="sm">
-                  <Plus className="h-4 w-4" />
+          <Card className="vibrant-card-orange" data-testid="card-financial-goals">
+            <CardHeader className="pb-2 sm:pb-4">
+              <CardTitle className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0">
+                <span className="text-responsive-md">Metas Financeiras</span>
+                <Button variant="ghost" size="sm" className="self-start sm:self-center" data-testid="button-add-goal">
+                  <Plus className="h-3 w-3 sm:h-4 sm:w-4" />
                 </Button>
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
+            <CardContent className="pt-0">
+              <div className="space-y-3 sm:space-y-4">
                 {goals.length > 0 ? (
                   goals.slice(0, 3).map((goal, index) => {
                     const progress = calculateGoalProgress(goal.currentAmount, goal.targetAmount);
                     return (
-                      <div key={index} className="space-y-3">
+                      <div key={index} className="space-y-2 sm:space-y-3" data-testid={`goal-${index}`}>
                         <div className="flex items-center justify-between">
-                          <div>
-                            <p className="font-semibold text-sm text-foreground">{goal.name}</p>
+                          <div className="min-w-0 flex-1">
+                            <p className="font-semibold text-xs sm:text-sm text-foreground truncate">{goal.name}</p>
                             <p className="text-xs font-medium text-vibrant-orange">
                               {formatCurrency(goal.currentAmount)} de {formatCurrency(goal.targetAmount)}
                             </p>
                           </div>
                           <Badge 
                             variant={progress >= 100 ? 'default' : 'secondary'}
-                            className={`font-bold ${progress >= 100 ? 'bg-vibrant-lime text-black' : 'bg-vibrant-orange text-white'}`}
+                            className={`font-bold text-xs shrink-0 ml-2 ${progress >= 100 ? 'bg-vibrant-lime text-black' : 'bg-vibrant-orange text-white'}`}
                           >
                             {Math.round(progress)}%
                           </Badge>
                         </div>
-                        <Progress value={Math.min(progress, 100)} gradient="orange" className="h-2" />
+                        <Progress value={Math.min(progress, 100)} gradient="orange" className="h-1.5 sm:h-2" />
                         <p className="text-xs font-medium text-vibrant-teal">
                           Meta para {formatDate(goal.targetDate)}
                         </p>
@@ -482,12 +487,12 @@ export function Dashboard() {
                     );
                   })
                 ) : (
-                  <div className="text-center py-8 text-muted-foreground">
-                    <Target className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                    <p>Defina suas metas financeiras</p>
-                    <Button className="mt-4" size="sm">
-                      <Plus className="h-4 w-4 mr-2" />
-                      Criar Meta
+                  <div className="text-center py-6 sm:py-8 text-muted-foreground">
+                    <Target className="h-8 w-8 sm:h-12 sm:w-12 mx-auto mb-2 sm:mb-4 opacity-50" />
+                    <p className="text-responsive-xs">Defina suas metas financeiras</p>
+                    <Button className="mt-2 sm:mt-4" size="sm" data-testid="button-create-goal">
+                      <Plus className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                      <span className="text-xs sm:text-sm">Criar Meta</span>
                     </Button>
                   </div>
                 )}
@@ -497,27 +502,27 @@ export function Dashboard() {
         </div>
 
         {/* Quick Actions */}
-        <Card className="pharos-card">
-          <CardHeader>
-            <CardTitle>Ações Rápidas</CardTitle>
+        <Card className="pharos-card" data-testid="card-quick-actions">
+          <CardHeader className="pb-2 sm:pb-4">
+            <CardTitle className="text-responsive-md">Ações Rápidas</CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <Button className="h-20 flex-col space-y-2">
-                <Plus className="h-6 w-6" />
-                <span className="text-sm">Nova Transação</span>
+          <CardContent className="pt-0">
+            <div className="responsive-grid responsive-grid-4 gap-3 sm:gap-4">
+              <Button className="h-16 sm:h-20 flex-col space-y-1 sm:space-y-2 text-xs sm:text-sm" data-testid="button-quick-new-transaction">
+                <Plus className="h-4 w-4 sm:h-6 sm:w-6" />
+                <span>Nova Transação</span>
               </Button>
-              <Button variant="outline" className="h-20 flex-col space-y-2">
-                <Target className="h-6 w-6" />
-                <span className="text-sm">Criar Meta</span>
+              <Button variant="outline" className="h-16 sm:h-20 flex-col space-y-1 sm:space-y-2 text-xs sm:text-sm" data-testid="button-quick-create-goal">
+                <Target className="h-4 w-4 sm:h-6 sm:w-6" />
+                <span>Criar Meta</span>
               </Button>
-              <Button variant="outline" className="h-20 flex-col space-y-2">
-                <BarChart3 className="h-6 w-6" />
-                <span className="text-sm">Ver Relatórios</span>
+              <Button variant="outline" className="h-16 sm:h-20 flex-col space-y-1 sm:space-y-2 text-xs sm:text-sm" data-testid="button-quick-reports">
+                <BarChart3 className="h-4 w-4 sm:h-6 sm:w-6" />
+                <span>Ver Relatórios</span>
               </Button>
-              <Button variant="outline" className="h-20 flex-col space-y-2">
-                <CreditCard className="h-6 w-6" />
-                <span className="text-sm">Gerenciar Cartões</span>
+              <Button variant="outline" className="h-16 sm:h-20 flex-col space-y-1 sm:space-y-2 text-xs sm:text-sm" data-testid="button-quick-cards">
+                <CreditCard className="h-4 w-4 sm:h-6 sm:w-6" />
+                <span className="text-center leading-tight">Gerenciar Cartões</span>
               </Button>
             </div>
           </CardContent>

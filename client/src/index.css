@@ -223,6 +223,79 @@
     -webkit-backdrop-filter: blur(12px);
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   }
+
+  /* Responsive Grid System */
+  .responsive-grid {
+    @apply grid gap-4 sm:gap-6;
+  }
+
+  .responsive-grid-1 {
+    @apply grid-cols-1;
+  }
+
+  .responsive-grid-2 {
+    @apply grid-cols-1 sm:grid-cols-2;
+  }
+
+  .responsive-grid-3 {
+    @apply grid-cols-1 sm:grid-cols-2 lg:grid-cols-3;
+  }
+
+  .responsive-grid-4 {
+    @apply grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4;
+  }
+
+  /* Responsive Cards */
+  .responsive-card {
+    @apply bg-card border border-border rounded-lg p-4 sm:p-6 shadow-sm hover:shadow-md transition-all duration-200;
+    min-height: fit-content;
+  }
+
+  .responsive-card:hover {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    border-color: hsl(var(--primary) / 0.15);
+  }
+
+  /* Chart Container Responsive */
+  .chart-container {
+    @apply w-full h-64 sm:h-72 md:h-80 lg:h-96;
+    min-height: 200px;
+  }
+
+  .chart-container-small {
+    @apply w-full h-48 sm:h-56 md:h-64;
+    min-height: 180px;
+  }
+
+  /* Responsive Text Sizes */
+  .text-responsive-xs {
+    @apply text-xs sm:text-sm;
+  }
+
+  .text-responsive-sm {
+    @apply text-sm sm:text-base;
+  }
+
+  .text-responsive-md {
+    @apply text-base sm:text-lg;
+  }
+
+  .text-responsive-lg {
+    @apply text-lg sm:text-xl md:text-2xl;
+  }
+
+  .text-responsive-xl {
+    @apply text-xl sm:text-2xl md:text-3xl;
+  }
+
+  /* Responsive Padding */
+  .padding-responsive {
+    @apply p-4 sm:p-6 lg:p-8;
+  }
+
+  .padding-responsive-sm {
+    @apply p-3 sm:p-4 md:p-6;
+  }
   
   /* Light theme header - dark text on light background */
   .btg-header,

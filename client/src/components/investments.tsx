@@ -348,17 +348,17 @@ export function Investments() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
+      <div className="padding-responsive space-y-4 sm:space-y-6 lg:space-y-8">
         {/* Hero Section */}
-        <div className="relative overflow-hidden rounded-xl sm:rounded-2xl bg-gradient-to-br from-primary via-primary to-chart-2 p-4 sm:p-6 lg:p-8 text-white">
+        <div className="relative overflow-hidden rounded-xl sm:rounded-2xl bg-gradient-to-br from-primary via-primary to-chart-2 padding-responsive-sm text-white">
           <div className="absolute inset-0 bg-gradient-to-br from-primary/90 via-primary/80 to-chart-2/70" />
           <div className="relative">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0 mb-6">
-              <div>
-                <h1 className="text-2xl sm:text-3xl font-bold mb-2">Meus Investimentos 📈</h1>
-                <p className="text-white/80 text-sm sm:text-base">Acompanhe sua carteira de investimentos</p>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0 mb-4 sm:mb-6">
+              <div className="min-w-0 flex-1">
+                <h1 className="text-responsive-lg font-bold mb-2">Meus Investimentos 📈</h1>
+                <p className="text-white/80 text-responsive-sm">Acompanhe sua carteira de investimentos</p>
               </div>
-              <div className="flex items-center space-x-2 sm:space-x-3">
+              <div className="flex items-center space-x-1 sm:space-x-2 shrink-0">
                 <InvestmentTransactionForm />
                 <QuoteUpdater assets={assets || []} />
                 <Button 
@@ -366,27 +366,28 @@ export function Investments() {
                   size="sm"
                   className="text-white hover:bg-white/10 p-2"
                   onClick={() => setBalanceVisible(!balanceVisible)}
+                  data-testid="button-toggle-visibility"
                 >
                   {balanceVisible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </Button>
-                <Button variant="secondary" size="sm" className="text-xs sm:text-sm">
+                <Button variant="secondary" size="sm" className="text-responsive-xs" data-testid="button-export-report">
                   <Download className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-                  <span className="hidden sm:inline">Relatório</span>
+                  <span className="hidden xs:inline">Relatório</span>
                 </Button>
               </div>
             </div>
             
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-              <div className="bg-white/10 rounded-xl p-4 backdrop-blur-sm">
-                <p className="text-white/80 text-sm mb-1">Patrimônio Total</p>
-                <p className="text-2xl font-bold">
+            <div className="responsive-grid responsive-grid-4 gap-3 sm:gap-4 lg:gap-6">
+              <div className="bg-white/10 rounded-lg sm:rounded-xl p-3 sm:p-4 backdrop-blur-sm" data-testid="card-total-value">
+                <p className="text-white/80 text-responsive-xs mb-1">Patrimônio Total</p>
+                <p className="text-responsive-lg font-bold">
                   {balanceVisible ? formatCurrency(totalValue) : '••••••'}
                 </p>
-                <div className="flex items-center mt-2 text-sm">
+                <div className="flex items-center mt-2 text-responsive-xs">
                   {variationPercent >= 0 ? (
-                    <TrendingUp className="h-4 w-4 mr-1" />
+                    <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4 mr-1 shrink-0" />
                   ) : (
-                    <TrendingDown className="h-4 w-4 mr-1" />
+                    <TrendingDown className="h-3 w-3 sm:h-4 sm:w-4 mr-1 shrink-0" />
                   )}
                   <span className={variationPercent >= 0 ? 'text-green-200' : 'text-red-200'}>
                     {formatPercentage(variationPercent)}
@@ -394,35 +395,35 @@ export function Investments() {
                 </div>
               </div>
               
-              <div className="bg-white/10 rounded-xl p-4 backdrop-blur-sm">
-                <p className="text-white/80 text-sm mb-1">Valor Investido</p>
-                <p className="text-2xl font-bold">
+              <div className="bg-white/10 rounded-lg sm:rounded-xl p-3 sm:p-4 backdrop-blur-sm" data-testid="card-applied-value">
+                <p className="text-white/80 text-responsive-xs mb-1">Valor Investido</p>
+                <p className="text-responsive-lg font-bold">
                   {balanceVisible ? formatCurrency(appliedValue) : '••••••'}
                 </p>
-                <p className="text-sm text-white/70 mt-2">Capital aplicado</p>
+                <p className="text-responsive-xs text-white/70 mt-2">Capital aplicado</p>
               </div>
               
-              <div className="bg-white/10 rounded-xl p-4 backdrop-blur-sm">
-                <p className="text-white/80 text-sm mb-1">Lucro Total</p>
-                <p className="text-2xl font-bold">
+              <div className="bg-white/10 rounded-lg sm:rounded-xl p-3 sm:p-4 backdrop-blur-sm" data-testid="card-total-profit">
+                <p className="text-white/80 text-responsive-xs mb-1">Lucro Total</p>
+                <p className="text-responsive-lg font-bold">
                   {balanceVisible ? formatCurrency(totalProfit) : '••••••'}
                 </p>
-                <p className="text-sm text-white/70 mt-2">Ganho de capital</p>
+                <p className="text-responsive-xs text-white/70 mt-2">Ganho de capital</p>
               </div>
               
-              <div className="bg-white/10 rounded-xl p-4 backdrop-blur-sm">
-                <p className="text-white/80 text-sm mb-1">Rentabilidade</p>
-                <p className="text-2xl font-bold text-green-200">
+              <div className="bg-white/10 rounded-lg sm:rounded-xl p-3 sm:p-4 backdrop-blur-sm" data-testid="card-profitability">
+                <p className="text-white/80 text-responsive-xs mb-1">Rentabilidade</p>
+                <p className="text-responsive-lg font-bold text-green-200">
                   {balanceVisible ? formatPercentage(profitabilityPercent) : '••••••'}
                 </p>
-                <p className="text-sm text-white/70 mt-2">Performance</p>
+                <p className="text-responsive-xs text-white/70 mt-2">Performance</p>
               </div>
             </div>
           </div>
         </div>
 
         {/* Charts Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="responsive-grid responsive-grid-2 gap-4 sm:gap-6 lg:gap-8">
           {/* Portfolio Evolution */}
           <Card className="pharos-card">
             <CardHeader>

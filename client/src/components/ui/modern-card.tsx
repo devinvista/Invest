@@ -32,7 +32,7 @@ export function ModernCard({
 }: ModernCardProps) {
   return (
     <Card className={cn(
-      'pharos-card group cursor-pointer overflow-hidden relative',
+      'responsive-card pharos-card group cursor-pointer overflow-hidden relative transition-all duration-200 hover:shadow-lg',
       gradient && 'pharos-gradient text-white border-0',
       className
     )}>
@@ -40,17 +40,17 @@ export function ModernCard({
         <div className="absolute inset-0 bg-gradient-to-br from-primary via-primary to-chart-2 opacity-90" />
       )}
       
-      <CardHeader className="relative pb-3">
+      <CardHeader className="relative pb-2 sm:pb-3 p-3 sm:p-4 lg:p-6">
         <div className="flex items-center justify-between">
           <CardTitle className={cn(
-            'text-sm font-medium',
+            'text-xs sm:text-sm font-medium truncate',
             gradient ? 'text-white/90' : 'text-muted-foreground'
           )}>
             {title}
           </CardTitle>
           {Icon && (
             <div className={cn(
-              'p-1.5 sm:p-2 rounded-lg transition-colors',
+              'p-1 sm:p-1.5 lg:p-2 rounded-lg transition-colors shrink-0 ml-2',
               gradient ? 'bg-white/10' : 'bg-accent',
               iconColor
             )}>
@@ -60,10 +60,10 @@ export function ModernCard({
         </div>
       </CardHeader>
       
-      <CardContent className="relative pt-0">
-        <div className="space-y-2 sm:space-y-3">
+      <CardContent className="relative pt-0 p-3 sm:p-4 lg:p-6">
+        <div className="space-y-1 sm:space-y-2 lg:space-y-3">
           <div className={cn(
-            'text-lg sm:text-xl lg:text-2xl font-bold',
+            'text-sm sm:text-lg lg:text-xl xl:text-2xl font-bold truncate',
             gradient ? 'text-white' : 'text-foreground'
           )}>
             {typeof value === 'number' ? value.toLocaleString() : value}
@@ -81,7 +81,7 @@ export function ModernCard({
           {trend && (
             <div className="flex items-center space-x-1">
               <span className={cn(
-                'text-sm font-medium',
+                'text-xs sm:text-sm font-medium',
                 gradient ? 'text-white' : trend.positive ? 'text-success' : 'text-expense'
               )}>
                 {trend.positive ? '+' : ''}{trend.value}%

@@ -46,26 +46,30 @@ function AppContent() {
     <div className="min-h-screen bg-background">
       <Header onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
       <div className="flex pt-16">
+        {/* Sidebar with proper responsive behavior */}
         <Sidebar
           isOpen={sidebarOpen}
           onClose={() => setSidebarOpen(false)}
           currentPath={location}
           onNavigate={navigate}
         />
-        <main className="flex-1 lg:ml-0 min-h-screen overflow-x-auto">
-          <Switch>
-            <Route path="/" component={Dashboard} />
-            <Route path="/budget" component={Budget} />
-            <Route path="/accounts" component={Accounts} />
-            <Route path="/cards" component={Cards} />
-            <Route path="/investments" component={Investments} />
-            <Route path="/goals" component={Goals} />
-            <Route path="/settings" component={Settings} />
-            <Route path="/reports" component={Reports} />
-            <Route path="/education" component={Education} />
+        {/* Main content with responsive margins */}
+        <main className="flex-1 w-full min-h-screen overflow-x-hidden lg:ml-0">
+          <div className="w-full max-w-full">
+            <Switch>
+              <Route path="/" component={Dashboard} />
+              <Route path="/budget" component={Budget} />
+              <Route path="/accounts" component={Accounts} />
+              <Route path="/cards" component={Cards} />
+              <Route path="/investments" component={Investments} />
+              <Route path="/goals" component={Goals} />
+              <Route path="/settings" component={Settings} />
+              <Route path="/reports" component={Reports} />
+              <Route path="/education" component={Education} />
 
-            <Route component={NotFound} />
-          </Switch>
+              <Route component={NotFound} />
+            </Switch>
+          </div>
         </main>
       </div>
     </div>
