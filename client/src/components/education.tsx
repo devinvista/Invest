@@ -585,7 +585,12 @@ export function Education() {
                                 />
                                 <YAxis 
                                   tickFormatter={(value) => formatCurrency(value)}
-                                  label={{ value: 'Valor (R$)', angle: -90, position: 'insideLeft' }}
+                                  label={{ 
+                                    value: 'Valor (R$)', 
+                                    angle: -90, 
+                                    position: 'insideLeft',
+                                    style: { textAnchor: 'middle', fontSize: '12px' }
+                                  }}
                                 />
                                 <Tooltip 
                                   content={(props) => {
