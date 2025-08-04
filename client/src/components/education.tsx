@@ -530,11 +530,11 @@ export function Education() {
         </div>
       </div>
 
-      <Tabs defaultValue="articles" className="space-y-6">
+      <Tabs defaultValue="simulators" className="space-y-6">
         <TabsList>
+          <TabsTrigger value="simulators">Simuladores</TabsTrigger>
           <TabsTrigger value="articles">Artigos</TabsTrigger>
           <TabsTrigger value="videos">Vídeos</TabsTrigger>
-          <TabsTrigger value="simulators">Simuladores</TabsTrigger>
           <TabsTrigger value="glossary">Glossário</TabsTrigger>
         </TabsList>
 
