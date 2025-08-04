@@ -17,6 +17,7 @@ import {
   ExternalLink,
   Search
 } from 'lucide-react';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area, PieChart, Pie, Cell } from 'recharts';
 
 const educationalContent = {
   articles: [
@@ -222,7 +223,67 @@ export function Education() {
     };
   };
 
+  const generateChartData = () => {
+    const initial = parseFloat(compoundInterestInputs.initialAmount) || 0;
+    const monthly = parseFloat(compoundInterestInputs.monthlyContribution) || 0;
+    const rate = (parseFloat(compoundInterestInputs.interestRate) || 0) / 100 / 12;
+    const years = parseFloat(compoundInterestInputs.years) || 0;
+    const months = years * 12;
+
+    if (months === 0) return [];
+
+    const data = [];
+    let amount = initial;
+    let totalContributed = initial;
+
+    // Add initial point
+    data.push({
+      year: 0,
+      totalAmount: Math.round(amount),
+      totalContributed: Math.round(totalContributed),
+      interestEarned: 0,
+    });
+
+    for (let i = 1; i <= months; i++) {
+      amount = amount * (1 + rate) + monthly;
+      totalContributed += monthly;
+      
+      // Add data point for each year
+      if (i % 12 === 0 || i === months) {
+        const yearMark = i / 12;
+        data.push({
+          year: yearMark,
+          totalAmount: Math.round(amount),
+          totalContributed: Math.round(totalContributed),
+          interestEarned: Math.round(amount - totalContributed),
+        });
+      }
+    }
+
+    return data;
+  };
+
+  const generatePieChartData = () => {
+    const result = calculateCompoundInterest();
+    if (result.finalAmount === 0) return [];
+
+    return [
+      {
+        name: 'Total Investido',
+        value: result.totalContributed,
+        color: '#3b82f6', // Blue
+      },
+      {
+        name: 'Juros Compostos',
+        value: result.totalInterest,
+        color: '#10b981', // Green
+      },
+    ];
+  };
+
   const compoundResult = calculateCompoundInterest();
+  const chartData = generateChartData();
+  const pieChartData = generatePieChartData();
 
   return (
     <div className="min-h-screen bg-background">
@@ -403,7 +464,8 @@ export function Education() {
                 <CardTitle>Simulador de Juros Compostos</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                  {/* Input Section */}
                   <div className="space-y-4">
                     <div>
                       <label className="text-sm font-medium text-foreground mb-2 block">
@@ -464,9 +526,8 @@ export function Education() {
                         }))}
                       />
                     </div>
-                  </div>
 
-                  <div className="space-y-6">
+                    {/* Results Summary */}
                     <div className="p-6 bg-green-50 dark:bg-green-900/20 rounded-lg">
                       <h3 className="font-semibold text-green-900 dark:text-green-100 mb-4">
                         Resultado da Simulação
@@ -503,6 +564,167 @@ export function Education() {
                           do valor final. Quanto maior o prazo, maior o poder dos juros compostos!
                         </p>
                       </div>
+                    )}
+                  </div>
+
+                  {/* Charts Section */}
+                  <div className="lg:col-span-2 space-y-6">
+                    {chartData.length > 0 && (
+                      <>
+                        {/* Evolution Chart */}
+                        <Card>
+                          <CardHeader>
+                            <CardTitle className="text-lg">Evolução do Investimento</CardTitle>
+                          </CardHeader>
+                          <CardContent>
+                            <div className="h-80">
+                              <ResponsiveContainer width="100%" height="100%">
+                                <AreaChart data={chartData}>
+                                  <CartesianGrid strokeDasharray="3 3" />
+                                  <XAxis 
+                                    dataKey="year" 
+                                    label={{ value: 'Anos', position: 'insideBottom', offset: -5 }}
+                                  />
+                                  <YAxis 
+                                    tickFormatter={(value) => formatCurrency(value)}
+                                    label={{ value: 'Valor (R$)', angle: -90, position: 'insideLeft' }}
+                                  />
+                                  <Tooltip 
+                                    formatter={(value, name) => [formatCurrency(Number(value)), name]}
+                                    labelFormatter={(label) => `Ano ${label}`}
+                                  />
+                                  <Area 
+                                    type="monotone" 
+                                    dataKey="totalContributed" 
+                                    stackId="1"
+                                    stroke="#3b82f6" 
+                                    fill="#3b82f6" 
+                                    fillOpacity={0.6}
+                                    name="Total Investido"
+                                  />
+                                  <Area 
+                                    type="monotone" 
+                                    dataKey="interestEarned" 
+                                    stackId="1"
+                                    stroke="#10b981" 
+                                    fill="#10b981" 
+                                    fillOpacity={0.8}
+                                    name="Juros Compostos"
+                                  />
+                                </AreaChart>
+                              </ResponsiveContainer>
+                            </div>
+                          </CardContent>
+                        </Card>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          {/* Composition Pie Chart */}
+                          <Card>
+                            <CardHeader>
+                              <CardTitle className="text-lg">Composição Final</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                              <div className="h-64">
+                                <ResponsiveContainer width="100%" height="100%">
+                                  <PieChart>
+                                    <Pie
+                                      data={pieChartData}
+                                      cx="50%"
+                                      cy="50%"
+                                      innerRadius={60}
+                                      outerRadius={100}
+                                      paddingAngle={5}
+                                      dataKey="value"
+                                    >
+                                      {pieChartData.map((entry, index) => (
+                                        <Cell key={`cell-${index}`} fill={entry.color} />
+                                      ))}
+                                    </Pie>
+                                    <Tooltip formatter={(value) => formatCurrency(Number(value))} />
+                                  </PieChart>
+                                </ResponsiveContainer>
+                              </div>
+                              <div className="mt-4 space-y-2">
+                                {pieChartData.map((entry, index) => (
+                                  <div key={index} className="flex items-center justify-between">
+                                    <div className="flex items-center space-x-2">
+                                      <div 
+                                        className="w-3 h-3 rounded-full"
+                                        style={{ backgroundColor: entry.color }}
+                                      />
+                                      <span className="text-sm text-muted-foreground">{entry.name}</span>
+                                    </div>
+                                    <span className="text-sm font-medium">
+                                      {formatCurrency(entry.value)}
+                                    </span>
+                                  </div>
+                                ))}
+                              </div>
+                            </CardContent>
+                          </Card>
+
+                          {/* Growth Comparison */}
+                          <Card>
+                            <CardHeader>
+                              <CardTitle className="text-lg">Crescimento Anual</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                              <div className="h-64">
+                                <ResponsiveContainer width="100%" height="100%">
+                                  <LineChart data={chartData}>
+                                    <CartesianGrid strokeDasharray="3 3" />
+                                    <XAxis 
+                                      dataKey="year"
+                                      label={{ value: 'Anos', position: 'insideBottom', offset: -5 }}
+                                    />
+                                    <YAxis 
+                                      tickFormatter={(value) => formatCurrency(value)}
+                                      label={{ value: 'Valor (R$)', angle: -90, position: 'insideLeft' }}
+                                    />
+                                    <Tooltip 
+                                      formatter={(value, name) => [formatCurrency(Number(value)), name]}
+                                      labelFormatter={(label) => `Ano ${label}`}
+                                    />
+                                    <Line 
+                                      type="monotone" 
+                                      dataKey="totalAmount" 
+                                      stroke="#8b5cf6" 
+                                      strokeWidth={3}
+                                      dot={{ fill: '#8b5cf6', strokeWidth: 2, r: 4 }}
+                                      name="Valor Total"
+                                    />
+                                    <Line 
+                                      type="monotone" 
+                                      dataKey="totalContributed" 
+                                      stroke="#3b82f6" 
+                                      strokeWidth={2}
+                                      strokeDasharray="5 5"
+                                      dot={{ fill: '#3b82f6', strokeWidth: 2, r: 3 }}
+                                      name="Total Investido"
+                                    />
+                                  </LineChart>
+                                </ResponsiveContainer>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        </div>
+                      </>
+                    )}
+
+                    {chartData.length === 0 && (
+                      <Card>
+                        <CardContent className="pt-6">
+                          <div className="text-center py-12">
+                            <TrendingUp className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                            <h3 className="text-lg font-medium text-muted-foreground mb-2">
+                              Preencha os dados
+                            </h3>
+                            <p className="text-sm text-muted-foreground">
+                              Insira os valores nos campos ao lado para visualizar os gráficos de evolução do seu investimento
+                            </p>
+                          </div>
+                        </CardContent>
+                      </Card>
                     )}
                   </div>
                 </div>
