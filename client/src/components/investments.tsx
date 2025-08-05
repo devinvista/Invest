@@ -25,7 +25,7 @@ import {
   EyeOff
 } from 'lucide-react';
 import { PieChart as RechartsPieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, AreaChart, Area } from 'recharts';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { InvestmentTransactionForm } from './investment-transaction-form';
 import { AssetForm } from './asset-form';
 import { QuoteUpdater } from './quote-updater';
@@ -74,22 +74,9 @@ export function Investments() {
   const [selectedEvolutionType, setSelectedEvolutionType] = useState('all');
   const [selectedAsset, setSelectedAsset] = useState<Asset | null>(null);
   const [assetDetailsOpen, setAssetDetailsOpen] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
   
   // Check if dark mode is active
   const isDarkMode = document.documentElement.classList.contains('dark');
-
-  // Track screen size for responsive chart optimization
-  useEffect(() => {
-    const checkIsMobile = () => {
-      setIsMobile(window.innerWidth < 640);
-    };
-    
-    checkIsMobile();
-    window.addEventListener('resize', checkIsMobile);
-    
-    return () => window.removeEventListener('resize', checkIsMobile);
-  }, []);
 
   const { data: investmentData, isLoading } = useQuery<InvestmentData>({
     queryKey: ['/api/investments'],
@@ -471,86 +458,70 @@ export function Investments() {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="chart-container">
+              <div className="h-72">
                 <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart 
-                    data={evolutionData} 
-                    margin={{ 
-                      top: 10, 
-                      right: isMobile ? 5 : 15, 
-                      left: isMobile ? 5 : 15, 
-                      bottom: 20 
-                    }}
-                  >
+                  <BarChart data={evolutionData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
                     <defs>
-                      <linearGradient id="portfolioGradient" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#195AB4" stopOpacity={0.8}/>
-                        <stop offset="95%" stopColor="#195AB4" stopOpacity={0.1}/>
+                      <linearGradient id="appliedGradientBar" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#195AB4" stopOpacity={1}/>
+                        <stop offset="100%" stopColor="#144A94" stopOpacity={1}/>
+                      </linearGradient>
+                      <linearGradient id="profitGradientBar" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#F59E0B" stopOpacity={1}/>
+                        <stop offset="100%" stopColor="#D97706" stopOpacity={1}/>
                       </linearGradient>
                     </defs>
-                    <CartesianGrid 
-                      strokeDasharray="3 3" 
-                      stroke="hsl(var(--border))" 
-                      opacity={0.2}
-                      horizontal={true}
-                      vertical={false}
-                    />
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
                     <XAxis 
                       dataKey="month" 
                       axisLine={false}
                       tickLine={false}
-                      tick={{ 
-                        fontSize: isMobile ? 10 : 12, 
-                        fill: 'hsl(var(--muted-foreground))' 
-                      }}
-                      height={isMobile ? 30 : 40}
+                      tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }}
                     />
-                    {/* YAxis oculto em mobile para maximizar área de dados */}
                     <YAxis 
-                      hide={isMobile}
                       axisLine={false}
                       tickLine={false}
-                      tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }}
-                      tickFormatter={(value) => isMobile ? '' : `${(value / 1000).toFixed(0)}k`}
-                      width={isMobile ? 0 : 60}
+                      tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }}
+                      tickFormatter={(value) => formatCurrency(value)}
                     />
                     <Tooltip 
                       formatter={(value, name) => [
                         formatCurrency(Number(value)), 
-                        'Valor Total'
+                        name === 'applied' ? 'Valor aplicado' : 'Ganho capital'
                       ]}
-                      labelStyle={{ color: 'hsl(var(--foreground))', fontSize: '12px' }}
+                      labelStyle={{ color: 'hsl(var(--foreground))' }}
                       contentStyle={{ 
                         backgroundColor: 'hsl(var(--card))', 
                         border: '1px solid hsl(var(--border))',
                         borderRadius: '8px',
-                        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-                        fontSize: '12px',
-                        padding: isMobile ? '6px 8px' : '8px 12px'
-                      }}
-                      cursor={{ stroke: '#195AB4', strokeWidth: 1, strokeDasharray: '3 3' }}
-                    />
-                    <Area 
-                      type="monotone"
-                      dataKey="total" 
-                      stroke="#195AB4"
-                      strokeWidth={isMobile ? 2 : 3}
-                      fill="url(#portfolioGradient)"
-                      dot={false}
-                      activeDot={{ 
-                        r: isMobile ? 4 : 6, 
-                        fill: '#195AB4',
-                        strokeWidth: 2,
-                        stroke: '#fff'
+                        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
                       }}
                     />
-                  </AreaChart>
+                    <Bar 
+                      dataKey="applied" 
+                      stackId="a"
+                      fill="url(#appliedGradientBar)"
+                      radius={[0, 0, 4, 4]}
+                      name="applied"
+                    />
+                    <Bar 
+                      dataKey="profit" 
+                      stackId="a"
+                      fill="url(#profitGradientBar)"
+                      radius={[4, 4, 0, 0]}
+                      name="profit"
+                    />
+                  </BarChart>
                 </ResponsiveContainer>
               </div>
-              <div className="mt-3 sm:mt-4 flex items-center justify-center">
+              <div className="mt-4 flex items-center justify-center space-x-6">
                 <div className="flex items-center space-x-2">
-                  <div className="w-3 h-3 rounded-sm bg-gradient-to-b from-[#195AB4] to-[#195AB4] opacity-80"></div>
-                  <span className="text-xs sm:text-sm font-medium text-foreground">Evolução da Carteira</span>
+                  <div className="w-3 h-3 rounded-sm bg-gradient-to-b from-[#195AB4] to-[#144A94]"></div>
+                  <span className="text-sm font-medium text-foreground">Valor aplicado</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <div className="w-3 h-3 rounded-sm bg-gradient-to-b from-[#F59E0B] to-[#D97706]"></div>
+                  <span className="text-sm font-medium text-foreground">Ganho capital</span>
                 </div>
               </div>
             </CardContent>
