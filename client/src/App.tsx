@@ -18,7 +18,6 @@ import { Reports } from "@/components/reports";
 import { Education } from "@/components/education";
 import { Settings } from "@/components/settings";
 import { Login } from "@/pages/auth/login";
-
 import NotFound from "@/pages/not-found";
 
 function AppContent() {
@@ -69,9 +68,9 @@ function AppContent() {
           isCollapsed={sidebarCollapsed}
           onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
         />
-        {/* Main content with responsive margins */}
+        {/* Main content with responsive layout */}
         <main className={`flex-1 w-full min-h-screen overflow-x-hidden transition-all duration-300 ${
-          sidebarCollapsed ? 'lg:ml-16' : 'lg:ml-72'
+          sidebarCollapsed ? 'lg:pl-16' : 'lg:pl-72'
         }`}>
           <div className="w-full max-w-full">
             <Switch>
