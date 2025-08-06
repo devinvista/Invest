@@ -430,6 +430,14 @@ export function Budget() {
     .filter((t: any) => t.type === 'income')
     .reduce((sum: number, t: any) => sum + parseFloat(t.amount), 0);
 
+  // Calculate total expenses from actual transactions
+  const totalExpenses = transactions
+    .filter((t: any) => t.type === 'expense')
+    .reduce((sum: number, t: any) => sum + parseFloat(t.amount), 0);
+
+  // Calculate remaining balance (income - expenses)
+  const remaining = totalIncome - totalExpenses;
+
   const months = [
     { value: 1, label: 'Janeiro' },
     { value: 2, label: 'Fevereiro' },
