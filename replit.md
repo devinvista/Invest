@@ -23,6 +23,10 @@ Identidade Visual: Diretrizes da marca Pharos Capital aplicadas.
   - Header e Sidebar com navegação móvel colapsável e menu hamburger
   - Tooltips e legendas de gráficos otimizados para telas de toque
 
+- **6 de Agosto de 2025**: Migração para ambiente Replit concluída com sucesso e pequenos ajustes de UI
+  - Removido texto do eixo Y no gráfico de evolução de investimentos para layout mais limpo
+  - Aplicação funcionando perfeitamente no ambiente Replit padrão
+
 - **4 de Agosto de 2025**: Migração para ambiente Replit concluída com sucesso
   - Migração bem-sucedida do OrçaFácil do Replit Agent para ambiente Replit padrão
   - Instalação de todos os pacotes Node.js e dependências necessárias

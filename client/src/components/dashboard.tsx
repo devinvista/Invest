@@ -273,9 +273,8 @@ export function Dashboard() {
                     <YAxis 
                       axisLine={false}
                       tickLine={false}
-                      tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }}
-                      tickFormatter={(value) => formatCurrency(value).replace('R$ ', 'R$')}
-                      width={60}
+                      tick={false}
+                      width={0}
                     />
                     <Tooltip 
                       formatter={(value, name) => [
