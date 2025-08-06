@@ -590,7 +590,169 @@ export function Budget() {
                 </CardContent>
               </Card>
             ) : (
-              <div className="space-y-6">
+              <div className="space-y-8">
+                {/* Header Moderno - Orçamento Mensal */}
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="text-3xl font-bold text-orange-500 mb-2">Orçamento mensal</h2>
+                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                      <span>Saldo inicial: <strong>{formatCurrency(budget?.totalIncome || 0)}</strong></span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Cards de Saldo Principal */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {/* Saldo Inicial */}
+                  <Card className="bg-slate-700 text-white border-0">
+                    <CardContent className="p-6 text-center">
+                      <div className="text-sm font-medium mb-2 opacity-90">SALDO INICIAL</div>
+                      <div className="text-3xl font-bold">{formatCurrency(budget?.totalIncome || 0)}</div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Saldo Final */}
+                  <Card className="bg-orange-500 text-white border-0">
+                    <CardContent className="p-6 text-center">
+                      <div className="text-sm font-medium mb-2 opacity-90">SALDO FINAL</div>
+                      <div className="text-3xl font-bold">{formatCurrency(remaining)}</div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Card de Economia */}
+                  <Card className="bg-slate-100 dark:bg-slate-800 border border-dashed border-slate-300 dark:border-slate-600">
+                    <CardContent className="p-6 text-center">
+                      <div className="text-4xl font-bold text-green-600 mb-2">
+                        +{remaining > 0 && budget?.totalIncome ? Math.round((remaining / parseFloat(budget.totalIncome.toString())) * 100) : 0}%
+                      </div>
+                      <div className="text-sm text-muted-foreground mb-2">Aumento da economia total</div>
+                      <div className="text-2xl font-bold">{formatCurrency(Math.max(0, remaining))}</div>
+                      <div className="text-sm text-muted-foreground">Economia do mês</div>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* Seções de Despesas e Renda em Grid */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                  {/* Seção Despesas */}
+                  <div>
+                    <h3 className="text-2xl font-bold text-orange-500 mb-6">Despesas</h3>
+                    <div className="space-y-4">
+                      {/* Despesas Planejadas vs Reais */}
+                      <div className="flex items-center justify-between py-3 border-b">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 bg-slate-200 dark:bg-slate-700 rounded flex items-center justify-center text-sm font-bold">P</div>
+                          <span className="font-medium">Planejado</span>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-lg font-bold">{formatCurrency((budget?.necessitiesBudget || 0) + (budget?.wantsBudget || 0))}</div>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center justify-between py-3 border-b">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 bg-slate-700 text-white rounded flex items-center justify-center text-sm font-bold">R</div>
+                          <span className="font-medium">Real</span>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-lg font-bold">{formatCurrency(totalExpenses)}</div>
+                        </div>
+                      </div>
+
+                      {/* Detalhes por categoria */}
+                      <div className="space-y-3 pt-4">
+                        <div className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Totais</div>
+                        
+                        <div className="grid grid-cols-4 gap-4 text-sm">
+                          <div className="font-medium">Categoria</div>
+                          <div className="text-right font-medium">Planejado</div>
+                          <div className="text-right font-medium">Real</div>
+                          <div className="text-right font-medium">Diferença</div>
+                        </div>
+
+                        <div className="grid grid-cols-4 gap-4 text-sm py-2 border-b">
+                          <div>Necessidades</div>
+                          <div className="text-right">{formatCurrency(budget?.necessitiesBudget || 0)}</div>
+                          <div className="text-right">{formatCurrency(spendingByType.necessities)}</div>
+                          <div className={`text-right font-medium ${(parseFloat(budget?.necessitiesBudget || '0') - spendingByType.necessities) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                            {formatCurrency((parseFloat(budget?.necessitiesBudget || '0') - spendingByType.necessities))}
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-4 gap-4 text-sm py-2 border-b">
+                          <div>Desejos</div>
+                          <div className="text-right">{formatCurrency(budget?.wantsBudget || 0)}</div>
+                          <div className="text-right">{formatCurrency(spendingByType.wants)}</div>
+                          <div className={`text-right font-medium ${(parseFloat(budget?.wantsBudget || '0') - spendingByType.wants) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                            {formatCurrency((parseFloat(budget?.wantsBudget || '0') - spendingByType.wants))}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Seção Renda */}
+                  <div>
+                    <h3 className="text-2xl font-bold text-orange-500 mb-6">Renda</h3>
+                    <div className="space-y-4">
+                      {/* Renda Planejada vs Real */}
+                      <div className="flex items-center justify-between py-3 border-b">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 bg-slate-200 dark:bg-slate-700 rounded flex items-center justify-center text-sm font-bold">P</div>
+                          <span className="font-medium">Planejado</span>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-lg font-bold">{formatCurrency(budget?.totalIncome || 0)}</div>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center justify-between py-3 border-b">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 bg-green-600 text-white rounded flex items-center justify-center text-sm font-bold">R</div>
+                          <span className="font-medium">Real</span>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-lg font-bold">{formatCurrency(totalIncome)}</div>
+                        </div>
+                      </div>
+
+                      {/* Detalhes por categoria de renda */}
+                      <div className="space-y-3 pt-4">
+                        <div className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Totais</div>
+                        
+                        <div className="grid grid-cols-4 gap-4 text-sm">
+                          <div className="font-medium">Categoria</div>
+                          <div className="text-right font-medium">Planejado</div>
+                          <div className="text-right font-medium">Real</div>
+                          <div className="text-right font-medium">Diferença</div>
+                        </div>
+
+                        {categories
+                          .filter((cat: any) => !cat.type) // Income categories
+                          .slice(0, 3)
+                          .map((category: any) => {
+                            const categoryIncome = transactions
+                              .filter((t: any) => t.categoryId === category.id && t.type === 'income')
+                              .reduce((sum: number, t: any) => sum + parseFloat(t.amount), 0);
+                            const budgetAmount = budgetCategories.find((bc: any) => bc.categoryId === category.id)?.amount || 0;
+                            const difference = budgetAmount - categoryIncome;
+                            
+                            return (
+                              <div key={category.id} className="grid grid-cols-4 gap-4 text-sm py-2 border-b">
+                                <div>{category.name}</div>
+                                <div className="text-right">{formatCurrency(budgetAmount)}</div>
+                                <div className="text-right">{formatCurrency(categoryIncome)}</div>
+                                <div className={`text-right font-medium ${difference <= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                  {formatCurrency(-difference)}
+                                </div>
+                              </div>
+                            );
+                          })}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
                 {/* Revenue Card - Same style as category breakdown cards */}
                 <div className="grid grid-cols-1 gap-6">
                   {/* Receitas */}

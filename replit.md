@@ -23,17 +23,19 @@ Identidade Visual: Diretrizes da marca Pharos Capital aplicadas.
   - Header e Sidebar com navegação móvel colapsável e menu hamburger
   - Tooltips e legendas de gráficos otimizados para telas de toque
 
-- **6 de Agosto de 2025**: Funcionalidade de sidebar colapsável implementada com sucesso
+- **6 de Agosto de 2025**: Funcionalidade de sidebar colapsável e layout moderno de orçamento implementados
   - Adicionado botão de colapso no header desktop com ícones PanelLeftClose/PanelLeftOpen
   - Sidebar responsivo com modo colapsado mostrando apenas ícones e tooltips
   - Estado de colapso persistido no localStorage para melhor experiência do usuário
   - Layout ajustado com padding responsivo para eliminar espaços em branco laterais
+  - Corrigidos problemas de z-index entre header e sidebar para visibilidade completa
+  - Implementado layout moderno na visão geral do orçamento inspirado em design profissional
+  - Cards visuais com saldo inicial/final e percentual de economia em destaque
+  - Seções de Despesas e Renda com comparação planejado vs real em grid responsivo
+  - Tabelas detalhadas por categoria com diferenças codificadas por cores
   - Corrigidos erros 500 nas APIs de investimentos e ativos relacionados à coluna exchange
   - Implementado sistema robusto de tratamento de erros com logs detalhados e fallbacks
-  - Adicionado ErrorBoundary para captura de erros do React e melhor experiência do usuário
-  - Criados componentes de loading otimizados (Skeleton) para melhor percepção de performance
-  - Implementados hooks personalizados para cache, debounce e otimização de queries
-  - Aplicação funcionando perfeitamente no ambiente Replit com sidebar funcional
+  - Aplicação funcionando perfeitamente no ambiente Replit com sidebar e orçamento funcionais
 
 - **4 de Agosto de 2025**: Migração para ambiente Replit concluída com sucesso
   - Migração bem-sucedida do OrçaFácil do Replit Agent para ambiente Replit padrão
