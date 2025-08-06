@@ -905,37 +905,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Assets routes
-  app.get("/api/assets", async (req: any, res) => {
+  app.get("/api/assets", authenticateToken, async (req: any, res) => {
     try {
-      const assets = await storage.getUserAssets(req.userId);
+      console.log(`📊 Loading assets for user: ${req.userId}`);
+      const assets = await storage.getUserAssets(req.userId) || [];
+      console.log(`✅ Found ${assets.length} assets for user`);
       res.json(assets);
     } catch (error) {
+      console.error("❌ Error loading assets:", error);
       res.status(500).json({ message: "Erro ao carregar ativos", error: error instanceof Error ? error.message : "Erro desconhecido" });
     }
   });
 
-  app.post("/api/assets", async (req: any, res) => {
+  app.post("/api/assets", authenticateToken, async (req: any, res) => {
     try {
+      console.log(`📝 Creating asset for user: ${req.userId}`, req.body);
       const assetData = insertAssetSchema.parse({ ...req.body, userId: req.userId });
       const asset = await storage.createAsset(assetData);
+      console.log(`✅ Asset created successfully: ${asset.id}`);
       res.json(asset);
     } catch (error) {
+      console.error("❌ Error creating asset:", error);
       res.status(400).json({ message: "Erro ao criar ativo", error: error instanceof Error ? error.message : "Erro desconhecido" });
     }
   });
 
   // Investment Transactions routes
-  app.get("/api/investment-transactions", async (req: any, res) => {
+  app.get("/api/investment-transactions", authenticateToken, async (req: any, res) => {
     try {
-      const transactions = await storage.getUserInvestmentTransactions(req.userId);
+      console.log(`💰 Loading investment transactions for user: ${req.userId}`);
+      const transactions = await storage.getUserInvestmentTransactions(req.userId) || [];
+      console.log(`✅ Found ${transactions.length} investment transactions for user`);
       res.json(transactions);
     } catch (error) {
+      console.error("❌ Error loading investment transactions:", error);
       res.status(500).json({ message: "Erro ao carregar transações de investimento", error: error instanceof Error ? error.message : "Erro desconhecido" });
     }
   });
 
-  app.post("/api/investment-transactions", async (req: any, res) => {
+  app.post("/api/investment-transactions", authenticateToken, async (req: any, res) => {
     try {
+      console.log(`💰 Creating investment transaction for user: ${req.userId}`, req.body);
       const transactionData = insertInvestmentTransactionSchema.parse({ 
         ...req.body, 
         userId: req.userId,
@@ -943,23 +953,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
       
       const transaction = await storage.createInvestmentTransaction(transactionData);
+      console.log(`✅ Investment transaction created successfully: ${transaction.id}`);
       res.json(transaction);
     } catch (error) {
+      console.error("❌ Error creating investment transaction:", error);
       res.status(400).json({ message: "Erro ao criar transação de investimento", error: error instanceof Error ? error.message : "Erro desconhecido" });
     }
   });
 
-  app.get("/api/investments", async (req: any, res) => {
+  app.get("/api/investments", authenticateToken, async (req: any, res) => {
     try {
-      const portfolioData = await storage.calculatePortfolioValue(req.userId);
-      const assets = await storage.getUserAssets(req.userId);
+      console.log(`🎯 Loading investment data for user: ${req.userId}`);
+      
+      // Safely get user assets with fallback
+      let assets: any[] = [];
+      try {
+        assets = await storage.getUserAssets(req.userId) || [];
+      } catch (assetError) {
+        console.error("❌ Error loading assets, returning empty array:", assetError);
+        assets = [];
+      }
+
+      // Calculate portfolio data safely
+      let portfolioData = { totalValue: 0, appliedValue: 0, totalProfit: 0 };
+      try {
+        portfolioData = await storage.calculatePortfolioValue(req.userId);
+      } catch (portfolioError) {
+        console.error("❌ Error calculating portfolio, using defaults:", portfolioError);
+      }
+
+      console.log(`✅ Investment data loaded: ${assets.length} assets, total value: ${portfolioData.totalValue}`);
       
       res.json({
         ...portfolioData,
         assets: assets,
-        portfolioEvolution: [] // Mock data for now, can be calculated from historical data
+        portfolioEvolution: [] // Historical data can be implemented later
       });
     } catch (error) {
+      console.error("❌ Error loading investment data:", error);
       res.status(500).json({ message: "Erro ao carregar dados de investimentos", error: error instanceof Error ? error.message : "Erro desconhecido" });
     }
   });
@@ -1096,9 +1127,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Update user assets with latest quotes
-  app.post("/api/assets/refresh-quotes", async (req: any, res) => {
+  app.post("/api/assets/refresh-quotes", authenticateToken, async (req: any, res) => {
     try {
-      const userAssets = await storage.getUserAssets(req.userId);
+      console.log(`🔄 Refreshing quotes for user: ${req.userId}`);
+      const userAssets = await storage.getUserAssets(req.userId) || [];
       
       if (userAssets.length === 0) {
         return res.json({ message: "Nenhum ativo encontrado", updated: 0 });
@@ -1139,25 +1171,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Goals routes
-  app.get("/api/goals", async (req: any, res) => {
+  app.get("/api/goals", authenticateToken, async (req: any, res) => {
     try {
-      const goals = await storage.getUserGoals(req.userId);
+      console.log(`🎯 Loading goals for user: ${req.userId}`);
+      const goals = await storage.getUserGoals(req.userId) || [];
+      console.log(`✅ Found ${goals.length} goals for user`);
       res.json(goals);
     } catch (error) {
+      console.error("❌ Error loading goals:", error);
       res.status(500).json({ message: "Erro ao carregar metas", error: error instanceof Error ? error.message : "Erro desconhecido" });
     }
   });
 
-  app.post("/api/goals", async (req: any, res) => {
+  app.post("/api/goals", authenticateToken, async (req: any, res) => {
     try {
+      console.log(`🎯 Creating goal for user: ${req.userId}`, req.body);
       const goalData = insertGoalSchema.parse({ 
         ...req.body, 
         userId: req.userId,
         targetDate: new Date(req.body.targetDate)
       });
       const goal = await storage.createGoal(goalData);
+      console.log(`✅ Goal created successfully: ${goal.id}`);
       res.json(goal);
     } catch (error) {
+      console.error("❌ Error creating goal:", error);
       res.status(400).json({ message: "Erro ao criar meta", error: error instanceof Error ? error.message : "Erro desconhecido" });
     }
   });
@@ -1261,20 +1299,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Investment routes
-  app.get("/api/investments", async (req: any, res) => {
+  // Enhanced Investment routes with detailed calculation
+  app.get("/api/investments/detailed", authenticateToken, async (req: any, res) => {
     try {
-      const assets = await storage.getUserAssets(req.userId);
+      console.log(`📈 Loading detailed investment data for user: ${req.userId}`);
+      const assets = await storage.getUserAssets(req.userId) || [];
+      
       const totalValue = assets.reduce((sum, asset) => {
-        const quantity = parseFloat(asset.quantity);
-        const currentPrice = parseFloat(asset.currentPrice || asset.averagePrice);
+        const quantity = parseFloat(asset.quantity || '0');
+        const currentPrice = parseFloat(asset.currentPrice || asset.averagePrice || '0');
         return sum + (quantity * currentPrice);
       }, 0);
+      
       const appliedValue = assets.reduce((sum, asset) => {
-        const quantity = parseFloat(asset.quantity);
-        const averagePrice = parseFloat(asset.averagePrice);
+        const quantity = parseFloat(asset.quantity || '0');
+        const averagePrice = parseFloat(asset.averagePrice || '0');
         return sum + (quantity * averagePrice);
       }, 0);
+      
       const totalProfit = totalValue - appliedValue;
       const profitabilityPercent = appliedValue > 0 ? (totalProfit / appliedValue) * 100 : 0;
 

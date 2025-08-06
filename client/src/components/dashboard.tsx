@@ -1,4 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
+import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
+import { DashboardSkeleton } from '@/components/ui/LoadingStates';
 import { ModernCard } from '@/components/ui/modern-card';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
