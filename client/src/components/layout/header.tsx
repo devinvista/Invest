@@ -48,21 +48,24 @@ export function Header({ onToggleSidebar, onCollapseSidebar, sidebarCollapsed = 
               <Menu className="h-5 w-5" />
             </Button>
             
-            {/* Desktop sidebar collapse button */}
+            {/* Desktop sidebar collapse button - mais visível */}
             {onCollapseSidebar && (
               <Button
-                variant="ghost"
+                variant="outline"
                 size="sm"
-                className="hidden lg:flex p-2 hover:bg-black/10 dark:hover:bg-white/20 rounded-lg transition-all duration-200 shrink-0"
+                className="hidden lg:flex items-center gap-1 px-2 py-1 ml-2 bg-background/80 border-border/60 hover:bg-accent hover:text-accent-foreground transition-all duration-200 shrink-0"
                 onClick={onCollapseSidebar}
                 data-testid="button-sidebar-collapse"
-                title={sidebarCollapsed ? "Expandir menu" : "Ocultar menu"}
+                title={sidebarCollapsed ? "Expandir menu lateral" : "Ocultar menu lateral"}
               >
                 {sidebarCollapsed ? (
-                  <PanelLeftOpen className="h-5 w-5" />
+                  <PanelLeftOpen className="h-4 w-4" />
                 ) : (
-                  <PanelLeftClose className="h-5 w-5" />
+                  <PanelLeftClose className="h-4 w-4" />
                 )}
+                <span className="text-xs font-medium hidden xl:inline">
+                  {sidebarCollapsed ? "Expandir" : "Ocultar"}
+                </span>
               </Button>
             )}
             <div className="ml-2 lg:ml-0 shrink-0">
