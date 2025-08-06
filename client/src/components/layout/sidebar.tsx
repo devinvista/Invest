@@ -36,9 +36,11 @@ interface SidebarProps {
   onClose: () => void;
   currentPath: string;
   onNavigate: (path: string) => void;
+  isCollapsed?: boolean;
+  onToggleCollapse?: () => void;
 }
 
-export function Sidebar({ isOpen, onClose, currentPath, onNavigate }: SidebarProps) {
+export function Sidebar({ isOpen, onClose, currentPath, onNavigate, isCollapsed = false, onToggleCollapse }: SidebarProps) {
   const { user } = useAuth();
 
   // TODO: Buscar patrimônio líquido real do usuário via API
@@ -62,7 +64,8 @@ export function Sidebar({ isOpen, onClose, currentPath, onNavigate }: SidebarPro
       {/* Sidebar */}
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-50 w-72 sm:w-80 md:w-72 lg:w-64 xl:w-72 bg-background border-r border-border shadow-lg lg:shadow-sm transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0 pt-16 lg:shadow-none",
+          "fixed inset-y-0 left-0 z-50 bg-background border-r border-border shadow-lg lg:shadow-sm transform transition-all duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0 pt-16 lg:shadow-none",
+          isCollapsed ? "lg:w-16" : "w-72 sm:w-80 md:w-72 lg:w-64 xl:w-72",
           isOpen ? "translate-x-0" : "-translate-x-full"
         )}
       >
@@ -81,22 +84,33 @@ export function Sidebar({ isOpen, onClose, currentPath, onNavigate }: SidebarPro
           </div>
 
           {/* User profile section */}
-          <div className="p-4 sm:p-5 lg:p-4 xl:p-6 border-b border-border/40">
-            <div className="flex items-center space-x-3">
-              <Avatar className="h-11 w-11 sm:h-12 sm:w-12 ring-2 ring-primary/20 shrink-0">
+          {!isCollapsed ? (
+            <div className="p-4 sm:p-5 lg:p-4 xl:p-6 border-b border-border/40">
+              <div className="flex items-center space-x-3">
+                <Avatar className="h-11 w-11 sm:h-12 sm:w-12 ring-2 ring-primary/20 shrink-0">
+                  <AvatarImage src="" alt={user?.name} />
+                  <AvatarFallback className="bg-primary text-primary-foreground font-bold text-sm">
+                    {user?.name?.charAt(0).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="min-w-0 flex-1">
+                  <p className="font-semibold text-foreground text-sm lg:text-base truncate">{user?.name}</p>
+                  <p className="text-xs lg:text-sm text-muted-foreground truncate">
+                    Patrimônio: {formatCurrency(netWorth)}
+                  </p>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="p-2 border-b border-border/40 flex justify-center">
+              <Avatar className="h-8 w-8 ring-2 ring-primary/20">
                 <AvatarImage src="" alt={user?.name} />
-                <AvatarFallback className="bg-primary text-primary-foreground font-bold text-sm">
+                <AvatarFallback className="bg-primary text-primary-foreground font-bold text-xs">
                   {user?.name?.charAt(0).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
-              <div className="min-w-0 flex-1">
-                <p className="font-semibold text-foreground text-sm lg:text-base truncate">{user?.name}</p>
-                <p className="text-xs lg:text-sm text-muted-foreground truncate">
-                  Patrimônio: {formatCurrency(netWorth)}
-                </p>
-              </div>
             </div>
-          </div>
+          )}
 
           {/* Navigation menu */}
           <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
@@ -108,14 +122,23 @@ export function Sidebar({ isOpen, onClose, currentPath, onNavigate }: SidebarPro
                   onClick={() => handleNavigation(item.href)}
                   className={cn(
                     "nav-item w-full text-left group relative",
-                    isActive && "active"
+                    isActive && "active",
+                    isCollapsed && "justify-center px-3 py-3"
                   )}
                   data-testid={`nav-${item.name.toLowerCase().replace(/\s+/g, '-')}`}
+                  title={isCollapsed ? item.name : undefined}
                 >
-                  <item.icon className="sidebar-icon shrink-0" />
-                  <span className="truncate text-sm lg:text-base">{item.name}</span>
-                  {isActive && (
-                    <div className="absolute right-2 w-1 h-1 bg-primary rounded-full" />
+                  <item.icon className={cn("sidebar-icon shrink-0", isCollapsed && "mx-auto")} />
+                  {!isCollapsed && (
+                    <>
+                      <span className="truncate text-sm lg:text-base">{item.name}</span>
+                      {isActive && (
+                        <div className="absolute right-2 w-1 h-1 bg-primary rounded-full" />
+                      )}
+                    </>
+                  )}
+                  {isCollapsed && isActive && (
+                    <div className="absolute right-1 w-1 h-4 bg-primary rounded-full" />
                   )}
                 </button>
               );
@@ -124,14 +147,25 @@ export function Sidebar({ isOpen, onClose, currentPath, onNavigate }: SidebarPro
 
           {/* Bottom actions */}
           <div className="p-3 sm:p-4 lg:p-3 xl:p-4 border-t border-border/40">
-            <Button 
-              className="w-full rounded-xl pharos-gradient text-sm font-medium h-10 lg:h-11" 
-              onClick={() => {/* TODO: Abrir modal de transação */}}
-              data-testid="button-new-transaction"
-            >
-              <Plus className="w-4 h-4 mr-2 shrink-0" />
-              <span className="truncate">Nova Transação</span>
-            </Button>
+            {!isCollapsed ? (
+              <Button 
+                className="w-full rounded-xl pharos-gradient text-sm font-medium h-10 lg:h-11" 
+                onClick={() => {/* TODO: Abrir modal de transação */}}
+                data-testid="button-new-transaction"
+              >
+                <Plus className="w-4 h-4 mr-2 shrink-0" />
+                <span className="truncate">Nova Transação</span>
+              </Button>
+            ) : (
+              <Button 
+                className="w-full rounded-xl pharos-gradient h-10 lg:h-11 p-0" 
+                onClick={() => {/* TODO: Abrir modal de transação */}}
+                data-testid="button-new-transaction"
+                title="Nova Transação"
+              >
+                <Plus className="w-4 h-4" />
+              </Button>
+            )}
           </div>
         </div>
       </aside>

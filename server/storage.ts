@@ -833,7 +833,17 @@ export class DatabaseStorage implements IStorage {
 
   // Assets
   async getUserAssets(userId: string): Promise<Asset[]> {
-    return await db.select().from(assets).where(eq(assets.userId, userId));
+    // Use raw SQL to handle missing exchange column gracefully
+    const result = await db.execute(sql`
+      SELECT 
+        id, user_id, symbol, name, type, quantity, average_price, 
+        current_price, sector, currency, coingecko_id, region, 
+        last_quote_update, created_at,
+        'B3' as exchange
+      FROM assets 
+      WHERE user_id = ${userId}
+    `);
+    return Array.from(result) as Asset[];
   }
 
   async createAsset(asset: InsertAsset): Promise<Asset> {

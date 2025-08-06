@@ -13,14 +13,16 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Bell, Search, Menu, User, Settings, LogOut } from 'lucide-react';
+import { Bell, Search, Menu, User, Settings, LogOut, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
 
 interface HeaderProps {
   onToggleSidebar: () => void;
+  onCollapseSidebar?: () => void;
+  sidebarCollapsed?: boolean;
 }
 
-export function Header({ onToggleSidebar }: HeaderProps) {
+export function Header({ onToggleSidebar, onCollapseSidebar, sidebarCollapsed = false }: HeaderProps) {
   const { user, logout } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -45,6 +47,24 @@ export function Header({ onToggleSidebar }: HeaderProps) {
             >
               <Menu className="h-5 w-5" />
             </Button>
+            
+            {/* Desktop sidebar collapse button */}
+            {onCollapseSidebar && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="hidden lg:flex p-2 hover:bg-black/10 dark:hover:bg-white/20 rounded-lg transition-all duration-200 shrink-0"
+                onClick={onCollapseSidebar}
+                data-testid="button-sidebar-collapse"
+                title={sidebarCollapsed ? "Expandir menu" : "Ocultar menu"}
+              >
+                {sidebarCollapsed ? (
+                  <PanelLeftOpen className="h-5 w-5" />
+                ) : (
+                  <PanelLeftClose className="h-5 w-5" />
+                )}
+              </Button>
+            )}
             <div className="ml-2 lg:ml-0 shrink-0">
               <PharosLogo />
             </div>

@@ -24,11 +24,21 @@ import NotFound from "@/pages/not-found";
 function AppContent() {
   const { user, isLoading } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
+    // Load collapsed state from localStorage
+    const saved = localStorage.getItem('sidebar-collapsed');
+    return saved ? JSON.parse(saved) : false;
+  });
   const [location, navigate] = useLocation();
 
   useEffect(() => {
     setupAuthInterceptor();
   }, []);
+
+  // Save sidebar collapsed state to localStorage
+  useEffect(() => {
+    localStorage.setItem('sidebar-collapsed', JSON.stringify(sidebarCollapsed));
+  }, [sidebarCollapsed]);
 
   if (isLoading) {
     return (
@@ -44,7 +54,11 @@ function AppContent() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
+      <Header 
+        onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} 
+        onCollapseSidebar={() => setSidebarCollapsed(!sidebarCollapsed)}
+        sidebarCollapsed={sidebarCollapsed}
+      />
       <div className="flex pt-16">
         {/* Sidebar with proper responsive behavior */}
         <Sidebar
@@ -52,9 +66,13 @@ function AppContent() {
           onClose={() => setSidebarOpen(false)}
           currentPath={location}
           onNavigate={navigate}
+          isCollapsed={sidebarCollapsed}
+          onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
         />
         {/* Main content with responsive margins */}
-        <main className="flex-1 w-full min-h-screen overflow-x-hidden lg:ml-0">
+        <main className={`flex-1 w-full min-h-screen overflow-x-hidden transition-all duration-300 ${
+          sidebarCollapsed ? 'lg:ml-16' : 'lg:ml-72'
+        }`}>
           <div className="w-full max-w-full">
             <Switch>
               <Route path="/" component={Dashboard} />
