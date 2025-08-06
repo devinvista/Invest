@@ -64,7 +64,7 @@ export function Sidebar({ isOpen, onClose, currentPath, onNavigate, isCollapsed 
       {/* Sidebar */}
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-50 bg-background border-r border-border shadow-lg lg:shadow-sm transform transition-all duration-300 ease-in-out pt-16 lg:shadow-none",
+          "fixed inset-y-0 left-0 z-40 bg-background border-r border-border shadow-lg lg:shadow-sm transform transition-all duration-300 ease-in-out pt-16 lg:shadow-none",
           isCollapsed ? "lg:w-16" : "w-72 sm:w-80 md:w-72 lg:w-72",
           isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
         )}
