@@ -787,32 +787,38 @@ export function Budget() {
                             const categoryIncome = transactions
                               .filter((t: any) => t.categoryId === category.id && t.type === 'income')
                               .reduce((sum: number, t: any) => sum + parseFloat(t.amount), 0);
-                            return { ...category, categoryIncome };
-                          })
-                          .filter((category: any) => category.categoryIncome > 0) // Mostrar apenas categorias com receitas
-                          .map((category: any) => {
-                            // Para receitas, como não temos planejamento por categoria individual,
-                            // mostramos o valor real como "planejado" para manter a tabela consistente
-                            const budgetAmount = category.categoryIncome;
-                            const difference = 0; // Sem diferença pois não temos meta individual
                             
-                            return (
-                              <div key={category.id} className="grid grid-cols-4 gap-4 text-sm py-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
-                                <div className="flex items-center gap-2">
-                                  <div 
-                                    className="w-2 h-2 rounded-full" 
-                                    style={{ backgroundColor: category.color || '#10B981' }}
-                                  ></div>
-                                  <span className="font-medium">{category.name}</span>
-                                </div>
-                                <div className="text-right font-mono">{formatCurrency(budgetAmount)}</div>
-                                <div className="text-right font-mono font-semibold">{formatCurrency(category.categoryIncome)}</div>
-                                <div className="text-right font-mono font-bold text-green-600">
-                                  {formatCurrency(difference)}
-                                </div>
+                            // Debug log para ver as categorias e seus valores
+                            if (categoryIncome > 0) {
+                              console.log(`Categoria ${category.name}: R$ ${categoryIncome}`);
+                            }
+                            
+                            return {
+                              ...category,
+                              categoryIncome,
+                              // Para receitas, consideramos o valor planejado do orçamento total
+                              // dividido proporcionalmente ou o valor atual da categoria
+                              budgetAmount: categoryIncome, // Por enquanto, usar o valor real
+                              difference: 0
+                            };
+                          })
+                          .filter((category: any) => category.categoryIncome > 0)
+                          .map((category: any) => (
+                            <div key={category.id} className="grid grid-cols-4 gap-4 text-sm py-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+                              <div className="flex items-center gap-2">
+                                <div 
+                                  className="w-2 h-2 rounded-full" 
+                                  style={{ backgroundColor: category.color || '#10B981' }}
+                                ></div>
+                                <span className="font-medium">{category.name}</span>
                               </div>
-                            );
-                          })}
+                              <div className="text-right font-mono">{formatCurrency(category.budgetAmount)}</div>
+                              <div className="text-right font-mono font-semibold">{formatCurrency(category.categoryIncome)}</div>
+                              <div className="text-right font-mono font-bold text-green-600">
+                                {formatCurrency(category.difference)}
+                              </div>
+                            </div>
+                          ))}
                       </div>
                     </CardContent>
                   </Card>
@@ -836,7 +842,7 @@ export function Budget() {
                     <CardContent className="space-y-3">
                       <div className="flex justify-between items-center text-sm">
                         <span>Planejado:</span>
-                        <span className="font-medium">{formatCurrency(budget?.totalIncome || 0)}</span>
+                        <span className="font-medium">{formatCurrency(parseFloat(budget?.totalIncome?.toString() || '0'))}</span>
                       </div>
                       <div className="flex justify-between items-center text-sm">
                         <span>Realizado:</span>
