@@ -782,26 +782,15 @@ export function Budget() {
 
                         {/* Categorias de Renda */}
                         {categories
-                          .filter((cat: any) => cat.type === null || cat.type === undefined) // Income categories (null type)
+                          .filter((cat: any) => cat.transactionType === 'income') // Income categories
                           .map((category: any) => {
                             // Calcula receita da categoria - debug para verificar transações
                             const categoryTransactions = transactions.filter((t: any) => t.categoryId === category.id && t.type === 'income');
                             const categoryIncome = categoryTransactions.reduce((sum: number, t: any) => sum + parseFloat(t.amount || 0), 0);
                             
-                            // Debug das transações de receita e seus categoryIds
+                            // Debug simplificado
                             if (category.name === 'Salário') {
-                              const incomeTransactions = transactions.filter(t => t.type === 'income');
-                              console.log('Transações de receita encontradas:', incomeTransactions.map(t => ({
-                                id: t.id,
-                                categoryId: t.categoryId,
-                                amount: t.amount,
-                                description: t.description,
-                                type: t.type
-                              })));
-                              console.log('IDs das categorias de receita:', categories.filter(c => c.type === null || c.type === undefined).map(c => ({
-                                id: c.id,
-                                name: c.name
-                              })));
+                              console.log(`Categoria ${category.name} (${category.id}) - Transações encontradas: ${categoryTransactions.length}, Valor: R$ ${categoryIncome}`);
                             }
                             
                             return (
@@ -866,7 +855,7 @@ export function Budget() {
                       />
                       <div className="pt-2 space-y-1">
                         {categories
-                          .filter((cat: any) => cat.type === null || cat.type === undefined) // Income categories
+                          .filter((cat: any) => cat.transactionType === 'income') // Income categories  
                           .map((category: any) => {
                             const categoryTransactions = transactions.filter((t: any) => t.categoryId === category.id && t.type === 'income');
                             const categoryIncome = categoryTransactions.reduce((sum: number, t: any) => sum + parseFloat(t.amount || 0), 0);

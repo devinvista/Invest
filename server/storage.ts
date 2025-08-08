@@ -189,7 +189,18 @@ export class DatabaseStorage implements IStorage {
 
   // Categories
   async getUserCategories(userId: string): Promise<Category[]> {
-    return await db.select().from(categories).where(eq(categories.userId, userId));
+    const userCategories = await db.select().from(categories).where(eq(categories.userId, userId));
+    
+    // Debug log para ver todas as categorias
+    console.log('📂 Categorias do usuário:', userCategories.map(c => ({
+      id: c.id,
+      name: c.name,
+      type: c.type,
+      transactionType: c.transactionType,
+      isDefault: c.isDefault
+    })));
+    
+    return userCategories;
   }
 
   async createCategory(category: InsertCategory): Promise<Category> {
@@ -216,7 +227,21 @@ export class DatabaseStorage implements IStorage {
       if (limit) {
         query = query.limit(limit) as any;
       }
-      return await query;
+      const userTransactions = await query;
+      
+      // Debug log para transações de receita
+      const incomeTransactions = userTransactions.filter(t => t.type === 'income');
+      if (incomeTransactions.length > 0) {
+        console.log('💰 Transações de receita:', incomeTransactions.map(t => ({
+          id: t.id,
+          categoryId: t.categoryId,
+          amount: t.amount,
+          description: t.description,
+          type: t.type
+        })));
+      }
+      
+      return userTransactions;
     } catch (error) {
       console.error("getUserTransactions error:", error);
       return [];
