@@ -88,11 +88,20 @@ export function Budget() {
 
   const { data: budget, isLoading } = useQuery<any>({
     queryKey: ['/api/budget', selectedMonth, selectedYear],
-    queryFn: () => fetch(`/api/budget/${selectedMonth}/${selectedYear}`, {
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+    queryFn: async () => {
+      const res = await fetch(`/api/budget/${selectedMonth}/${selectedYear}`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        }
+      });
+      const data = await res.json();
+      console.log('🔍 Budget data from API:', data);
+      console.log('📊 Budget categories structure:', data?.budgetCategories);
+      if (data?.budgetCategories?.length > 0) {
+        console.log('📋 Sample budget category:', data.budgetCategories[0]);
       }
-    }).then(res => res.json()),
+      return data;
+    },
   });
 
   const { data: transactions = [] } = useQuery<any[]>({
