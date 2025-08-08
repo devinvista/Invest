@@ -788,10 +788,16 @@ export function Budget() {
                             const categoryTransactions = transactions.filter((t: any) => t.categoryId === category.id && t.type === 'income');
                             const categoryIncome = categoryTransactions.reduce((sum: number, t: any) => sum + parseFloat(t.amount || 0), 0);
                             
-                            // Log temporário para debug
-                            if (categoryTransactions.length > 0) {
-                              console.log(`Categoria ${category.name}:`, categoryTransactions.map(t => ({amount: t.amount, description: t.description})));
-                            }
+                            // Debug completo
+                            console.log(`Debug categoria ${category.name}:`, {
+                              categoryId: category.id,
+                              categoryType: category.type,
+                              totalTransactions: transactions.length,
+                              incomeTransactions: transactions.filter(t => t.type === 'income').length,
+                              categoryTransactions: categoryTransactions.length,
+                              allTransactionTypes: [...new Set(transactions.map(t => t.type))],
+                              sampleTransaction: transactions[0]
+                            });
                             
                             return (
                               <div key={category.id} className="grid grid-cols-4 gap-4 text-sm py-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
