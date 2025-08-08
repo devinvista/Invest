@@ -784,10 +784,14 @@ export function Budget() {
                         {categories
                           .filter((cat: any) => cat.type === null || cat.type === undefined) // Income categories (null type)
                           .map((category: any) => {
-                            // Calcula receita da categoria
-                            const categoryIncome = transactions
-                              .filter((t: any) => t.categoryId === category.id && t.type === 'income')
-                              .reduce((sum: number, t: any) => sum + parseFloat(t.amount || 0), 0);
+                            // Calcula receita da categoria - debug para verificar transações
+                            const categoryTransactions = transactions.filter((t: any) => t.categoryId === category.id && t.type === 'income');
+                            const categoryIncome = categoryTransactions.reduce((sum: number, t: any) => sum + parseFloat(t.amount || 0), 0);
+                            
+                            // Log temporário para debug
+                            if (categoryTransactions.length > 0) {
+                              console.log(`Categoria ${category.name}:`, categoryTransactions.map(t => ({amount: t.amount, description: t.description})));
+                            }
                             
                             return (
                               <div key={category.id} className="grid grid-cols-4 gap-4 text-sm py-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
@@ -851,11 +855,10 @@ export function Budget() {
                       />
                       <div className="pt-2 space-y-1">
                         {categories
-                          .filter((cat: any) => !cat.type) // Income categories
+                          .filter((cat: any) => cat.type === null || cat.type === undefined) // Income categories
                           .map((category: any) => {
-                            const categoryIncome = transactions
-                              .filter((t: any) => t.categoryId === category.id && t.type === 'income')
-                              .reduce((sum: number, t: any) => sum + parseFloat(t.amount), 0);
+                            const categoryTransactions = transactions.filter((t: any) => t.categoryId === category.id && t.type === 'income');
+                            const categoryIncome = categoryTransactions.reduce((sum: number, t: any) => sum + parseFloat(t.amount || 0), 0);
                             // Não temos valores planejados por categoria individual na API, apenas totais por tipo
                             const budgetAmount = 0;
                             
