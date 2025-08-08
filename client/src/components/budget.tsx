@@ -88,20 +88,11 @@ export function Budget() {
 
   const { data: budget, isLoading } = useQuery<any>({
     queryKey: ['/api/budget', selectedMonth, selectedYear],
-    queryFn: async () => {
-      const res = await fetch(`/api/budget/${selectedMonth}/${selectedYear}`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        }
-      });
-      const data = await res.json();
-      console.log('🔍 Budget data from API:', data);
-      console.log('📊 Budget categories structure:', data?.budgetCategories);
-      if (data?.budgetCategories?.length > 0) {
-        console.log('📋 Sample budget category:', data.budgetCategories[0]);
+    queryFn: () => fetch(`/api/budget/${selectedMonth}/${selectedYear}`, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`,
       }
-      return data;
-    },
+    }).then(res => res.json()),
   });
 
   const { data: transactions = [] } = useQuery<any[]>({
@@ -797,8 +788,8 @@ export function Budget() {
                             const categoryIncome = transactions
                               .filter((t: any) => t.categoryId === category.id && t.type === 'income')
                               .reduce((sum: number, t: any) => sum + parseFloat(t.amount), 0);
-                            // Busca o valor planejado das categorias de orçamento da API
-                            const budgetAmount = budget?.budgetCategories?.find((bc: any) => bc.categoryId === category.id)?.allocatedAmount || 0;
+                            // Não temos valores planejados por categoria individual na API, apenas totais por tipo
+                            const budgetAmount = 0;
                             const difference = budgetAmount - categoryIncome;
                             
                             return (
@@ -868,8 +859,8 @@ export function Budget() {
                             const categoryIncome = transactions
                               .filter((t: any) => t.categoryId === category.id && t.type === 'income')
                               .reduce((sum: number, t: any) => sum + parseFloat(t.amount), 0);
-                            // Busca o valor planejado das categorias de orçamento da API
-                            const budgetAmount = budget?.budgetCategories?.find((bc: any) => bc.categoryId === category.id)?.allocatedAmount || 0;
+                            // Não temos valores planejados por categoria individual na API, apenas totais por tipo
+                            const budgetAmount = 0;
                             
                             return { ...category, categoryIncome, budgetAmount };
                           })
@@ -951,8 +942,8 @@ export function Budget() {
                             const categorySpent = transactions
                               .filter((t: any) => t.categoryId === category.id && t.type === 'expense')
                               .reduce((sum: number, t: any) => sum + parseFloat(t.amount), 0);
-                            // Busca o valor planejado das categorias de orçamento da API
-                            const budgetAmount = budget?.budgetCategories?.find((bc: any) => bc.categoryId === category.id)?.allocatedAmount || 0;
+                            // Não temos valores planejados por categoria individual na API, apenas totais por tipo
+                            const budgetAmount = 0;
                             
                             return { ...category, categorySpent, budgetAmount };
                           })
@@ -1033,8 +1024,8 @@ export function Budget() {
                             const categorySpent = transactions
                               .filter((t: any) => t.categoryId === category.id && t.type === 'expense')
                               .reduce((sum: number, t: any) => sum + parseFloat(t.amount), 0);
-                            // Busca o valor planejado das categorias de orçamento da API
-                            const budgetAmount = budget?.budgetCategories?.find((bc: any) => bc.categoryId === category.id)?.allocatedAmount || 0;
+                            // Não temos valores planejados por categoria individual na API, apenas totais por tipo
+                            const budgetAmount = 0;
                             
                             return { ...category, categorySpent, budgetAmount };
                           })
@@ -1118,8 +1109,8 @@ export function Budget() {
                             const categorySpent = transactions
                               .filter((t: any) => t.categoryId === category.id && t.type === 'expense')
                               .reduce((sum: number, t: any) => sum + parseFloat(t.amount), 0);
-                            // Busca o valor planejado das categorias de orçamento da API
-                            const budgetAmount = budget?.budgetCategories?.find((bc: any) => bc.categoryId === category.id)?.allocatedAmount || 0;
+                            // Não temos valores planejados por categoria individual na API, apenas totais por tipo
+                            const budgetAmount = 0;
                             
                             return { ...category, categorySpent, budgetAmount };
                           })
