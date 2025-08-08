@@ -783,14 +783,18 @@ export function Budget() {
                         {/* Categorias de Renda */}
                         {categories
                           .filter((cat: any) => !cat.type) // Income categories
-                          .slice(0, 3)
                           .map((category: any) => {
                             const categoryIncome = transactions
                               .filter((t: any) => t.categoryId === category.id && t.type === 'income')
                               .reduce((sum: number, t: any) => sum + parseFloat(t.amount), 0);
-                            // Não temos valores planejados por categoria individual na API, apenas totais por tipo
-                            const budgetAmount = 0;
-                            const difference = budgetAmount - categoryIncome;
+                            return { ...category, categoryIncome };
+                          })
+                          .filter((category: any) => category.categoryIncome > 0) // Mostrar apenas categorias com receitas
+                          .map((category: any) => {
+                            // Para receitas, como não temos planejamento por categoria individual,
+                            // mostramos o valor real como "planejado" para manter a tabela consistente
+                            const budgetAmount = category.categoryIncome;
+                            const difference = 0; // Sem diferença pois não temos meta individual
                             
                             return (
                               <div key={category.id} className="grid grid-cols-4 gap-4 text-sm py-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
@@ -802,9 +806,9 @@ export function Budget() {
                                   <span className="font-medium">{category.name}</span>
                                 </div>
                                 <div className="text-right font-mono">{formatCurrency(budgetAmount)}</div>
-                                <div className="text-right font-mono font-semibold">{formatCurrency(categoryIncome)}</div>
-                                <div className={`text-right font-mono font-bold ${difference <= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                                  {formatCurrency(-difference)}
+                                <div className="text-right font-mono font-semibold">{formatCurrency(category.categoryIncome)}</div>
+                                <div className="text-right font-mono font-bold text-green-600">
+                                  {formatCurrency(difference)}
                                 </div>
                               </div>
                             );
