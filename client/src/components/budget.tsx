@@ -661,7 +661,7 @@ export function Budget() {
                             <span className="text-sm font-medium text-muted-foreground">Planejado</span>
                           </div>
                           <div className="text-xl font-bold text-foreground">
-                            {formatCurrency((budget?.necessitiesBudget || 0) + (budget?.wantsBudget || 0))}
+                            {formatCurrency((parseFloat(budget?.necessitiesBudget?.toString() || '0') + parseFloat(budget?.wantsBudget?.toString() || '0')))}
                           </div>
                         </div>
                         
@@ -696,10 +696,10 @@ export function Budget() {
                             <div className="w-2 h-2 rounded-full bg-red-500"></div>
                             <span className="font-medium">Necessidades</span>
                           </div>
-                          <div className="text-right font-mono">{formatCurrency(budget?.necessitiesBudget || 0)}</div>
+                          <div className="text-right font-mono">{formatCurrency(parseFloat(budget?.necessitiesBudget?.toString() || '0'))}</div>
                           <div className="text-right font-mono font-semibold">{formatCurrency(spendingByType.necessities)}</div>
-                          <div className={`text-right font-mono font-bold ${(parseFloat(budget?.necessitiesBudget || '0') - spendingByType.necessities) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                            {formatCurrency((parseFloat(budget?.necessitiesBudget || '0') - spendingByType.necessities))}
+                          <div className={`text-right font-mono font-bold ${(parseFloat(budget?.necessitiesBudget?.toString() || '0') - spendingByType.necessities) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                            {formatCurrency((parseFloat(budget?.necessitiesBudget?.toString() || '0') - spendingByType.necessities))}
                           </div>
                         </div>
 
@@ -709,10 +709,10 @@ export function Budget() {
                             <div className="w-2 h-2 rounded-full bg-blue-500"></div>
                             <span className="font-medium">Desejos</span>
                           </div>
-                          <div className="text-right font-mono">{formatCurrency(budget?.wantsBudget || 0)}</div>
+                          <div className="text-right font-mono">{formatCurrency(parseFloat(budget?.wantsBudget?.toString() || '0'))}</div>
                           <div className="text-right font-mono font-semibold">{formatCurrency(spendingByType.wants)}</div>
-                          <div className={`text-right font-mono font-bold ${(parseFloat(budget?.wantsBudget || '0') - spendingByType.wants) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                            {formatCurrency((parseFloat(budget?.wantsBudget || '0') - spendingByType.wants))}
+                          <div className={`text-right font-mono font-bold ${(parseFloat(budget?.wantsBudget?.toString() || '0') - spendingByType.wants) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                            {formatCurrency((parseFloat(budget?.wantsBudget?.toString() || '0') - spendingByType.wants))}
                           </div>
                         </div>
 
@@ -722,10 +722,10 @@ export function Budget() {
                             <div className="w-2 h-2 rounded-full bg-purple-500"></div>
                             <span className="font-medium">Investimentos</span>
                           </div>
-                          <div className="text-right font-mono">{formatCurrency(budget?.savingsBudget || 0)}</div>
+                          <div className="text-right font-mono">{formatCurrency(parseFloat(budget?.savingsBudget?.toString() || '0'))}</div>
                           <div className="text-right font-mono font-semibold">{formatCurrency(spendingByType.savings)}</div>
-                          <div className={`text-right font-mono font-bold ${(parseFloat(budget?.savingsBudget || '0') - spendingByType.savings) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                            {formatCurrency((parseFloat(budget?.savingsBudget || '0') - spendingByType.savings))}
+                          <div className={`text-right font-mono font-bold ${(parseFloat(budget?.savingsBudget?.toString() || '0') - spendingByType.savings) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                            {formatCurrency((parseFloat(budget?.savingsBudget?.toString() || '0') - spendingByType.savings))}
                           </div>
                         </div>
                       </div>
@@ -751,7 +751,7 @@ export function Budget() {
                             <span className="text-sm font-medium text-muted-foreground">Planejado</span>
                           </div>
                           <div className="text-xl font-bold text-foreground">
-                            {formatCurrency(budget?.totalIncome || 0)}
+                            {formatCurrency(parseFloat(budget?.totalIncome?.toString() || '0'))}
                           </div>
                         </div>
                         
