@@ -788,16 +788,21 @@ export function Budget() {
                             const categoryTransactions = transactions.filter((t: any) => t.categoryId === category.id && t.type === 'income');
                             const categoryIncome = categoryTransactions.reduce((sum: number, t: any) => sum + parseFloat(t.amount || 0), 0);
                             
-                            // Debug completo
-                            console.log(`Debug categoria ${category.name}:`, {
-                              categoryId: category.id,
-                              categoryType: category.type,
-                              totalTransactions: transactions.length,
-                              incomeTransactions: transactions.filter(t => t.type === 'income').length,
-                              categoryTransactions: categoryTransactions.length,
-                              allTransactionTypes: [...new Set(transactions.map(t => t.type))],
-                              sampleTransaction: transactions[0]
-                            });
+                            // Debug das transações de receita e seus categoryIds
+                            if (category.name === 'Salário') {
+                              const incomeTransactions = transactions.filter(t => t.type === 'income');
+                              console.log('Transações de receita encontradas:', incomeTransactions.map(t => ({
+                                id: t.id,
+                                categoryId: t.categoryId,
+                                amount: t.amount,
+                                description: t.description,
+                                type: t.type
+                              })));
+                              console.log('IDs das categorias de receita:', categories.filter(c => c.type === null || c.type === undefined).map(c => ({
+                                id: c.id,
+                                name: c.name
+                              })));
+                            }
                             
                             return (
                               <div key={category.id} className="grid grid-cols-4 gap-4 text-sm py-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
