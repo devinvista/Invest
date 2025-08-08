@@ -1,151 +1,55 @@
-# replit.md
+## Overview
 
-## Visão Geral
+OrçaFácil is a comprehensive personal financial management application designed for Brazilian users. Its primary goal is to provide tools for budget management using the 50/30/20 method, expense tracking, investment portfolio management, goal setting, and financial reporting. The project aims to offer a modern and professional user experience, combining robust financial features with an intuitive interface.
 
-OrçaFácil é uma aplicação abrangente de gestão financeira pessoal desenvolvida para usuários brasileiros. Seu principal objetivo é fornecer ferramentas para gestão de orçamento usando o método 50/30/20, acompanhamento de despesas, gestão de carteira de investimentos, definição de metas e relatórios financeiros. O projeto visa oferecer uma experiência de usuário moderna e profissional, combinando recursos financeiros robustos com uma interface intuitiva.
+## User Preferences
 
-## Preferências do Usuário
+Preferred communication style: Simple and everyday language.
+Visual Identity: Pharos Capital brand guidelines applied.
 
-Estilo de comunicação preferido: Linguagem simples e cotidiana.
-Identidade Visual: Diretrizes da marca Pharos Capital aplicadas.
+## System Architecture
 
-## Mudanças Recentes
+### Frontend Architecture
+- **Framework**: React with TypeScript, Vite build tool.
+- **UI Library**: Radix UI components with Tailwind CSS, complemented by Shadcn/ui for consistent styling.
+- **State Management**: TanStack Query (React Query) for server state.
+- **Routing**: Wouter for client-side routing.
+- **Form Handling**: React Hook Form with Zod validation.
+- **UI/UX Design**: Emphasizes a professional banking interface with a clean light theme (clean white background, subtle light grey accents, Pharos Capital blue gradient for headers) and a modern dark theme (deep dark blue-gray). Includes responsive design, Brazilian localization (currency formatting, Portuguese language), and accessibility features. Visual elements include professional typography, enhanced card styling, and color-coded badges for financial indicators. Investment charts feature professional bar and donut designs with category filtering.
 
-- **4 de Agosto de 2025**: Implementação completa de design responsivo para dispositivos móveis
-  - Sistema de grid responsivo com classes CSS customizadas (responsive-grid-1 a responsive-grid-4)
-  - Melhorias no Dashboard com gráficos adaptativos e cards otimizados para mobile
-  - Componente de Investimentos totalmente responsivo com visualizações adaptáveis
-  - ModernCard component aprimorado com tipografia e espaçamento responsivos
-  - Classes utilitárias de texto responsivo (text-responsive-xs a text-responsive-xl)
-  - Containers de gráficos adaptativos (chart-container e chart-container-small)
-  - Todas as interfaces adaptadas para telas pequenas (320px+) até monitores ultrawide
-  - Sistema de breakpoints expandido incluindo xs (475px) e 3xl (1600px)
-  - Header e Sidebar com navegação móvel colapsável e menu hamburger
-  - Tooltips e legendas de gráficos otimizados para telas de toque
+### Backend Architecture
+- **Runtime**: Node.js with TypeScript.
+- **Framework**: Express.js with a RESTful API design.
+- **Database**: PostgreSQL with Neon serverless connection.
+- **ORM**: Drizzle ORM for type-safe database operations.
+- **Authentication**: JWT-based authentication with bcrypt password hashing and connect-pg-simple for session management.
 
-- **6 de Agosto de 2025**: Funcionalidade de sidebar colapsável e layout moderno de orçamento implementados
-  - Adicionado botão de colapso no header desktop com ícones PanelLeftClose/PanelLeftOpen
-  - Sidebar responsivo com modo colapsado mostrando apenas ícones e tooltips
-  - Estado de colapso persistido no localStorage para melhor experiência do usuário
-  - Layout ajustado com padding responsivo para eliminar espaços em branco laterais
-  - Corrigidos problemas de z-index entre header e sidebar para visibilidade completa
-  - Implementado layout moderno na visão geral do orçamento inspirado em design profissional
-  - Cards visuais com saldo inicial/final e percentual de economia em destaque
-  - Seções de Despesas e Renda com comparação planejado vs real em grid responsivo
-  - Tabelas detalhadas por categoria com diferenças codificadas por cores
-  - Corrigidos erros 500 nas APIs de investimentos e ativos relacionados à coluna exchange
-  - Implementado sistema robusto de tratamento de erros com logs detalhados e fallbacks
-  - Aplicação funcionando perfeitamente no ambiente Replit com sidebar e orçamento funcionais
+### Key Features and Technical Implementations
+- **Budget Management**: Implements the 50/30/20 methodology, allowing standard (all months) or specific month budgets, and custom category allocation. Income calculation is automatic based on revenue categories.
+- **Transaction Tracking**: Comprehensive tracking of income, expenses, and transfers with categorization. Includes features like automatic installment description, confirmation of pending transactions with account selection, and full-screen transaction dialogues with filtering and sorting. Credit card expenses are recorded directly on the card, and payments are handled as transfers from a bank account to the credit card.
+- **Investment Portfolio**: Asset tracking with real-time price updates, integrated asset search (including Brazilian stocks like B3), and manual asset creation. Features portfolio evolution charts and asset distribution.
+- **Goal Setting**: Allows defining financial goals and tracking progress.
+- **Credit Card Management**: Features limit and usage tracking, direct expense recording, and bill payment recording.
+- **Account Management**: Supports account information updates, transfers between accounts, and account deletion with balance verification.
+- **Standard Categories**: A comprehensive system of standard categories based on the 50/30/20 methodology is automatically created for new users.
+- **Financial Simulators**: Includes enhanced compound interest, emergency reserve, financial goals, retirement, and financing calculators, along with an investment comparison tool. All simulators feature responsive design, professional color-coded results, and educational tips.
+- **Responsive Design**: Implemented with a responsive grid system, adaptive charts, and optimized components for mobile devices. All interfaces adapt from small screens (320px+) to ultrawide monitors. Header and Sidebar include a collapsible mobile navigation with a hamburger menu.
+- **Collapsible Sidebar**: Features a collapse button in the desktop header with PanelLeftClose/PanelLeftOpen icons. The responsive sidebar shows only icons and tooltips when collapsed, with its state persisted in localStorage.
 
-- **4 de Agosto de 2025**: Migração para ambiente Replit concluída com sucesso
-  - Migração bem-sucedida do OrçaFácil do Replit Agent para ambiente Replit padrão
-  - Instalação de todos os pacotes Node.js e dependências necessárias
-  - Correção da execução TypeScript com runtime tsx
-  - Verificação de todas as funcionalidades principais funcionando: autenticação, dashboard, transações e conexões de banco de dados
-  - Mantida conexão segura PostgreSQL com integração Neon serverless
-  - Todos os workflows configurados adequadamente e executando na porta 5000
+## External Dependencies
 
-- **4 de Agosto de 2025**: Suíte abrangente de simuladores financeiros implementada
-  - Simulador de juros compostos aprimorado com gráfico de área interativo "Evolução do Investimento"
-  - Adicionada Calculadora de Reserva de Emergência com análise de situação de emprego e acompanhamento de progresso
-  - Implementada Calculadora de Metas para planejamento personalizado de objetivos financeiros com requisitos de contribuição mensal
-  - Criada Calculadora de Aposentadoria com avaliação de adequação e projeções de renda futura
-  - Construída Calculadora de Financiamento com metodologia PRICE para análise de financiamentos
-  - Adicionada ferramenta de Comparação de Investimentos para análise lado a lado de diferentes opções de investimento
-  - Todos os simuladores apresentam design responsivo, resultados codificados por cores profissionais e dicas educacionais
-  - Tooltips interativos com formatação adequada de moeda em todas as ferramentas
-
-- **3 de Agosto de 2025**: Migração para ambiente Replit concluída com sucesso
-  - Corrigido comportamento de exclusão de transações pendentes - usuários agora podem deletar transações pendentes sem recriação automática
-  - Mantidas práticas robustas de segurança com proteção de ambiente para conexões de banco de dados
-  - Verificadas todas as funcionalidades funcionando corretamente incluindo metodologia de orçamento 50/30/20, acompanhamento de transações e gestão de carteira de investimentos
-  - Arquitetura cliente/servidor adequadamente separada com backend Express.js e frontend React
-  - Conexão de banco de dados PostgreSQL protegida com integração Neon serverless
-  - **ATUALIZADO**: Lógica de exclusão revisada para transações pendentes com recorrências ativas - ao deletar uma transação pendente de uma recorrência ativa (para sempre ou parcelamentos), ela é deletada e a próxima parcela é criada automaticamente mantendo a data de vencimento original
-
-- **1º de Agosto de 2025**: Grande melhoria arquitetural - Corrigida lógica de pagamento de cartão de crédito
-  - **MUDANÇA SIGNIFICATIVA**: Cartões de crédito agora funcionam como contas virtuais para rastreamento financeiro adequado
-  - **Despesas do cartão de crédito**: Registradas diretamente no cartão de crédito (aumenta dívida/valorUtilizado)
-  - **Pagamentos do cartão de crédito**: Criados como transferências da conta bancária para o cartão de crédito (reduz dívida)
-  - **Eliminadas despesas duplicadas**: Não cria mais despesa ao pagar fatura + despesa ao comprar
-  - **Novo endpoint**: `/api/credit-cards/:cardId/payment` para pagamentos adequados de faturas
-  - **Lógica de transação aprimorada**: Distingue entre compras (despesa no cartão) e pagamentos (transferência)
-  - **Rastreamento preciso de dívida**: valorUtilizado do cartão de crédito reflete adequadamente o saldo real da dívida
-
-- **1º de Agosto de 2025**: Estilização aprimorada da navegação da barra lateral para tema claro
-  - Itens de menu ativos agora exibem fundo azul (hsl(218, 78%, 42%)) e texto branco no tema claro
-  - Melhor contraste visual e experiência do usuário para identificação da página atual
-  - Aplicadas declarações !important para garantir estilização consistente em diferentes estados
-
-- **1º de Agosto de 2025**: Adicionadas funcionalidades de edição e exclusão para transações pendentes
-  - Usuários agora podem editar transações pendentes através de interface de diálogo abrangente
-  - Funcionalidade de exclusão com confirmação para transações pendentes
-  - Apenas transações pendentes podem ser editadas/excluídas, transações confirmadas permanecem protegidas
-  - Adicionado tratamento adequado de erros e feedback do usuário para todas as operações
-  - Novo componente `EditPendingTransactionDialog` com validação completa de formulário
-  - Endpoints de API backend: PUT `/api/transactions/:id` e validação DELETE aprimorada
-  - Corrigida criação de recorrência: primeira transação pendente agora usa data de início em vez de próxima data de execução
-  - Lógica de exclusão aprimorada: ao excluir transações pendentes de recorrências "para sempre", cria automaticamente próxima transação pendente
-  - Corrigido cálculo de data de recorrência: lógica simplificada para contar transações totais para numeração progressiva de período
-  - Corrigida criação automática de transação para manter progressão sequencial (próximo período = total de transações + 1)
-
-- **1º de Agosto de 2025**: Implementada lógica de data de confirmação para transações pendentes
-  - Quando uma transação pendente é confirmada, sua data é automaticamente atualizada para a data de confirmação (data/hora atual)
-  - Aplica-se aos métodos `confirmTransactionWithAccount` e `updateTransactionStatus`
-  - Garante registros financeiros precisos mostrando quando as transações realmente ocorreram
-  - Adicionado logging detalhado para mudanças de data durante processo de confirmação
-
-- **31 de Janeiro de 2025**: Implementado gerenciamento automático de transações pendentes para recorrências "para sempre"
-  - Recorrências "para sempre" (sem data final) criam automaticamente a primeira transação pendente quando criadas
-  - Quando uma transação de recorrência é confirmada, a próxima transação pendente é automaticamente criada
-  - Sistema mantém exatamente uma transação pendente visível para cada recorrência ativa para sempre
-  - Lógica inteligente de atualização de recorrência: apenas transações pendentes são modificadas enquanto transações confirmadas permanecem inalteradas
-  - Criado método especializado `updateRecurrenceAndPendingTransactions` que mapeia mudanças de recorrência para transações pendentes relacionadas
-  - Corrigidos problemas de validação de data em atualizações de recorrência com `updateRecurrenceSchema` dedicado e transformação adequada de string ISO para Date
-  - Resposta backend aprimorada para mostrar quantas transações pendentes foram atualizadas e fornece feedback claro ao usuário
-  - Preserva integridade financeira mantendo histórico de transações confirmadas intacto
-
-## Arquitetura do Sistema
-
-### Arquitetura Frontend
-- **Framework**: React com TypeScript
-- **Ferramenta de Build**: Vite
-- **Biblioteca de UI**: Componentes Radix UI com Tailwind CSS para estilização, complementada por Shadcn/ui para estilização consistente.
-- **Gerenciamento de Estado**: TanStack Query (React Query) para estado do servidor.
-- **Roteamento**: Wouter para roteamento do lado do cliente.
-- **Manipulação de Formulários**: React Hook Form com validação Zod.
-- **Design UI/UX**: Enfatiza uma interface bancária profissional com tema claro (fundo branco limpo, acentos cinza claro sutis, gradiente azul Pharos Capital para cabeçalhos) e tema escuro moderno (azul-cinza escuro profundo). Inclui design responsivo, localização brasileira (formatação de moeda, idioma português) e recursos de acessibilidade. Elementos visuais incluem tipografia profissional, estilização aprimorada de cards e badges codificados por cores para indicadores financeiros. Gráficos de investimento apresentam designs profissionais de barras e rosca com filtragem por categoria.
-
-### Arquitetura Backend
-- **Runtime**: Node.js com TypeScript
-- **Framework**: Express.js com design de API RESTful.
-- **Banco de Dados**: PostgreSQL com conexão Neon serverless.
-- **ORM**: Drizzle ORM para operações de banco de dados type-safe.
-- **Autenticação**: Autenticação baseada em JWT com hash de senha bcrypt e connect-pg-simple para gerenciamento de sessão.
-
-### Principais Funcionalidades e Implementações Técnicas
-- **Gestão de Orçamento**: Implementa a metodologia 50/30/20, permitindo orçamentos padrão (todos os meses) ou meses específicos, e alocação personalizada de categorias. Cálculo de renda é automático baseado em categorias de receita.
-- **Rastreamento de Transações**: Acompanhamento abrangente de receitas, despesas e transferências com categorização. Inclui funcionalidades como descrição automática de parcelamento, confirmação de transações pendentes com seleção de conta, e diálogos de transações em tela cheia com filtragem e ordenação.
-- **Carteira de Investimentos**: Rastreamento de ativos com atualizações de preços em tempo real, busca integrada de ativos (incluindo ações brasileiras como B3) e criação manual de ativos. Apresenta gráficos de evolução de carteira e distribuição de ativos.
-- **Definição de Metas**: Permite definição de metas financeiras e acompanhamento de progresso.
-- **Gestão de Cartão de Crédito**: Apresenta rastreamento de limite e uso, registro direto de despesas e gravação de pagamento de faturas.
-- **Gestão de Contas**: Suporta atualização de informações de conta, transferências entre contas e exclusão de conta com verificação de saldo.
-- **Categorias Padrão**: Sistema abrangente de categorias padrão baseado na metodologia 50/30/20 é automaticamente criado para novos usuários.
-
-## Dependências Externas
-
-- **@neondatabase/serverless**: Para conexões PostgreSQL.
-- **drizzle-orm**: Para interações com banco de dados.
-- **@tanstack/react-query**: Para gerenciamento de estado do servidor.
-- **@radix-ui/***: Para componentes de UI acessíveis.
-- **react-hook-form**: Para manipulação de formulários.
-- **@hookform/resolvers**: Para integração Zod com formulários.
-- **bcrypt**: Para hash de senhas.
-- **jsonwebtoken**: Para gerenciamento de tokens JWT.
-- **tailwindcss**: Para estilização.
-- **class-variance-authority**: Para variantes de componentes.
-- **clsx**: Para nomes de classes condicionais.
-- **lucide-react**: Para ícones.
-- **recharts**: Para gráficos e visualização de dados.
-- **Alpha Vantage API**: Para dados financeiros em tempo real e busca de ativos.
-- **CoinGecko API**: Para dados de criptomoedas.
+- **@neondatabase/serverless**: For PostgreSQL connections.
+- **drizzle-orm**: For database interactions.
+- **@tanstack/react-query**: For server state management.
+- **@radix-ui/**: For accessible UI components.
+- **react-hook-form**: For form handling.
+- **@hookform/resolvers**: For Zod integration with forms.
+- **bcrypt**: For password hashing.
+- **jsonwebtoken**: For JWT token management.
+- **tailwindcss**: For styling.
+- **class-variance-authority**: For component variants.
+- **clsx**: For conditional class names.
+- **lucide-react**: For icons.
+- **recharts**: For charts and data visualization.
+- **Alpha Vantage API**: For real-time financial data and asset search.
+- **CoinGecko API**: For cryptocurrency data.

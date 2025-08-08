@@ -18,7 +18,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Calculator, TrendingUp, Target, Plus, Edit3, Eye, EyeOff, BarChart3, PieChart as PieChartIcon, Calendar, Settings, DollarSign, Activity, ArrowUpCircle, ArrowDownCircle, Clock, FileText, Repeat, CalendarClock } from 'lucide-react';
+import { Calculator, TrendingUp, TrendingDown, Target, Plus, Edit3, Eye, EyeOff, BarChart3, PieChart as PieChartIcon, Calendar, Settings, DollarSign, Activity, ArrowUpCircle, ArrowDownCircle, Clock, FileText, Repeat, CalendarClock } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, BarChart, Bar } from 'recharts';
 import { TransactionsTableDialog } from '@/components/ui/transactions-table-dialog';
 import PendingTransactions from '@/components/pending-transactions';
@@ -640,101 +640,147 @@ export function Budget() {
                   </Card>
                 </div>
 
-                {/* Seções de Despesas e Renda em Grid */}
+                {/* Seções Profissionais de Despesas e Renda */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                  {/* Seção Despesas */}
-                  <div>
-                    <h3 className="text-2xl font-bold text-orange-500 mb-6">Despesas</h3>
-                    <div className="space-y-4">
-                      {/* Despesas Planejadas vs Reais */}
-                      <div className="flex items-center justify-between py-3 border-b">
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 bg-slate-200 dark:bg-slate-700 rounded flex items-center justify-center text-sm font-bold">P</div>
-                          <span className="font-medium">Planejado</span>
+                  {/* Card Profissional de Despesas */}
+                  <Card className="border-0 shadow-lg bg-white dark:bg-slate-900">
+                    <CardHeader className="pb-4">
+                      <CardTitle className="flex items-center gap-3 text-xl font-bold">
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center text-white">
+                          <TrendingDown className="h-5 w-5" />
                         </div>
-                        <div className="text-right">
-                          <div className="text-lg font-bold">{formatCurrency((budget?.necessitiesBudget || 0) + (budget?.wantsBudget || 0))}</div>
+                        <span className="text-orange-600 dark:text-orange-400">Despesas</span>
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-6">
+                      {/* Summary Cards */}
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="bg-slate-50 dark:bg-slate-800 rounded-lg p-4">
+                          <div className="flex items-center gap-2 mb-2">
+                            <div className="w-3 h-3 rounded-full bg-slate-400"></div>
+                            <span className="text-sm font-medium text-muted-foreground">Planejado</span>
+                          </div>
+                          <div className="text-xl font-bold text-foreground">
+                            {formatCurrency((budget?.necessitiesBudget || 0) + (budget?.wantsBudget || 0))}
+                          </div>
                         </div>
-                      </div>
-                      
-                      <div className="flex items-center justify-between py-3 border-b">
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 bg-slate-700 text-white rounded flex items-center justify-center text-sm font-bold">R</div>
-                          <span className="font-medium">Real</span>
-                        </div>
-                        <div className="text-right">
-                          <div className="text-lg font-bold">{formatCurrency(totalExpenses)}</div>
-                        </div>
-                      </div>
-
-                      {/* Detalhes por categoria */}
-                      <div className="space-y-3 pt-4">
-                        <div className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Totais</div>
                         
-                        <div className="grid grid-cols-4 gap-4 text-sm">
-                          <div className="font-medium">Categoria</div>
-                          <div className="text-right font-medium">Planejado</div>
-                          <div className="text-right font-medium">Real</div>
-                          <div className="text-right font-medium">Diferença</div>
+                        <div className="bg-orange-50 dark:bg-orange-900/20 rounded-lg p-4">
+                          <div className="flex items-center gap-2 mb-2">
+                            <div className="w-3 h-3 rounded-full bg-orange-500"></div>
+                            <span className="text-sm font-medium text-muted-foreground">Real</span>
+                          </div>
+                          <div className="text-xl font-bold text-orange-600 dark:text-orange-400">
+                            {formatCurrency(totalExpenses)}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Tabela Detalhada */}
+                      <div className="space-y-4">
+                        <div className="text-sm font-semibold text-muted-foreground uppercase tracking-wide border-b pb-2">
+                          Totais por Categoria
+                        </div>
+                        
+                        {/* Header */}
+                        <div className="grid grid-cols-4 gap-4 text-sm font-medium text-muted-foreground pb-2 border-b">
+                          <div>Categoria</div>
+                          <div className="text-right">Planejado</div>
+                          <div className="text-right">Real</div>
+                          <div className="text-right">Diferença</div>
                         </div>
 
-                        <div className="grid grid-cols-4 gap-4 text-sm py-2 border-b">
-                          <div>Necessidades</div>
-                          <div className="text-right">{formatCurrency(budget?.necessitiesBudget || 0)}</div>
-                          <div className="text-right">{formatCurrency(spendingByType.necessities)}</div>
-                          <div className={`text-right font-medium ${(parseFloat(budget?.necessitiesBudget || '0') - spendingByType.necessities) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                        {/* Necessidades */}
+                        <div className="grid grid-cols-4 gap-4 text-sm py-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+                          <div className="flex items-center gap-2">
+                            <div className="w-2 h-2 rounded-full bg-red-500"></div>
+                            <span className="font-medium">Necessidades</span>
+                          </div>
+                          <div className="text-right font-mono">{formatCurrency(budget?.necessitiesBudget || 0)}</div>
+                          <div className="text-right font-mono font-semibold">{formatCurrency(spendingByType.necessities)}</div>
+                          <div className={`text-right font-mono font-bold ${(parseFloat(budget?.necessitiesBudget || '0') - spendingByType.necessities) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                             {formatCurrency((parseFloat(budget?.necessitiesBudget || '0') - spendingByType.necessities))}
                           </div>
                         </div>
 
-                        <div className="grid grid-cols-4 gap-4 text-sm py-2 border-b">
-                          <div>Desejos</div>
-                          <div className="text-right">{formatCurrency(budget?.wantsBudget || 0)}</div>
-                          <div className="text-right">{formatCurrency(spendingByType.wants)}</div>
-                          <div className={`text-right font-medium ${(parseFloat(budget?.wantsBudget || '0') - spendingByType.wants) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                        {/* Desejos */}
+                        <div className="grid grid-cols-4 gap-4 text-sm py-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+                          <div className="flex items-center gap-2">
+                            <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+                            <span className="font-medium">Desejos</span>
+                          </div>
+                          <div className="text-right font-mono">{formatCurrency(budget?.wantsBudget || 0)}</div>
+                          <div className="text-right font-mono font-semibold">{formatCurrency(spendingByType.wants)}</div>
+                          <div className={`text-right font-mono font-bold ${(parseFloat(budget?.wantsBudget || '0') - spendingByType.wants) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                             {formatCurrency((parseFloat(budget?.wantsBudget || '0') - spendingByType.wants))}
                           </div>
                         </div>
-                      </div>
-                    </div>
-                  </div>
 
-                  {/* Seção Renda */}
-                  <div>
-                    <h3 className="text-2xl font-bold text-orange-500 mb-6">Renda</h3>
-                    <div className="space-y-4">
-                      {/* Renda Planejada vs Real */}
-                      <div className="flex items-center justify-between py-3 border-b">
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 bg-slate-200 dark:bg-slate-700 rounded flex items-center justify-center text-sm font-bold">P</div>
-                          <span className="font-medium">Planejado</span>
-                        </div>
-                        <div className="text-right">
-                          <div className="text-lg font-bold">{formatCurrency(budget?.totalIncome || 0)}</div>
-                        </div>
-                      </div>
-                      
-                      <div className="flex items-center justify-between py-3 border-b">
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 bg-green-600 text-white rounded flex items-center justify-center text-sm font-bold">R</div>
-                          <span className="font-medium">Real</span>
-                        </div>
-                        <div className="text-right">
-                          <div className="text-lg font-bold">{formatCurrency(totalIncome)}</div>
+                        {/* Nova Linha de Investimentos */}
+                        <div className="grid grid-cols-4 gap-4 text-sm py-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors border-t pt-4">
+                          <div className="flex items-center gap-2">
+                            <div className="w-2 h-2 rounded-full bg-purple-500"></div>
+                            <span className="font-medium">Investimentos</span>
+                          </div>
+                          <div className="text-right font-mono">{formatCurrency(budget?.savingsBudget || 0)}</div>
+                          <div className="text-right font-mono font-semibold">{formatCurrency(spendingByType.savings)}</div>
+                          <div className={`text-right font-mono font-bold ${(parseFloat(budget?.savingsBudget || '0') - spendingByType.savings) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                            {formatCurrency((parseFloat(budget?.savingsBudget || '0') - spendingByType.savings))}
+                          </div>
                         </div>
                       </div>
+                    </CardContent>
+                  </Card>
 
-                      {/* Detalhes por categoria de renda */}
-                      <div className="space-y-3 pt-4">
-                        <div className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Totais</div>
+                  {/* Card Profissional de Renda */}
+                  <Card className="border-0 shadow-lg bg-white dark:bg-slate-900">
+                    <CardHeader className="pb-4">
+                      <CardTitle className="flex items-center gap-3 text-xl font-bold">
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center text-white">
+                          <TrendingUp className="h-5 w-5" />
+                        </div>
+                        <span className="text-green-600 dark:text-green-400">Renda</span>
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-6">
+                      {/* Summary Cards */}
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="bg-slate-50 dark:bg-slate-800 rounded-lg p-4">
+                          <div className="flex items-center gap-2 mb-2">
+                            <div className="w-3 h-3 rounded-full bg-slate-400"></div>
+                            <span className="text-sm font-medium text-muted-foreground">Planejado</span>
+                          </div>
+                          <div className="text-xl font-bold text-foreground">
+                            {formatCurrency(budget?.totalIncome || 0)}
+                          </div>
+                        </div>
                         
-                        <div className="grid grid-cols-4 gap-4 text-sm">
-                          <div className="font-medium">Categoria</div>
-                          <div className="text-right font-medium">Planejado</div>
-                          <div className="text-right font-medium">Real</div>
-                          <div className="text-right font-medium">Diferença</div>
+                        <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4">
+                          <div className="flex items-center gap-2 mb-2">
+                            <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                            <span className="text-sm font-medium text-muted-foreground">Real</span>
+                          </div>
+                          <div className="text-xl font-bold text-green-600 dark:text-green-400">
+                            {formatCurrency(totalIncome)}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Tabela Detalhada */}
+                      <div className="space-y-4">
+                        <div className="text-sm font-semibold text-muted-foreground uppercase tracking-wide border-b pb-2">
+                          Totais por Categoria
+                        </div>
+                        
+                        {/* Header */}
+                        <div className="grid grid-cols-4 gap-4 text-sm font-medium text-muted-foreground pb-2 border-b">
+                          <div>Categoria</div>
+                          <div className="text-right">Planejado</div>
+                          <div className="text-right">Real</div>
+                          <div className="text-right">Diferença</div>
                         </div>
 
+                        {/* Categorias de Renda */}
                         {categories
                           .filter((cat: any) => !cat.type) // Income categories
                           .slice(0, 3)
@@ -746,19 +792,25 @@ export function Budget() {
                             const difference = budgetAmount - categoryIncome;
                             
                             return (
-                              <div key={category.id} className="grid grid-cols-4 gap-4 text-sm py-2 border-b">
-                                <div>{category.name}</div>
-                                <div className="text-right">{formatCurrency(budgetAmount)}</div>
-                                <div className="text-right">{formatCurrency(categoryIncome)}</div>
-                                <div className={`text-right font-medium ${difference <= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                              <div key={category.id} className="grid grid-cols-4 gap-4 text-sm py-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+                                <div className="flex items-center gap-2">
+                                  <div 
+                                    className="w-2 h-2 rounded-full" 
+                                    style={{ backgroundColor: category.color || '#10B981' }}
+                                  ></div>
+                                  <span className="font-medium">{category.name}</span>
+                                </div>
+                                <div className="text-right font-mono">{formatCurrency(budgetAmount)}</div>
+                                <div className="text-right font-mono font-semibold">{formatCurrency(categoryIncome)}</div>
+                                <div className={`text-right font-mono font-bold ${difference <= 0 ? 'text-green-600' : 'text-red-600'}`}>
                                   {formatCurrency(-difference)}
                                 </div>
                               </div>
                             );
                           })}
                       </div>
-                    </div>
-                  </div>
+                    </CardContent>
+                  </Card>
                 </div>
 
                 {/* Revenue Card - Same style as category breakdown cards */}
