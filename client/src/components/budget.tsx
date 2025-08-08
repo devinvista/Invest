@@ -788,7 +788,8 @@ export function Budget() {
                             const categoryIncome = transactions
                               .filter((t: any) => t.categoryId === category.id && t.type === 'income')
                               .reduce((sum: number, t: any) => sum + parseFloat(t.amount), 0);
-                            const budgetAmount = budgetCategories.find((bc: any) => bc.categoryId === category.id)?.amount || 0;
+                            // Busca o valor planejado das categorias de orçamento da API
+                            const budgetAmount = budget?.budgetCategories?.find((bc: any) => bc.categoryId === category.id)?.allocatedAmount || 0;
                             const difference = budgetAmount - categoryIncome;
                             
                             return (
@@ -858,7 +859,8 @@ export function Budget() {
                             const categoryIncome = transactions
                               .filter((t: any) => t.categoryId === category.id && t.type === 'income')
                               .reduce((sum: number, t: any) => sum + parseFloat(t.amount), 0);
-                            const budgetAmount = budgetCategories.find((bc: any) => bc.categoryId === category.id)?.amount || 0;
+                            // Busca o valor planejado das categorias de orçamento da API
+                            const budgetAmount = budget?.budgetCategories?.find((bc: any) => bc.categoryId === category.id)?.allocatedAmount || 0;
                             
                             return { ...category, categoryIncome, budgetAmount };
                           })
@@ -940,7 +942,8 @@ export function Budget() {
                             const categorySpent = transactions
                               .filter((t: any) => t.categoryId === category.id && t.type === 'expense')
                               .reduce((sum: number, t: any) => sum + parseFloat(t.amount), 0);
-                            const budgetAmount = budgetCategories.find((bc: any) => bc.categoryId === category.id)?.amount || 0;
+                            // Busca o valor planejado das categorias de orçamento da API
+                            const budgetAmount = budget?.budgetCategories?.find((bc: any) => bc.categoryId === category.id)?.allocatedAmount || 0;
                             
                             return { ...category, categorySpent, budgetAmount };
                           })
@@ -1021,7 +1024,8 @@ export function Budget() {
                             const categorySpent = transactions
                               .filter((t: any) => t.categoryId === category.id && t.type === 'expense')
                               .reduce((sum: number, t: any) => sum + parseFloat(t.amount), 0);
-                            const budgetAmount = budgetCategories.find((bc: any) => bc.categoryId === category.id)?.amount || 0;
+                            // Busca o valor planejado das categorias de orçamento da API
+                            const budgetAmount = budget?.budgetCategories?.find((bc: any) => bc.categoryId === category.id)?.allocatedAmount || 0;
                             
                             return { ...category, categorySpent, budgetAmount };
                           })
@@ -1105,7 +1109,8 @@ export function Budget() {
                             const categorySpent = transactions
                               .filter((t: any) => t.categoryId === category.id && t.type === 'expense')
                               .reduce((sum: number, t: any) => sum + parseFloat(t.amount), 0);
-                            const budgetAmount = budgetCategories.find((bc: any) => bc.categoryId === category.id)?.amount || 0;
+                            // Busca o valor planejado das categorias de orçamento da API
+                            const budgetAmount = budget?.budgetCategories?.find((bc: any) => bc.categoryId === category.id)?.allocatedAmount || 0;
                             
                             return { ...category, categorySpent, budgetAmount };
                           })
