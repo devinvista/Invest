@@ -709,17 +709,33 @@ export function Budget() {
                           </CollapsibleTrigger>
                           <CollapsibleContent>
                             <div className="ml-6 mt-2 space-y-2 bg-slate-50 dark:bg-slate-800 rounded-lg p-4">
+                              {/* Header do detalhamento */}
+                              <div className="grid grid-cols-3 gap-4 text-xs font-medium text-muted-foreground pb-2 border-b">
+                                <div>Categoria</div>
+                                <div className="text-right">Real</div>
+                                <div className="text-right">Previsto</div>
+                              </div>
                               {categories
                                 .filter((cat: any) => cat.type === 'necessities')
                                 .map((category: any) => {
                                   const categorySpent = transactions
                                     .filter((t: any) => t.categoryId === category.id && t.type === 'expense')
                                     .reduce((sum: number, t: any) => sum + parseFloat(t.amount), 0);
+                                  
+                                  // Calcular valor previsto proporcional baseado no total de necessidades
+                                  const totalNecessitiesSpent = spendingByType.necessities;
+                                  const totalNecessitiesBudget = parseFloat(budget?.necessitiesBudget?.toString() || '0');
+                                  const categoryBudget = totalNecessitiesSpent > 0 && totalNecessitiesBudget > 0 
+                                    ? (categorySpent / totalNecessitiesSpent) * totalNecessitiesBudget 
+                                    : 0;
+                                  
                                   return (
                                     <div key={category.id} className="grid grid-cols-3 gap-4 text-xs py-2">
                                       <span className="font-medium">{category.name}</span>
                                       <span className="text-right font-mono">{formatCurrency(categorySpent)}</span>
-                                      <span className="text-right font-mono text-muted-foreground">-</span>
+                                      <span className="text-right font-mono text-muted-foreground">
+                                        {categoryBudget > 0 ? formatCurrency(categoryBudget) : '-'}
+                                      </span>
                                     </div>
                                   );
                                 })}
@@ -769,17 +785,33 @@ export function Budget() {
                           </CollapsibleTrigger>
                           <CollapsibleContent>
                             <div className="ml-6 mt-2 space-y-2 bg-slate-50 dark:bg-slate-800 rounded-lg p-4">
+                              {/* Header do detalhamento */}
+                              <div className="grid grid-cols-3 gap-4 text-xs font-medium text-muted-foreground pb-2 border-b">
+                                <div>Categoria</div>
+                                <div className="text-right">Real</div>
+                                <div className="text-right">Previsto</div>
+                              </div>
                               {categories
                                 .filter((cat: any) => cat.type === 'wants')
                                 .map((category: any) => {
                                   const categorySpent = transactions
                                     .filter((t: any) => t.categoryId === category.id && t.type === 'expense')
                                     .reduce((sum: number, t: any) => sum + parseFloat(t.amount), 0);
+                                  
+                                  // Calcular valor previsto proporcional baseado no total de desejos
+                                  const totalWantsSpent = spendingByType.wants;
+                                  const totalWantsBudget = parseFloat(budget?.wantsBudget?.toString() || '0');
+                                  const categoryBudget = totalWantsSpent > 0 && totalWantsBudget > 0 
+                                    ? (categorySpent / totalWantsSpent) * totalWantsBudget 
+                                    : 0;
+                                  
                                   return (
                                     <div key={category.id} className="grid grid-cols-3 gap-4 text-xs py-2">
                                       <span className="font-medium">{category.name}</span>
                                       <span className="text-right font-mono">{formatCurrency(categorySpent)}</span>
-                                      <span className="text-right font-mono text-muted-foreground">-</span>
+                                      <span className="text-right font-mono text-muted-foreground">
+                                        {categoryBudget > 0 ? formatCurrency(categoryBudget) : '-'}
+                                      </span>
                                     </div>
                                   );
                                 })}
@@ -829,17 +861,33 @@ export function Budget() {
                           </CollapsibleTrigger>
                           <CollapsibleContent>
                             <div className="ml-6 mt-2 space-y-2 bg-slate-50 dark:bg-slate-800 rounded-lg p-4">
+                              {/* Header do detalhamento */}
+                              <div className="grid grid-cols-3 gap-4 text-xs font-medium text-muted-foreground pb-2 border-b">
+                                <div>Categoria</div>
+                                <div className="text-right">Real</div>
+                                <div className="text-right">Previsto</div>
+                              </div>
                               {categories
                                 .filter((cat: any) => cat.type === 'savings')
                                 .map((category: any) => {
                                   const categorySpent = transactions
                                     .filter((t: any) => t.categoryId === category.id && t.type === 'expense')
                                     .reduce((sum: number, t: any) => sum + parseFloat(t.amount), 0);
+                                  
+                                  // Calcular valor previsto proporcional baseado no total de investimentos
+                                  const totalSavingsSpent = spendingByType.savings;
+                                  const totalSavingsBudget = parseFloat(budget?.savingsBudget?.toString() || '0');
+                                  const categoryBudget = totalSavingsSpent > 0 && totalSavingsBudget > 0 
+                                    ? (categorySpent / totalSavingsSpent) * totalSavingsBudget 
+                                    : 0;
+                                  
                                   return (
                                     <div key={category.id} className="grid grid-cols-3 gap-4 text-xs py-2">
                                       <span className="font-medium">{category.name}</span>
                                       <span className="text-right font-mono">{formatCurrency(categorySpent)}</span>
-                                      <span className="text-right font-mono text-muted-foreground">-</span>
+                                      <span className="text-right font-mono text-muted-foreground">
+                                        {categoryBudget > 0 ? formatCurrency(categoryBudget) : '-'}
+                                      </span>
                                     </div>
                                   );
                                 })}
@@ -932,6 +980,12 @@ export function Budget() {
                           </CollapsibleTrigger>
                           <CollapsibleContent>
                             <div className="ml-6 mt-2 space-y-2 bg-slate-50 dark:bg-slate-800 rounded-lg p-4">
+                              {/* Header do detalhamento */}
+                              <div className="grid grid-cols-3 gap-4 text-xs font-medium text-muted-foreground pb-2 border-b">
+                                <div>Categoria</div>
+                                <div className="text-right">Real</div>
+                                <div className="text-right">Previsto</div>
+                              </div>
                               {categories
                                 .filter((cat: any) => cat.transactionType === 'income')
                                 .map((category: any) => {
@@ -943,11 +997,20 @@ export function Budget() {
                                     console.log(`Categoria ${category.name} (${category.id}) - Transações encontradas: ${categoryTransactions.length}, Valor: R$ ${categoryIncome}`);
                                   }
                                   
+                                  // Calcular valor previsto proporcional baseado no total de receitas
+                                  const totalIncomeActual = totalIncome;
+                                  const totalIncomeBudget = parseFloat(budget?.totalIncome?.toString() || '0');
+                                  const categoryBudget = totalIncomeActual > 0 && totalIncomeBudget > 0 
+                                    ? (categoryIncome / totalIncomeActual) * totalIncomeBudget 
+                                    : 0;
+                                  
                                   return (
                                     <div key={category.id} className="grid grid-cols-3 gap-4 text-xs py-2">
                                       <span className="font-medium">{category.name}</span>
                                       <span className="text-right font-mono">{formatCurrency(categoryIncome)}</span>
-                                      <span className="text-right font-mono text-muted-foreground">-</span>
+                                      <span className="text-right font-mono text-muted-foreground">
+                                        {categoryBudget > 0 ? formatCurrency(categoryBudget) : '-'}
+                                      </span>
                                     </div>
                                   );
                                 })}
