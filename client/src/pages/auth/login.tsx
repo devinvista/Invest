@@ -170,7 +170,7 @@ export function Login() {
         <div className="text-center mb-8">
           <div className="flex items-center justify-center mb-4">
             <ChartLine className="h-12 w-12 text-primary mr-3" />
-            <h1 className="text-3xl font-bold text-foreground">OrçaFácil</h1>
+            <h1 className="text-3xl font-bold text-foreground">InvestON</h1>
           </div>
           <p className="text-muted-foreground">
             Gestão financeira inteligente e descomplicada
@@ -447,7 +447,7 @@ export function Login() {
 
         {/* Footer */}
         <div className="text-center mt-8 text-sm text-muted-foreground">
-          <p>© 2024 OrçaFácil. Todos os direitos reservados.</p>
+          <p>© 2024 InvestON. Todos os direitos reservados.</p>
           <p className="mt-1">
             Gerencie suas finanças com inteligência e simplicidade.
           </p>

@@ -5,7 +5,7 @@ export function PharosLogo() {
         <span className="text-white font-bold text-xs">PC</span>
       </div>
       <div>
-        <div className="text-lg font-semibold leading-none">OrçaFácil</div>
+        <div className="text-lg font-semibold leading-none">InvestON</div>
         <div className="text-xs opacity-70">powered by Pharos Capital</div>
       </div>
     </div>

@@ -1,6 +1,6 @@
 ## Overview
 
-OrçaFácil is a comprehensive personal financial management application designed for Brazilian users. Its primary goal is to provide tools for budget management using the 50/30/20 method, expense tracking, investment portfolio management, goal setting, and financial reporting. The project aims to offer a modern and professional user experience, combining robust financial features with an intuitive interface.
+InvestON is a comprehensive personal financial management application designed for Brazilian users. Its primary goal is to provide tools for budget management using the 50/30/20 method, expense tracking, investment portfolio management, goal setting, and financial reporting. The project aims to offer a modern and professional user experience, combining robust financial features with an intuitive interface.
 
 ## User Preferences
 

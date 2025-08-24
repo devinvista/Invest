@@ -343,7 +343,7 @@ async function searchCrypto(query: string): Promise<AssetSearchResult[]> {
     const response = await fetch(searchUrl, {
       headers: {
         'Accept': 'application/json',
-        'User-Agent': 'OrçaFácil/1.0'
+        'User-Agent': 'InvestON/1.0'
       }
     });
 
@@ -393,7 +393,7 @@ async function getCryptoQuote(coinId: string): Promise<AssetQuote | null> {
     const response = await fetch(quoteUrl, {
       headers: {
         'Accept': 'application/json',
-        'User-Agent': 'OrçaFácil/1.0'
+        'User-Agent': 'InvestON/1.0'
       }
     });
 
