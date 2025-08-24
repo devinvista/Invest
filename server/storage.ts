@@ -1032,6 +1032,13 @@ export class DatabaseStorage implements IStorage {
 
       console.log(`🔍 Fetching budget categories for budgetId: ${budgetId}`);
       
+      // Additional validation to ensure UUID format
+      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+      if (!uuidRegex.test(budgetId)) {
+        console.log(`⚠️ Invalid UUID format for budgetId: ${budgetId}`);
+        return [];
+      }
+
       const result = await db
         .select({
           id: budgetCategories.id,

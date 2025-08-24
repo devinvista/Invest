@@ -724,7 +724,9 @@ export function Budget() {
                                     .reduce((sum: number, t: any) => sum + parseFloat(t.amount), 0);
                                   
                                   // Buscar valor previsto específico desta categoria no orçamento cadastrado
-                                  const budgetCategory = existingBudgetCategories.find((bc: any) => bc.categoryId === category.id);
+                                  const budgetCategory = Array.isArray(existingBudgetCategories) 
+                                    ? existingBudgetCategories.find((bc: any) => bc.categoryId === category.id)
+                                    : null;
                                   const categoryBudget = budgetCategory ? parseFloat(budgetCategory.allocatedAmount) : 0;
                                   
                                   const remainingBudget = categoryBudget - categorySpent;
@@ -803,7 +805,9 @@ export function Budget() {
                                     .reduce((sum: number, t: any) => sum + parseFloat(t.amount), 0);
                                   
                                   // Buscar valor previsto específico desta categoria no orçamento cadastrado
-                                  const budgetCategory = existingBudgetCategories.find((bc: any) => bc.categoryId === category.id);
+                                  const budgetCategory = Array.isArray(existingBudgetCategories) 
+                                    ? existingBudgetCategories.find((bc: any) => bc.categoryId === category.id)
+                                    : null;
                                   const categoryBudget = budgetCategory ? parseFloat(budgetCategory.allocatedAmount) : 0;
                                   
                                   const remainingBudget = categoryBudget - categorySpent;
@@ -882,7 +886,9 @@ export function Budget() {
                                     .reduce((sum: number, t: any) => sum + parseFloat(t.amount), 0);
                                   
                                   // Buscar valor previsto específico desta categoria no orçamento cadastrado
-                                  const budgetCategory = existingBudgetCategories.find((bc: any) => bc.categoryId === category.id);
+                                  const budgetCategory = Array.isArray(existingBudgetCategories) 
+                                    ? existingBudgetCategories.find((bc: any) => bc.categoryId === category.id)
+                                    : null;
                                   const categoryBudget = budgetCategory ? parseFloat(budgetCategory.allocatedAmount) : 0;
                                   
                                   const remainingBudget = categoryBudget - categorySpent;
@@ -1008,7 +1014,9 @@ export function Budget() {
                                   }
                                   
                                   // Buscar valor previsto específico desta categoria no orçamento cadastrado
-                                  const budgetCategory = existingBudgetCategories.find((bc: any) => bc.categoryId === category.id);
+                                  const budgetCategory = Array.isArray(existingBudgetCategories) 
+                                    ? existingBudgetCategories.find((bc: any) => bc.categoryId === category.id)
+                                    : null;
                                   const categoryBudget = budgetCategory ? parseFloat(budgetCategory.allocatedAmount) : 0;
                                   
                                   const remainingTarget = categoryBudget - categoryIncome;
