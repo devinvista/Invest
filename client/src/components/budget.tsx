@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
@@ -18,7 +19,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Calculator, TrendingUp, TrendingDown, Target, Plus, Edit3, Eye, EyeOff, BarChart3, PieChart as PieChartIcon, Calendar, Settings, DollarSign, Activity, ArrowUpCircle, ArrowDownCircle, Clock, FileText, Repeat, CalendarClock } from 'lucide-react';
+import { Calculator, TrendingUp, TrendingDown, Target, Plus, Edit3, Eye, EyeOff, BarChart3, PieChart as PieChartIcon, Calendar, Settings, DollarSign, Activity, ArrowUpCircle, ArrowDownCircle, Clock, FileText, Repeat, CalendarClock, ChevronDown, ChevronRight } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, BarChart, Bar } from 'recharts';
 import { TransactionsTableDialog } from '@/components/ui/transactions-table-dialog';
 import PendingTransactions from '@/components/pending-transactions';
@@ -57,6 +58,12 @@ export function Budget() {
   
   // Planned transactions dialog state
   const [isPlannedDialogOpen, setIsPlannedDialogOpen] = useState(false);
+  
+  // Collapsible states for category sections
+  const [isNecessitiesExpanded, setIsNecessitiesExpanded] = useState(false);
+  const [isWantsExpanded, setIsWantsExpanded] = useState(false);
+  const [isSavingsExpanded, setIsSavingsExpanded] = useState(false);
+  const [isIncomeExpanded, setIsIncomeExpanded] = useState(false);
   
 
 
@@ -676,58 +683,191 @@ export function Budget() {
                         </div>
                       </div>
 
-                      {/* Tabela Detalhada */}
+                      {/* Seções Colapsáveis por Categoria */}
                       <div className="space-y-4">
                         <div className="text-sm font-semibold text-muted-foreground uppercase tracking-wide border-b pb-2">
                           Totais por Categoria
                         </div>
                         
-                        {/* Header */}
-                        <div className="grid grid-cols-4 gap-4 text-sm font-medium text-muted-foreground pb-2 border-b">
-                          <div>Categoria</div>
-                          <div className="text-right">Planejado</div>
-                          <div className="text-right">Real</div>
-                          <div className="text-right">Diferença</div>
-                        </div>
-
                         {/* Necessidades */}
-                        <div className="grid grid-cols-4 gap-4 text-sm py-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
-                          <div className="flex items-center gap-2">
-                            <div className="w-2 h-2 rounded-full bg-red-500"></div>
-                            <span className="font-medium">Necessidades</span>
-                          </div>
-                          <div className="text-right font-mono">{formatCurrency(parseFloat(budget?.necessitiesBudget?.toString() || '0'))}</div>
-                          <div className="text-right font-mono font-semibold">{formatCurrency(spendingByType.necessities)}</div>
-                          <div className={`text-right font-mono font-bold ${(parseFloat(budget?.necessitiesBudget?.toString() || '0') - spendingByType.necessities) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                            {formatCurrency((parseFloat(budget?.necessitiesBudget?.toString() || '0') - spendingByType.necessities))}
-                          </div>
-                        </div>
+                        <Collapsible open={isNecessitiesExpanded} onOpenChange={setIsNecessitiesExpanded}>
+                          <CollapsibleTrigger className="w-full">
+                            <div className="grid grid-cols-4 gap-4 text-sm py-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer">
+                              <div className="flex items-center gap-2">
+                                <div className="flex items-center gap-1">
+                                  {isNecessitiesExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                                  <div className="w-2 h-2 rounded-full bg-red-500"></div>
+                                </div>
+                                <span className="font-medium">Necessidades</span>
+                              </div>
+                              <div className="text-right font-mono">{formatCurrency(parseFloat(budget?.necessitiesBudget?.toString() || '0'))}</div>
+                              <div className="text-right font-mono font-semibold">{formatCurrency(spendingByType.necessities)}</div>
+                              <div className={`text-right font-mono font-bold ${(parseFloat(budget?.necessitiesBudget?.toString() || '0') - spendingByType.necessities) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                {formatCurrency((parseFloat(budget?.necessitiesBudget?.toString() || '0') - spendingByType.necessities))}
+                              </div>
+                            </div>
+                          </CollapsibleTrigger>
+                          <CollapsibleContent>
+                            <div className="ml-6 mt-2 space-y-2 bg-slate-50 dark:bg-slate-800 rounded-lg p-4">
+                              {categories
+                                .filter((cat: any) => cat.type === 'necessities')
+                                .map((category: any) => {
+                                  const categorySpent = transactions
+                                    .filter((t: any) => t.categoryId === category.id && t.type === 'expense')
+                                    .reduce((sum: number, t: any) => sum + parseFloat(t.amount), 0);
+                                  return (
+                                    <div key={category.id} className="grid grid-cols-3 gap-4 text-xs py-2">
+                                      <span className="font-medium">{category.name}</span>
+                                      <span className="text-right font-mono">{formatCurrency(categorySpent)}</span>
+                                      <span className="text-right font-mono text-muted-foreground">-</span>
+                                    </div>
+                                  );
+                                })}
+                              <div className="pt-3 border-t">
+                                <Button 
+                                  variant="outline" 
+                                  size="sm" 
+                                  className="w-full text-xs"
+                                  onClick={() => {
+                                    const necessitiesCategories = categories
+                                      .filter((cat: any) => cat.type === 'necessities')
+                                      .map((cat: any) => cat.id);
+                                    setTransactionsDialogTitle('Lançamentos - Necessidades');
+                                    setTransactionsDialogFilters({
+                                      type: 'expense' as const,
+                                      categoryIds: necessitiesCategories,
+                                      period: `${selectedMonth}/${selectedYear}`
+                                    });
+                                    setIsTransactionsDialogOpen(true);
+                                  }}
+                                >
+                                  <FileText className="w-3 h-3 mr-2" />
+                                  Ver Lançamentos
+                                </Button>
+                              </div>
+                            </div>
+                          </CollapsibleContent>
+                        </Collapsible>
 
                         {/* Desejos */}
-                        <div className="grid grid-cols-4 gap-4 text-sm py-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
-                          <div className="flex items-center gap-2">
-                            <div className="w-2 h-2 rounded-full bg-blue-500"></div>
-                            <span className="font-medium">Desejos</span>
-                          </div>
-                          <div className="text-right font-mono">{formatCurrency(parseFloat(budget?.wantsBudget?.toString() || '0'))}</div>
-                          <div className="text-right font-mono font-semibold">{formatCurrency(spendingByType.wants)}</div>
-                          <div className={`text-right font-mono font-bold ${(parseFloat(budget?.wantsBudget?.toString() || '0') - spendingByType.wants) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                            {formatCurrency((parseFloat(budget?.wantsBudget?.toString() || '0') - spendingByType.wants))}
-                          </div>
-                        </div>
+                        <Collapsible open={isWantsExpanded} onOpenChange={setIsWantsExpanded}>
+                          <CollapsibleTrigger className="w-full">
+                            <div className="grid grid-cols-4 gap-4 text-sm py-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer">
+                              <div className="flex items-center gap-2">
+                                <div className="flex items-center gap-1">
+                                  {isWantsExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                                  <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+                                </div>
+                                <span className="font-medium">Desejos</span>
+                              </div>
+                              <div className="text-right font-mono">{formatCurrency(parseFloat(budget?.wantsBudget?.toString() || '0'))}</div>
+                              <div className="text-right font-mono font-semibold">{formatCurrency(spendingByType.wants)}</div>
+                              <div className={`text-right font-mono font-bold ${(parseFloat(budget?.wantsBudget?.toString() || '0') - spendingByType.wants) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                {formatCurrency((parseFloat(budget?.wantsBudget?.toString() || '0') - spendingByType.wants))}
+                              </div>
+                            </div>
+                          </CollapsibleTrigger>
+                          <CollapsibleContent>
+                            <div className="ml-6 mt-2 space-y-2 bg-slate-50 dark:bg-slate-800 rounded-lg p-4">
+                              {categories
+                                .filter((cat: any) => cat.type === 'wants')
+                                .map((category: any) => {
+                                  const categorySpent = transactions
+                                    .filter((t: any) => t.categoryId === category.id && t.type === 'expense')
+                                    .reduce((sum: number, t: any) => sum + parseFloat(t.amount), 0);
+                                  return (
+                                    <div key={category.id} className="grid grid-cols-3 gap-4 text-xs py-2">
+                                      <span className="font-medium">{category.name}</span>
+                                      <span className="text-right font-mono">{formatCurrency(categorySpent)}</span>
+                                      <span className="text-right font-mono text-muted-foreground">-</span>
+                                    </div>
+                                  );
+                                })}
+                              <div className="pt-3 border-t">
+                                <Button 
+                                  variant="outline" 
+                                  size="sm" 
+                                  className="w-full text-xs"
+                                  onClick={() => {
+                                    const wantsCategories = categories
+                                      .filter((cat: any) => cat.type === 'wants')
+                                      .map((cat: any) => cat.id);
+                                    setTransactionsDialogTitle('Lançamentos - Desejos');
+                                    setTransactionsDialogFilters({
+                                      type: 'expense' as const,
+                                      categoryIds: wantsCategories,
+                                      period: `${selectedMonth}/${selectedYear}`
+                                    });
+                                    setIsTransactionsDialogOpen(true);
+                                  }}
+                                >
+                                  <FileText className="w-3 h-3 mr-2" />
+                                  Ver Lançamentos
+                                </Button>
+                              </div>
+                            </div>
+                          </CollapsibleContent>
+                        </Collapsible>
 
-                        {/* Nova Linha de Investimentos */}
-                        <div className="grid grid-cols-4 gap-4 text-sm py-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors border-t pt-4">
-                          <div className="flex items-center gap-2">
-                            <div className="w-2 h-2 rounded-full bg-purple-500"></div>
-                            <span className="font-medium">Investimentos</span>
-                          </div>
-                          <div className="text-right font-mono">{formatCurrency(parseFloat(budget?.savingsBudget?.toString() || '0'))}</div>
-                          <div className="text-right font-mono font-semibold">{formatCurrency(spendingByType.savings)}</div>
-                          <div className={`text-right font-mono font-bold ${(parseFloat(budget?.savingsBudget?.toString() || '0') - spendingByType.savings) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                            {formatCurrency((parseFloat(budget?.savingsBudget?.toString() || '0') - spendingByType.savings))}
-                          </div>
-                        </div>
+                        {/* Investimentos */}
+                        <Collapsible open={isSavingsExpanded} onOpenChange={setIsSavingsExpanded}>
+                          <CollapsibleTrigger className="w-full">
+                            <div className="grid grid-cols-4 gap-4 text-sm py-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer border-t pt-4">
+                              <div className="flex items-center gap-2">
+                                <div className="flex items-center gap-1">
+                                  {isSavingsExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                                  <div className="w-2 h-2 rounded-full bg-purple-500"></div>
+                                </div>
+                                <span className="font-medium">Investimentos</span>
+                              </div>
+                              <div className="text-right font-mono">{formatCurrency(parseFloat(budget?.savingsBudget?.toString() || '0'))}</div>
+                              <div className="text-right font-mono font-semibold">{formatCurrency(spendingByType.savings)}</div>
+                              <div className={`text-right font-mono font-bold ${(parseFloat(budget?.savingsBudget?.toString() || '0') - spendingByType.savings) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                {formatCurrency((parseFloat(budget?.savingsBudget?.toString() || '0') - spendingByType.savings))}
+                              </div>
+                            </div>
+                          </CollapsibleTrigger>
+                          <CollapsibleContent>
+                            <div className="ml-6 mt-2 space-y-2 bg-slate-50 dark:bg-slate-800 rounded-lg p-4">
+                              {categories
+                                .filter((cat: any) => cat.type === 'savings')
+                                .map((category: any) => {
+                                  const categorySpent = transactions
+                                    .filter((t: any) => t.categoryId === category.id && t.type === 'expense')
+                                    .reduce((sum: number, t: any) => sum + parseFloat(t.amount), 0);
+                                  return (
+                                    <div key={category.id} className="grid grid-cols-3 gap-4 text-xs py-2">
+                                      <span className="font-medium">{category.name}</span>
+                                      <span className="text-right font-mono">{formatCurrency(categorySpent)}</span>
+                                      <span className="text-right font-mono text-muted-foreground">-</span>
+                                    </div>
+                                  );
+                                })}
+                              <div className="pt-3 border-t">
+                                <Button 
+                                  variant="outline" 
+                                  size="sm" 
+                                  className="w-full text-xs"
+                                  onClick={() => {
+                                    const savingsCategories = categories
+                                      .filter((cat: any) => cat.type === 'savings')
+                                      .map((cat: any) => cat.id);
+                                    setTransactionsDialogTitle('Lançamentos - Investimentos');
+                                    setTransactionsDialogFilters({
+                                      type: 'expense' as const,
+                                      categoryIds: savingsCategories,
+                                      period: `${selectedMonth}/${selectedYear}`
+                                    });
+                                    setIsTransactionsDialogOpen(true);
+                                  }}
+                                >
+                                  <FileText className="w-3 h-3 mr-2" />
+                                  Ver Lançamentos
+                                </Button>
+                              </div>
+                            </div>
+                          </CollapsibleContent>
+                        </Collapsible>
                       </div>
                     </CardContent>
                   </Card>
@@ -766,50 +906,72 @@ export function Budget() {
                         </div>
                       </div>
 
-                      {/* Tabela Detalhada */}
+                      {/* Seção Colapsável de Receitas */}
                       <div className="space-y-4">
                         <div className="text-sm font-semibold text-muted-foreground uppercase tracking-wide border-b pb-2">
                           Totais por Categoria
                         </div>
                         
-                        {/* Header */}
-                        <div className="grid grid-cols-4 gap-4 text-sm font-medium text-muted-foreground pb-2 border-b">
-                          <div>Categoria</div>
-                          <div className="text-right">Planejado</div>
-                          <div className="text-right">Real</div>
-                          <div className="text-right">Diferença</div>
-                        </div>
-
-                        {/* Categorias de Renda */}
-                        {categories
-                          .filter((cat: any) => cat.transactionType === 'income') // Income categories
-                          .map((category: any) => {
-                            // Calcula receita da categoria - debug para verificar transações
-                            const categoryTransactions = transactions.filter((t: any) => t.categoryId === category.id && t.type === 'income');
-                            const categoryIncome = categoryTransactions.reduce((sum: number, t: any) => sum + parseFloat(t.amount || 0), 0);
-                            
-                            // Debug simplificado
-                            if (category.name === 'Salário') {
-                              console.log(`Categoria ${category.name} (${category.id}) - Transações encontradas: ${categoryTransactions.length}, Valor: R$ ${categoryIncome}`);
-                            }
-                            
-                            return (
-                              <div key={category.id} className="grid grid-cols-4 gap-4 text-sm py-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
-                                <div className="flex items-center gap-2">
-                                  <div 
-                                    className="w-2 h-2 rounded-full" 
-                                    style={{ backgroundColor: category.color || '#10B981' }}
-                                  ></div>
-                                  <span className="font-medium">{category.name}</span>
+                        {/* Receitas */}
+                        <Collapsible open={isIncomeExpanded} onOpenChange={setIsIncomeExpanded}>
+                          <CollapsibleTrigger className="w-full">
+                            <div className="grid grid-cols-4 gap-4 text-sm py-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer">
+                              <div className="flex items-center gap-2">
+                                <div className="flex items-center gap-1">
+                                  {isIncomeExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                                  <div className="w-2 h-2 rounded-full bg-green-500"></div>
                                 </div>
-                                <div className="text-right font-mono">{formatCurrency(categoryIncome)}</div>
-                                <div className="text-right font-mono font-semibold">{formatCurrency(categoryIncome)}</div>
-                                <div className="text-right font-mono font-bold text-green-600">
-                                  {formatCurrency(0)}
-                                </div>
+                                <span className="font-medium">Receitas</span>
                               </div>
-                            );
-                          })}
+                              <div className="text-right font-mono">{formatCurrency(parseFloat(budget?.totalIncome?.toString() || '0'))}</div>
+                              <div className="text-right font-mono font-semibold">{formatCurrency(totalIncome)}</div>
+                              <div className="text-right font-mono font-bold text-green-600">
+                                {formatCurrency((parseFloat(budget?.totalIncome?.toString() || '0') - totalIncome))}
+                              </div>
+                            </div>
+                          </CollapsibleTrigger>
+                          <CollapsibleContent>
+                            <div className="ml-6 mt-2 space-y-2 bg-slate-50 dark:bg-slate-800 rounded-lg p-4">
+                              {categories
+                                .filter((cat: any) => cat.transactionType === 'income')
+                                .map((category: any) => {
+                                  const categoryTransactions = transactions.filter((t: any) => t.categoryId === category.id && t.type === 'income');
+                                  const categoryIncome = categoryTransactions.reduce((sum: number, t: any) => sum + parseFloat(t.amount || 0), 0);
+                                  
+                                  // Debug simplificado
+                                  if (category.name === 'Salário') {
+                                    console.log(`Categoria ${category.name} (${category.id}) - Transações encontradas: ${categoryTransactions.length}, Valor: R$ ${categoryIncome}`);
+                                  }
+                                  
+                                  return (
+                                    <div key={category.id} className="grid grid-cols-3 gap-4 text-xs py-2">
+                                      <span className="font-medium">{category.name}</span>
+                                      <span className="text-right font-mono">{formatCurrency(categoryIncome)}</span>
+                                      <span className="text-right font-mono text-muted-foreground">-</span>
+                                    </div>
+                                  );
+                                })}
+                              <div className="pt-3 border-t">
+                                <Button 
+                                  variant="outline" 
+                                  size="sm" 
+                                  className="w-full text-xs"
+                                  onClick={() => {
+                                    setTransactionsDialogTitle('Lançamentos de Receita');
+                                    setTransactionsDialogFilters({
+                                      type: 'income' as const,
+                                      period: `${selectedMonth}/${selectedYear}`
+                                    });
+                                    setIsTransactionsDialogOpen(true);
+                                  }}
+                                >
+                                  <FileText className="w-3 h-3 mr-2" />
+                                  Ver Lançamentos
+                                </Button>
+                              </div>
+                            </div>
+                          </CollapsibleContent>
+                        </Collapsible>
                       </div>
                     </CardContent>
                   </Card>
