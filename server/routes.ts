@@ -1288,9 +1288,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "ID do orçamento inválido" });
       }
       
-      // Completely bypass database query for now to fix the error
-      console.log(`⚠️ Bypassing budget categories query to prevent PostgreSQL error`);
-      res.json([]);
+      const budgetCategories = await storage.getBudgetCategories(budgetId);
+      res.json(budgetCategories);
     } catch (error) {
       console.error('❌ Erro ao carregar categorias do orçamento:', error);
       res.status(500).json({ message: "Erro interno do servidor" });

@@ -1021,11 +1021,47 @@ export class DatabaseStorage implements IStorage {
 
 
 
-  // Budget Categories (DISABLED to prevent PostgreSQL error)
+  // Budget Categories
   async getBudgetCategories(budgetId: string): Promise<(BudgetCategory & { category: Category })[]> {
-    console.log(`⚠️ getBudgetCategories method disabled to prevent PostgreSQL NaN error for budgetId: ${budgetId}`);
-    // Return empty array to prevent any database queries that might cause PostgreSQL errors
-    return [];
+    try {
+      // Validate budgetId to prevent NaN errors
+      if (!budgetId || budgetId === 'undefined' || budgetId === 'NaN' || budgetId === 'null') {
+        console.log(`⚠️ Invalid budgetId received: ${budgetId}, returning empty array`);
+        return [];
+      }
+
+      console.log(`🔍 Fetching budget categories for budgetId: ${budgetId}`);
+      
+      const result = await db
+        .select({
+          id: budgetCategories.id,
+          budgetId: budgetCategories.budgetId,
+          categoryId: budgetCategories.categoryId,
+          allocatedAmount: budgetCategories.allocatedAmount,
+          createdAt: budgetCategories.createdAt,
+          category: {
+            id: categories.id,
+            name: categories.name,
+            type: categories.type,
+            transactionType: categories.transactionType,
+            color: categories.color,
+            icon: categories.icon,
+            description: categories.description,
+            isDefault: categories.isDefault,
+            userId: categories.userId,
+            createdAt: categories.createdAt,
+          }
+        })
+        .from(budgetCategories)
+        .innerJoin(categories, eq(budgetCategories.categoryId, categories.id))
+        .where(eq(budgetCategories.budgetId, budgetId));
+
+      console.log(`✅ Found ${result.length} budget categories`);
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching budget categories for ${budgetId}:`, error);
+      return [];
+    }
   }
 
   // Diagnostic method to test budget categories queries step by step

@@ -119,15 +119,15 @@ export function Budget() {
     queryKey: ['/api/accounts'],
   });
 
-  // Temporarily disable budget categories query to fix PostgreSQL error
+  // Budget categories query - now enabled with fixed API
   const { data: existingBudgetCategories = [] } = useQuery<any[]>({
     queryKey: ['/api/budget', budget?.id, 'categories'],
-    queryFn: () => {
-      // Return empty array to prevent PostgreSQL error
-      console.log('⚠️ Budget categories query disabled to prevent PostgreSQL error');
-      return Promise.resolve([]);
-    },
-    enabled: false, // Disable the query completely
+    queryFn: () => fetch(`/api/budget/${budget?.id}/categories`, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+      }
+    }).then(res => res.json()),
+    enabled: !!budget?.id, // Enable when budget ID is available
   });
 
   const createBudgetMutation = useMutation({
@@ -723,12 +723,9 @@ export function Budget() {
                                     .filter((t: any) => t.categoryId === category.id && t.type === 'expense')
                                     .reduce((sum: number, t: any) => sum + parseFloat(t.amount), 0);
                                   
-                                  // Calcular valor previsto distribuindo igualmente entre categorias de necessidades
-                                  const totalNecessitiesBudget = parseFloat(budget?.necessitiesBudget?.toString() || '0');
-                                  const necessitiesCategories = categories.filter((cat: any) => cat.type === 'necessities');
-                                  const categoryBudget = totalNecessitiesBudget > 0 && necessitiesCategories.length > 0
-                                    ? totalNecessitiesBudget / necessitiesCategories.length
-                                    : 0;
+                                  // Buscar valor previsto específico desta categoria no orçamento cadastrado
+                                  const budgetCategory = existingBudgetCategories.find((bc: any) => bc.categoryId === category.id);
+                                  const categoryBudget = budgetCategory ? parseFloat(budgetCategory.allocatedAmount) : 0;
                                   
                                   const remainingBudget = categoryBudget - categorySpent;
                                   
@@ -805,12 +802,9 @@ export function Budget() {
                                     .filter((t: any) => t.categoryId === category.id && t.type === 'expense')
                                     .reduce((sum: number, t: any) => sum + parseFloat(t.amount), 0);
                                   
-                                  // Calcular valor previsto distribuindo igualmente entre categorias de desejos
-                                  const totalWantsBudget = parseFloat(budget?.wantsBudget?.toString() || '0');
-                                  const wantsCategories = categories.filter((cat: any) => cat.type === 'wants');
-                                  const categoryBudget = totalWantsBudget > 0 && wantsCategories.length > 0
-                                    ? totalWantsBudget / wantsCategories.length
-                                    : 0;
+                                  // Buscar valor previsto específico desta categoria no orçamento cadastrado
+                                  const budgetCategory = existingBudgetCategories.find((bc: any) => bc.categoryId === category.id);
+                                  const categoryBudget = budgetCategory ? parseFloat(budgetCategory.allocatedAmount) : 0;
                                   
                                   const remainingBudget = categoryBudget - categorySpent;
                                   
@@ -887,12 +881,9 @@ export function Budget() {
                                     .filter((t: any) => t.categoryId === category.id && t.type === 'expense')
                                     .reduce((sum: number, t: any) => sum + parseFloat(t.amount), 0);
                                   
-                                  // Calcular valor previsto distribuindo igualmente entre categorias de investimentos
-                                  const totalSavingsBudget = parseFloat(budget?.savingsBudget?.toString() || '0');
-                                  const savingsCategories = categories.filter((cat: any) => cat.type === 'savings');
-                                  const categoryBudget = totalSavingsBudget > 0 && savingsCategories.length > 0
-                                    ? totalSavingsBudget / savingsCategories.length
-                                    : 0;
+                                  // Buscar valor previsto específico desta categoria no orçamento cadastrado
+                                  const budgetCategory = existingBudgetCategories.find((bc: any) => bc.categoryId === category.id);
+                                  const categoryBudget = budgetCategory ? parseFloat(budgetCategory.allocatedAmount) : 0;
                                   
                                   const remainingBudget = categoryBudget - categorySpent;
                                   
@@ -1016,12 +1007,9 @@ export function Budget() {
                                     console.log(`Categoria ${category.name} (${category.id}) - Transações encontradas: ${categoryTransactions.length}, Valor: R$ ${categoryIncome}`);
                                   }
                                   
-                                  // Calcular valor previsto distribuindo igualmente entre categorias de receita
-                                  const totalIncomeBudget = parseFloat(budget?.totalIncome?.toString() || '0');
-                                  const incomeCategories = categories.filter((cat: any) => cat.transactionType === 'income');
-                                  const categoryBudget = totalIncomeBudget > 0 && incomeCategories.length > 0
-                                    ? totalIncomeBudget / incomeCategories.length
-                                    : 0;
+                                  // Buscar valor previsto específico desta categoria no orçamento cadastrado
+                                  const budgetCategory = existingBudgetCategories.find((bc: any) => bc.categoryId === category.id);
+                                  const categoryBudget = budgetCategory ? parseFloat(budgetCategory.allocatedAmount) : 0;
                                   
                                   const remainingTarget = categoryBudget - categoryIncome;
                                   
