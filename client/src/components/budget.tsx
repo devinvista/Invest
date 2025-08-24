@@ -710,10 +710,11 @@ export function Budget() {
                           <CollapsibleContent>
                             <div className="ml-6 mt-2 space-y-2 bg-slate-50 dark:bg-slate-800 rounded-lg p-4">
                               {/* Header do detalhamento */}
-                              <div className="grid grid-cols-3 gap-4 text-xs font-medium text-muted-foreground pb-2 border-b">
+                              <div className="grid grid-cols-4 gap-4 text-xs font-medium text-muted-foreground pb-2 border-b">
                                 <div>Categoria</div>
-                                <div className="text-right">Real</div>
                                 <div className="text-right">Previsto</div>
+                                <div className="text-right">Realizado</div>
+                                <div className="text-right">Saldo Restante</div>
                               </div>
                               {categories
                                 .filter((cat: any) => cat.type === 'necessities')
@@ -729,12 +730,17 @@ export function Budget() {
                                     ? (categorySpent / totalNecessitiesSpent) * totalNecessitiesBudget 
                                     : 0;
                                   
+                                  const remainingBudget = categoryBudget - categorySpent;
+                                  
                                   return (
-                                    <div key={category.id} className="grid grid-cols-3 gap-4 text-xs py-2">
+                                    <div key={category.id} className="grid grid-cols-4 gap-4 text-xs py-2">
                                       <span className="font-medium">{category.name}</span>
-                                      <span className="text-right font-mono">{formatCurrency(categorySpent)}</span>
-                                      <span className="text-right font-mono text-muted-foreground">
+                                      <span className="text-right font-mono">
                                         {categoryBudget > 0 ? formatCurrency(categoryBudget) : '-'}
+                                      </span>
+                                      <span className="text-right font-mono">{formatCurrency(categorySpent)}</span>
+                                      <span className={`text-right font-mono ${remainingBudget >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                        {categoryBudget > 0 ? formatCurrency(remainingBudget) : '-'}
                                       </span>
                                     </div>
                                   );
@@ -786,10 +792,11 @@ export function Budget() {
                           <CollapsibleContent>
                             <div className="ml-6 mt-2 space-y-2 bg-slate-50 dark:bg-slate-800 rounded-lg p-4">
                               {/* Header do detalhamento */}
-                              <div className="grid grid-cols-3 gap-4 text-xs font-medium text-muted-foreground pb-2 border-b">
+                              <div className="grid grid-cols-4 gap-4 text-xs font-medium text-muted-foreground pb-2 border-b">
                                 <div>Categoria</div>
-                                <div className="text-right">Real</div>
                                 <div className="text-right">Previsto</div>
+                                <div className="text-right">Realizado</div>
+                                <div className="text-right">Saldo Restante</div>
                               </div>
                               {categories
                                 .filter((cat: any) => cat.type === 'wants')
@@ -805,12 +812,17 @@ export function Budget() {
                                     ? (categorySpent / totalWantsSpent) * totalWantsBudget 
                                     : 0;
                                   
+                                  const remainingBudget = categoryBudget - categorySpent;
+                                  
                                   return (
-                                    <div key={category.id} className="grid grid-cols-3 gap-4 text-xs py-2">
+                                    <div key={category.id} className="grid grid-cols-4 gap-4 text-xs py-2">
                                       <span className="font-medium">{category.name}</span>
-                                      <span className="text-right font-mono">{formatCurrency(categorySpent)}</span>
-                                      <span className="text-right font-mono text-muted-foreground">
+                                      <span className="text-right font-mono">
                                         {categoryBudget > 0 ? formatCurrency(categoryBudget) : '-'}
+                                      </span>
+                                      <span className="text-right font-mono">{formatCurrency(categorySpent)}</span>
+                                      <span className={`text-right font-mono ${remainingBudget >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                        {categoryBudget > 0 ? formatCurrency(remainingBudget) : '-'}
                                       </span>
                                     </div>
                                   );
@@ -862,10 +874,11 @@ export function Budget() {
                           <CollapsibleContent>
                             <div className="ml-6 mt-2 space-y-2 bg-slate-50 dark:bg-slate-800 rounded-lg p-4">
                               {/* Header do detalhamento */}
-                              <div className="grid grid-cols-3 gap-4 text-xs font-medium text-muted-foreground pb-2 border-b">
+                              <div className="grid grid-cols-4 gap-4 text-xs font-medium text-muted-foreground pb-2 border-b">
                                 <div>Categoria</div>
-                                <div className="text-right">Real</div>
                                 <div className="text-right">Previsto</div>
+                                <div className="text-right">Realizado</div>
+                                <div className="text-right">Saldo Restante</div>
                               </div>
                               {categories
                                 .filter((cat: any) => cat.type === 'savings')
@@ -881,12 +894,17 @@ export function Budget() {
                                     ? (categorySpent / totalSavingsSpent) * totalSavingsBudget 
                                     : 0;
                                   
+                                  const remainingBudget = categoryBudget - categorySpent;
+                                  
                                   return (
-                                    <div key={category.id} className="grid grid-cols-3 gap-4 text-xs py-2">
+                                    <div key={category.id} className="grid grid-cols-4 gap-4 text-xs py-2">
                                       <span className="font-medium">{category.name}</span>
-                                      <span className="text-right font-mono">{formatCurrency(categorySpent)}</span>
-                                      <span className="text-right font-mono text-muted-foreground">
+                                      <span className="text-right font-mono">
                                         {categoryBudget > 0 ? formatCurrency(categoryBudget) : '-'}
+                                      </span>
+                                      <span className="text-right font-mono">{formatCurrency(categorySpent)}</span>
+                                      <span className={`text-right font-mono ${remainingBudget >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                        {categoryBudget > 0 ? formatCurrency(remainingBudget) : '-'}
                                       </span>
                                     </div>
                                   );
@@ -981,10 +999,11 @@ export function Budget() {
                           <CollapsibleContent>
                             <div className="ml-6 mt-2 space-y-2 bg-slate-50 dark:bg-slate-800 rounded-lg p-4">
                               {/* Header do detalhamento */}
-                              <div className="grid grid-cols-3 gap-4 text-xs font-medium text-muted-foreground pb-2 border-b">
+                              <div className="grid grid-cols-4 gap-4 text-xs font-medium text-muted-foreground pb-2 border-b">
                                 <div>Categoria</div>
-                                <div className="text-right">Real</div>
                                 <div className="text-right">Previsto</div>
+                                <div className="text-right">Realizado</div>
+                                <div className="text-right">Meta Restante</div>
                               </div>
                               {categories
                                 .filter((cat: any) => cat.transactionType === 'income')
@@ -1004,12 +1023,17 @@ export function Budget() {
                                     ? (categoryIncome / totalIncomeActual) * totalIncomeBudget 
                                     : 0;
                                   
+                                  const remainingTarget = categoryBudget - categoryIncome;
+                                  
                                   return (
-                                    <div key={category.id} className="grid grid-cols-3 gap-4 text-xs py-2">
+                                    <div key={category.id} className="grid grid-cols-4 gap-4 text-xs py-2">
                                       <span className="font-medium">{category.name}</span>
-                                      <span className="text-right font-mono">{formatCurrency(categoryIncome)}</span>
-                                      <span className="text-right font-mono text-muted-foreground">
+                                      <span className="text-right font-mono">
                                         {categoryBudget > 0 ? formatCurrency(categoryBudget) : '-'}
+                                      </span>
+                                      <span className="text-right font-mono">{formatCurrency(categoryIncome)}</span>
+                                      <span className={`text-right font-mono ${remainingTarget <= 0 ? 'text-green-600' : 'text-orange-600'}`}>
+                                        {categoryBudget > 0 ? formatCurrency(Math.max(0, remainingTarget)) : '-'}
                                       </span>
                                     </div>
                                   );
