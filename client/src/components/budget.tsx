@@ -723,11 +723,11 @@ export function Budget() {
                                     .filter((t: any) => t.categoryId === category.id && t.type === 'expense')
                                     .reduce((sum: number, t: any) => sum + parseFloat(t.amount), 0);
                                   
-                                  // Calcular valor previsto proporcional baseado no total de necessidades
-                                  const totalNecessitiesSpent = spendingByType.necessities;
+                                  // Calcular valor previsto distribuindo igualmente entre categorias de necessidades
                                   const totalNecessitiesBudget = parseFloat(budget?.necessitiesBudget?.toString() || '0');
-                                  const categoryBudget = totalNecessitiesSpent > 0 && totalNecessitiesBudget > 0 
-                                    ? (categorySpent / totalNecessitiesSpent) * totalNecessitiesBudget 
+                                  const necessitiesCategories = categories.filter((cat: any) => cat.type === 'necessities');
+                                  const categoryBudget = totalNecessitiesBudget > 0 && necessitiesCategories.length > 0
+                                    ? totalNecessitiesBudget / necessitiesCategories.length
                                     : 0;
                                   
                                   const remainingBudget = categoryBudget - categorySpent;
@@ -805,11 +805,11 @@ export function Budget() {
                                     .filter((t: any) => t.categoryId === category.id && t.type === 'expense')
                                     .reduce((sum: number, t: any) => sum + parseFloat(t.amount), 0);
                                   
-                                  // Calcular valor previsto proporcional baseado no total de desejos
-                                  const totalWantsSpent = spendingByType.wants;
+                                  // Calcular valor previsto distribuindo igualmente entre categorias de desejos
                                   const totalWantsBudget = parseFloat(budget?.wantsBudget?.toString() || '0');
-                                  const categoryBudget = totalWantsSpent > 0 && totalWantsBudget > 0 
-                                    ? (categorySpent / totalWantsSpent) * totalWantsBudget 
+                                  const wantsCategories = categories.filter((cat: any) => cat.type === 'wants');
+                                  const categoryBudget = totalWantsBudget > 0 && wantsCategories.length > 0
+                                    ? totalWantsBudget / wantsCategories.length
                                     : 0;
                                   
                                   const remainingBudget = categoryBudget - categorySpent;
@@ -887,11 +887,11 @@ export function Budget() {
                                     .filter((t: any) => t.categoryId === category.id && t.type === 'expense')
                                     .reduce((sum: number, t: any) => sum + parseFloat(t.amount), 0);
                                   
-                                  // Calcular valor previsto proporcional baseado no total de investimentos
-                                  const totalSavingsSpent = spendingByType.savings;
+                                  // Calcular valor previsto distribuindo igualmente entre categorias de investimentos
                                   const totalSavingsBudget = parseFloat(budget?.savingsBudget?.toString() || '0');
-                                  const categoryBudget = totalSavingsSpent > 0 && totalSavingsBudget > 0 
-                                    ? (categorySpent / totalSavingsSpent) * totalSavingsBudget 
+                                  const savingsCategories = categories.filter((cat: any) => cat.type === 'savings');
+                                  const categoryBudget = totalSavingsBudget > 0 && savingsCategories.length > 0
+                                    ? totalSavingsBudget / savingsCategories.length
                                     : 0;
                                   
                                   const remainingBudget = categoryBudget - categorySpent;
@@ -1016,11 +1016,11 @@ export function Budget() {
                                     console.log(`Categoria ${category.name} (${category.id}) - Transações encontradas: ${categoryTransactions.length}, Valor: R$ ${categoryIncome}`);
                                   }
                                   
-                                  // Calcular valor previsto proporcional baseado no total de receitas
-                                  const totalIncomeActual = totalIncome;
+                                  // Calcular valor previsto distribuindo igualmente entre categorias de receita
                                   const totalIncomeBudget = parseFloat(budget?.totalIncome?.toString() || '0');
-                                  const categoryBudget = totalIncomeActual > 0 && totalIncomeBudget > 0 
-                                    ? (categoryIncome / totalIncomeActual) * totalIncomeBudget 
+                                  const incomeCategories = categories.filter((cat: any) => cat.transactionType === 'income');
+                                  const categoryBudget = totalIncomeBudget > 0 && incomeCategories.length > 0
+                                    ? totalIncomeBudget / incomeCategories.length
                                     : 0;
                                   
                                   const remainingTarget = categoryBudget - categoryIncome;
