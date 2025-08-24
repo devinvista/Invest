@@ -1039,6 +1039,7 @@ export class DatabaseStorage implements IStorage {
         return [];
       }
 
+      // Use prepared statement to prevent SQL injection and ensure proper parameter handling
       const result = await db
         .select({
           id: budgetCategories.id,
@@ -1061,7 +1062,7 @@ export class DatabaseStorage implements IStorage {
         })
         .from(budgetCategories)
         .innerJoin(categories, eq(budgetCategories.categoryId, categories.id))
-        .where(eq(budgetCategories.budgetId, budgetId));
+        .where(sql`${budgetCategories.budgetId} = ${budgetId}`);
 
       console.log(`✅ Found ${result.length} budget categories`);
       return result;

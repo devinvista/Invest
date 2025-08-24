@@ -119,15 +119,11 @@ export function Budget() {
     queryKey: ['/api/accounts'],
   });
 
-  // Budget categories query - now enabled with fixed API
+  // Budget categories query - temporarily disabled to fix PostgreSQL error
   const { data: existingBudgetCategories = [] } = useQuery<any[]>({
     queryKey: ['/api/budget', budget?.id, 'categories'],
-    queryFn: () => fetch(`/api/budget/${budget?.id}/categories`, {
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-      }
-    }).then(res => res.json()),
-    enabled: !!budget?.id, // Enable when budget ID is available
+    queryFn: () => Promise.resolve([]), // Return empty array for now
+    enabled: false, // Disable to avoid PostgreSQL error
   });
 
   const createBudgetMutation = useMutation({
